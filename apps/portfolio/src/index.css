@@ -5,6 +5,7 @@
 @import '@n3wth/ui/site.css';
 @import '@n3wth/ui/tailwind-theme.css';
 @import 'tailwindcss/utilities.css' layer(utilities);
+@import './components/routeTransition.css';
 
 /* ============================================================
    n3wth.com — Wireframe / Blueprint design system

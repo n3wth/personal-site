@@ -54,11 +54,39 @@ if (path.startsWith('thinking/')) schemas.push(buildArticleSchema({ url, title: 
     {path === '' && <link rel="preload" href="/images/hero-playa.webp" as="image" type="image/webp" fetchpriority="high" />}
     {[...siteSchema, ...schemas].map(schema => <script type="application/ld+json" set:html={JSON.stringify(schema).replace(/</g, '\\u003c')} />)}
     <script>import '../lib/initializeAnalytics'</script>
+    <style is:inline>@view-transition { navigation: auto; }</style>
+    <script is:inline>
+      // Skip the native snapshot when the line wipe owns navigation or motion is reduced.
+      for (var type of ['pageswap', 'pagereveal']) {
+        window.addEventListener(type, function (event) {
+          if (!event.viewTransition) return
+          event.viewTransition.ready.catch(function () {})
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches
+            || document.documentElement.hasAttribute('data-route-leave')
+            || document.documentElement.hasAttribute('data-route-arrive')) event.viewTransition.skipTransition()
+        })
+      }
+      try {
+        var routeLineArrive = sessionStorage.getItem('route-line-arrive') === '1'
+        var routeLineReduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+        if (routeLineArrive && !routeLineReduce) document.documentElement.dataset.routeArrive = ''
+      } catch (error) { /* storage can be blocked */ }
+    </script>
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to content</a>
     <SiteHeader pathname={`/${path}`} client:load />
-    <div class="n3wth-site-main"><div class="frame"><main id="main" tabindex="-1"><slot /></main></div></div>
+    <div class="n3wth-site-main"><div class="frame"><main id="main" tabindex="-1"><slot /><script is:inline>
+      if (document.documentElement.dataset.routeArrive === '') {
+        document.querySelectorAll('.section-story path').forEach(function (path) {
+          if (!path.getAttribute('pathLength')) path.setAttribute('pathLength', '1')
+        })
+      }
+    </script></main></div></div>
     {path !== '' && <Footer client:load />}
+    <script>
+      import { mountRouteTransitions } from '../lib/routeTransition'
+      mountRouteTransitions()
+    </script>
   </body>
 </html>

@@ -26,7 +26,10 @@ export function Nav({ onOpenSearch, searchOpen = false, pathname = '/' }: NavPro
       menuLabel="Open menu"
       data-nosnippet
       brand={<a href="/" aria-label="Oliver Newth — home" onClick={sameRouteClick('/')}>Oliver Newth</a>}
-      links={topNavigation.map((item) => <a key={item.href} href={item.href} aria-current={pathname === item.href || pathname.startsWith(`${item.href}/`) ? 'page' : undefined} onClick={sameRouteClick(item.href)}>{item.name}</a>)}
+      links={topNavigation.map((item) => {
+        const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
+        return <a key={item.href} href={item.href} aria-current={active ? 'page' : undefined} onClick={sameRouteClick(item.href)}>{item.name}{active ? <span className="nav-anchor" aria-hidden="true" /> : null}</a>
+      })}
       actions={<>
         {onOpenSearch && (
           <button

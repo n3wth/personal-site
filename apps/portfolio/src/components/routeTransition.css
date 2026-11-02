@@ -1,0 +1,67 @@
+/* The field lines draw in over 420ms. Other navigations cross-fade for the same time. */
+
+.nav-anchor { display: none; }
+
+@media (min-width: 1024px) {
+  a:has(> .nav-anchor) {
+    position: relative;
+    text-decoration: none;
+  }
+
+  .nav-anchor {
+    display: block;
+    view-transition-name: nav-anchor;
+    position: absolute;
+    left: 50%;
+    bottom: 6px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-icon-cyan);
+    transform: translateX(-50%);
+  }
+}
+
+.route-line-accent {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-group(nav-anchor) {
+    animation-duration: 420ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .portfolio-story-hero ~ *,
+  footer {
+    transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  html[data-route-leave] .portfolio-story-hero ~ *,
+  html[data-route-leave] footer {
+    opacity: 0;
+  }
+
+  html[data-route-arrive] .section-story path:not(.section-story__pulse):not(.section-story__contact-spectrum) {
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: 1;
+    animation: route-line-in 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}
+
+@keyframes route-line-in {
+  to { stroke-dashoffset: 0; }
+}
