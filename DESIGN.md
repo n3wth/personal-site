@@ -47,6 +47,8 @@ Change the lowest appropriate shared layer. Do not copy shared components, CSS o
 
 ## Interaction
 
+Active primary navigation uses the shared bright label and a single text-width underline. Keep the indicator neutral and static, without a colored dot or traveling marker.
+
 Thinking uses one reading column with search, compact format and topic filters, and a continuously loaded list of articles and notes. Keep search, filters, sort and loaded batches in the URL so returning from a piece preserves the list. Provide a keyboard-accessible load-more control. Place format and reading time together beneath each description, leaving the right margin clear. Avoid tag clouds, sidebars, featured blocks and repeated counts on this index. Groves keep clear ground around landmarks; show writing details on interaction rather than covering the scene with labels.
 
 Thinking notes keep the reading outline in a collapsed Contents disclosure above the prose, without a sidebar or a repeated Thinking link above the title.
