@@ -56,6 +56,14 @@ function PortalLabel({ def, onEnter, hovered, position = [0, -0.8, 0] }: {
   onEnter: NightFieldProps['onEnter']
   position?: [number, number, number]
 }) {
+  const [mounted, setMounted] = useState(false)
+  // Canvas mounts synchronously; Html needs its canvas parent in the DOM.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setMounted(true))
+    return () => cancelAnimationFrame(frame)
+  }, [])
+  if (!mounted) return null
+
   return (
     <Html center position={position} zIndexRange={[20, 10]}>
       <a
