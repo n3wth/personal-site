@@ -579,7 +579,7 @@ test('AI answers start automatically after typing pauses', async ({ page }, test
   })
   await page.goto('/work')
   await page.getByRole('button', { name: 'Search', exact: true }).click()
-  await expect(page.getByRole('option')).toHaveText(['Work', 'Projects', 'Art', 'Thinking', 'Library', 'Contact'])
+  await expect(page.getByRole('group', { name: 'Pages', exact: true }).getByRole('option')).toHaveText(['Work', 'Projects', 'Art', 'Thinking', 'Library', 'Contact'])
   await expect(page.getByRole('dialog', { name: 'Search n3wth.com' })).toHaveCSS('opacity', '1')
   await page.screenshot({ path: testInfo.outputPath('search.png') })
   await page.getByRole('combobox').fill('garden')
