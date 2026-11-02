@@ -46,6 +46,9 @@ export function validateGardenSearch(search) {
     if (typeof note?.href !== 'string' || !note.href) {
       errors.push(`garden-search.json.notes[${i}].href: expected a non-empty string`)
     }
+    if (note?.tags !== undefined && (!Array.isArray(note.tags) || note.tags.some((tag) => typeof tag !== 'string' || !tag))) {
+      errors.push(`garden-search.json.notes[${i}].tags: expected an array of non-empty strings`)
+    }
   })
   return errors
 }

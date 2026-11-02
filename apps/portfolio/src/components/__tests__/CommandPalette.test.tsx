@@ -34,6 +34,7 @@ describe('CommandPalette smoke', () => {
     expect(document.activeElement).toBe(input)
     expect(screen.getAllByRole('option').map(option => option.textContent)).toEqual([
       'Work', 'Projects', 'Art', 'Thinking', 'Library', 'Contact',
+      'elephant-goldfish', 'markup', 'r3', '@n3wth/ui', 'hop.flights', 'lunchmoney.sh',
     ])
 
     // garden arrives via dynamic import
@@ -192,6 +193,24 @@ describe('CommandPalette AI search', () => {
     await waitFor(() => expect(screen.queryByRole('status', { name: 'Searching' })).toBeNull())
     expect(screen.queryByText('Stale answer')).toBeNull()
     expect(track).toHaveBeenCalledWith('$ai_generation', expect.objectContaining({ outcome: 'cancelled' }))
+  })
+
+  it('lists elephant-goldfish for elepha and hides an abstain answer', async () => {
+    globalThis.fetch = vi.fn(async () => new Response(JSON.stringify({
+      answer: 'No relevant information found. Try another search.',
+    }), { headers: { 'content-type': 'application/json' } }))
+    render(<><CommandPalette open onClose={noop} /></>)
+    const input = screen.getByRole('combobox')
+    const started = performance.now()
+    fireEvent.change(input, { target: { value: 'elepha' } })
+    const option = screen.getByRole('option', { name: 'elephant-goldfish' })
+    expect(performance.now() - started).toBeLessThan(50)
+    expect(option).toHaveAttribute('href', '/projects/elephant-goldfish')
+    expect(option.querySelector('.command-palette-mark')?.textContent).toBe('elepha')
+    expect(screen.queryByText(/No relevant information found/)).toBeNull()
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled())
+    expect(screen.queryByText(/No relevant information found/)).toBeNull()
+    expect(screen.getByRole('option', { name: 'elephant-goldfish' })).toBeTruthy()
   })
 
   it('records the model and no-answer outcome from a streamed response', async () => {
