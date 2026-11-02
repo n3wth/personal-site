@@ -674,6 +674,14 @@ test('AI answers start automatically after typing pauses', async ({ page }, test
   await expect(page).toHaveURL(/\/work$/)
 })
 
+test('asset-free scene labels attach when Canvas mounts synchronously', async ({ page }) => {
+  await page.route('**/models/**', route => route.abort())
+  await page.goto('/')
+  const triangle = page.locator('.world-portal-link[aria-label="Pink Triangle"]')
+  await expect(triangle).toBeVisible()
+  await expect(triangle).toHaveAttribute('href', '/art#pink-triangle')
+})
+
 for (const route of ['/', '/work', '/art', '/thinking', '/library', '/contact']) {
   test(`${route} renders without runtime errors or horizontal overflow`, async ({ page }, testInfo) => {
     const errors: string[] = []
