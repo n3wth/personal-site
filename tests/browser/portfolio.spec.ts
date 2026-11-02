@@ -512,6 +512,48 @@ test('work uses the shared theme and a usable resume action', async ({ page }, t
   await expect(page.getByRole('link', { name: 'Open resume', exact: true })).toHaveAttribute('href', 'https://r2.n3wth.com/resume/oliver-newth-resume.pdf')
 })
 
+test('section navigation survives animation failures and browser Back', async ({ page }, testInfo) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  for (const failure of ['throw', 'cancel', 'none']) {
+    await page.goto('/work')
+    await expect(page.locator('html')).toHaveAttribute('data-route-transitions', 'on')
+    if (failure === 'throw') {
+      await page.evaluate(() => {
+        SVGElement.prototype.animate = () => { throw new Error('Animation unavailable') }
+      })
+    }
+    await page.getByRole('navigation', { name: 'Footer', exact: true }).getByRole('link', { name: 'Projects', exact: true }).click()
+    if (failure === 'cancel') {
+      await expect(page.locator('html')).toHaveAttribute('data-route-leave', '')
+      await page.evaluate(() => document.getAnimations().filter(animation => animation.id === 'route-line-wipe').forEach(animation => animation.cancel()))
+    }
+    if (failure === 'none') await page.screenshot({ path: testInfo.outputPath('section-line-wipe.png') })
+    await expect(page).toHaveURL(/\/projects$/)
+    await page.goBack()
+    await expect(page.locator('main h1')).toHaveText('Work')
+    await expect(page.locator('html')).not.toHaveAttribute('data-route-leave')
+    await expect(page.locator('.n3wth-site-footer')).toHaveCSS('opacity', '1')
+    await expect(page.locator('.route-line-accent')).toHaveCount(0)
+  }
+  expect(errors).toEqual([])
+})
+
+test('route hints do not prefetch other origins', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/work')
+  await expect(page.locator('html')).toHaveAttribute('data-route-transitions', 'on')
+  await page.evaluate(() => {
+    const link = document.createElement('a')
+    link.href = 'https://example.com/projects'
+    link.textContent = 'External projects'
+    document.querySelector('main')!.append(link)
+  })
+  await page.getByRole('link', { name: 'External projects', exact: true }).hover()
+  await expect(page.locator('link[rel="prefetch"][href="https://example.com/projects"]')).toHaveCount(0)
+})
+
 test('hybrid planting remains navigable with motion', async ({ page }, testInfo) => {
   test.setTimeout(60_000)
   const errors: string[] = []

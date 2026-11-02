@@ -54,7 +54,18 @@ if (path.startsWith('thinking/')) schemas.push(buildArticleSchema({ url, title: 
     {path === '' && <link rel="preload" href="/images/hero-playa.webp" as="image" type="image/webp" fetchpriority="high" />}
     {[...siteSchema, ...schemas].map(schema => <script type="application/ld+json" set:html={JSON.stringify(schema).replace(/</g, '\\u003c')} />)}
     <script>import '../lib/initializeAnalytics'</script>
+    <style is:inline>@view-transition { navigation: auto; }</style>
     <script is:inline>
+      // Skip the native snapshot when the line wipe owns navigation or motion is reduced.
+      for (var type of ['pageswap', 'pagereveal']) {
+        window.addEventListener(type, function (event) {
+          if (!event.viewTransition) return
+          event.viewTransition.ready.catch(function () {})
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches
+            || document.documentElement.hasAttribute('data-route-leave')
+            || document.documentElement.hasAttribute('data-route-arrive')) event.viewTransition.skipTransition()
+        })
+      }
       try {
         var routeLineArrive = sessionStorage.getItem('route-line-arrive') === '1'
         var routeLineReduce = matchMedia('(prefers-reduced-motion: reduce)').matches

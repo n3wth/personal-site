@@ -30,12 +30,6 @@ function plainClick(event: MouseEvent, link: HTMLAnchorElement) {
   return true
 }
 
-function disableDocumentTransition() {
-  const style = document.createElement('style')
-  style.textContent = '@view-transition { navigation: none; }'
-  document.head.appendChild(style)
-}
-
 function storyLines() {
   return [...document.querySelectorAll<SVGPathElement>('.section-story path')].filter(path => {
     if (path.closest('defs')) return false
@@ -48,7 +42,6 @@ function storyLines() {
 
 function prepareLine(path: SVGPathElement) {
   if (!path.getAttribute('pathLength')) path.setAttribute('pathLength', '1')
-  path.style.strokeDasharray = '1 2'
 }
 
 function wipeLines() {
@@ -67,6 +60,7 @@ function wipeLines() {
     accent.setAttribute('fill', 'none')
     accent.setAttribute('stroke', `var(--color-icon-${ACCENTS[index]})`)
     prepareLine(accent)
+    accent.style.strokeDasharray = '1 2'
     accent.style.strokeDashoffset = '1'
     path.parentElement?.appendChild(accent)
     accent.animate(
@@ -76,10 +70,12 @@ function wipeLines() {
   })
   const wipes = lines.map(path => {
     prepareLine(path)
-    return path.animate(
-      [{ strokeDashoffset: 0 }, { strokeDashoffset: 1 }],
+    const animation = path.animate(
+      [{ strokeDasharray: '1 2', strokeDashoffset: 0 }, { strokeDasharray: '1 2', strokeDashoffset: 1 }],
       { duration: ROUTE_LINE_MS, easing: EASE, fill: 'forwards' },
-    ).finished
+    )
+    animation.id = 'route-line-wipe'
+    return animation.finished
   })
   return Promise.all(wipes)
 }
@@ -97,10 +93,9 @@ async function wipeThenVisit(href: string) {
   const id = ++flight
   window.scrollTo(0, 0)
   document.documentElement.dataset.routeLeave = ''
-  await wipeLines()
+  try { await wipeLines() } catch { /* Decorative failures must not block navigation. */ }
   if (id !== flight) return
   try { sessionStorage.setItem(ARRIVE_KEY, '1') } catch { /* storage can be blocked */ }
-  disableDocumentTransition()
   location.assign(href)
 }
 
@@ -108,11 +103,22 @@ export function mountRouteTransitions() {
   document.documentElement.dataset.routeTransitions = 'on'
   clearArrive()
 
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted) return
+    flight++
+    document.documentElement.removeAttribute('data-route-leave')
+    document.documentElement.removeAttribute('data-route-arrive')
+    document.getAnimations().filter(animation => animation.id === 'route-line-wipe').forEach(animation => animation.cancel())
+    document.querySelectorAll('.route-line-accent').forEach(element => element.remove())
+  })
+
   document.addEventListener('pointerenter', event => {
     if (!motionOk()) return
     const link = linkFrom(event)
     if (!link) return
-    const destination = storyKindFromPath(pathnameOf(new URL(link.href, location.href).pathname))
+    const url = new URL(link.href, location.href)
+    if (url.origin !== location.origin) return
+    const destination = storyKindFromPath(pathnameOf(url.pathname))
     const current = storyKindFromPath(pathnameOf(location.pathname))
     if (!destination || !current || destination === current) return
     const hint = document.querySelector(`link[rel="prefetch"][href="${CSS.escape(link.href)}"]`)
