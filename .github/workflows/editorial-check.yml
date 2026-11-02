@@ -29,12 +29,20 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || 'HEAD^' }}
         run: node docs/editorial/require-reviews.mjs "$BASE_SHA"
-      - name: Verify reviewed manuscripts and current outbound links
+      - name: Verify all reviewed manuscripts
         shell: bash
         run: |
           for review in docs/editorial/reviews/*.json; do
             id=$(basename "$review" .json)
             node docs/editorial/check.mjs review "$id"
+          done
+      - name: Verify outbound links for affected manuscripts
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          ids=$(node docs/editorial/check.mjs affected-reviews "$BASE_SHA")
+          for id in $ids; do
             node docs/editorial/check.mjs links "$id" "$RUNNER_TEMP/links-$id.json"
             node docs/editorial/check.mjs release "$id" "$RUNNER_TEMP/links-$id.json"
           done

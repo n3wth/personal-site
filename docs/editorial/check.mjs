@@ -30,6 +30,12 @@ const validDate = (value, now) => nonempty(value) && /^\d{4}-\d{2}-\d{2}(?:T\d{2
 
 export const isChallenge = body => /<title>[^<]*(access denied|just a moment|page not found|captcha|sign in|client challenge|checking your browser|security check)/i.test(body)
 
+export function reviewsForChanges(reviews, paths) {
+  if (!paths || paths.includes('docs/editorial/sources.json')) return reviews
+  const changed = new Set(paths)
+  return reviews.filter(review => changed.has(review.contentPath) || changed.has(`docs/editorial/reviews/${review.id}.json`))
+}
+
 export function outboundLinks(text) {
   const urls = []
   for (const match of text.matchAll(/https?:\/\/[^\s<>"'`\]}]+|(?<![\w:/])\/\/[^\s<>"'`\]}]+/gi)) {
@@ -180,6 +186,13 @@ async function main() {
   const [command = 'backlog', id, reportPath] = process.argv.slice(2)
   const backlog = await readJson('docs/editorial/backlog.json')
   const sources = await readJson('docs/editorial/sources.json')
+  if (command === 'affected-reviews') {
+    const names = (await readdir(resolve(root, 'docs/editorial/reviews'))).filter(name => name.endsWith('.json'))
+    const reviews = await Promise.all(names.map(name => readJson(`docs/editorial/reviews/${name}`)))
+    const paths = id ? execFileSync('git', ['diff', '--name-only', '-z', id, 'HEAD', '--'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean) : undefined
+    console.log(reviewsForChanges(reviews, paths).map(review => review.id).join('\n'))
+    return
+  }
   if (command === 'backlog') {
     const errors = validateBacklog(backlog, sources)
     const mdFiles = await readdir(resolve(root, 'apps/portfolio/content'), { recursive: true })
