@@ -188,7 +188,7 @@ Specify what the skill should and shouldn't do:
 Install as a `SKILL.md` in a skill folder:
 
 ```bash
-mkdir -p ~/.claude/skills/skill-creator && curl -fsSL https://raw.githubusercontent.com/n3wth/n3wth/main/apps/skills/skills/skill-creator.md -o ~/.claude/skills/skill-creator/SKILL.md
+mkdir -p ~/.claude/skills/skill-creator && curl -fsSL https://raw.githubusercontent.com/n3wth/personal-site/main/apps/skills/skills/skill-creator.md -o ~/.claude/skills/skill-creator/SKILL.md
 ```
 
 Project-local install: `.claude/skills/skill-creator/SKILL.md`. Start a new Claude Code session after copying the file.

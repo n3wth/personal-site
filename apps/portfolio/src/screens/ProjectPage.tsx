@@ -43,7 +43,7 @@ const details = {
       ['Inspect and try it', 'The current implementation and package releases live in the n3wth monorepo. The documentation includes a working page example, native control APIs, and the shared layout components used on this site.'],
     ],
     docs: '/docs/ui/quickstart',
-    source: 'https://github.com/n3wth/n3wth/tree/main/packages/ui',
+    source: 'https://github.com/n3wth/personal-site/tree/main/packages/ui',
   },
 } as const
 

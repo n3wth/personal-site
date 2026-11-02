@@ -1,16 +1,6 @@
-# Oliver Newth
+# Personal site
 
-AI product lead at Google. San Francisco.
-
-I build agent infrastructure — memory, tooling, and interfaces that make AI systems useful over long horizons — plus the smart-home and design systems that run my own life.
-
-## Building
-
-- [r3](https://github.com/n3wth/r3) — persistent memory for AI apps over MCP. Local Redis, optional cloud sync. `npx @n3wth/r3`
-- [ui](packages/ui) — shared design system for n3wth sites
-- [canvas](https://github.com/n3wth/canvas) — live canvases with realtime sync
-- [gbrain](https://github.com/n3wth/gbrain) — personal knowledge base an agent can read and write
-- [lunchmoney](https://lunchmoney.sh) — unofficial Lunch Money plugin for Claude, Codex, and Cursor
+Source for [n3wth.com](https://n3wth.com), its documentation, and shared site packages. The GitHub profile README lives in [n3wth/n3wth](https://github.com/n3wth/n3wth).
 
 ## Docs
 

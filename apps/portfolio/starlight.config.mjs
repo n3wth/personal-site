@@ -19,8 +19,8 @@ export default function docs() {
       { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://n3wth.com/og-image.png' } },
       { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
     ],
-    social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/n3wth/n3wth' }],
-    editLink: { baseUrl: 'https://github.com/n3wth/n3wth/edit/main/apps/portfolio/' },
+    social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/n3wth/personal-site' }],
+    editLink: { baseUrl: 'https://github.com/n3wth/personal-site/edit/main/apps/portfolio/' },
     sidebar: [
       { label: 'Overview', slug: 'docs' },
       {

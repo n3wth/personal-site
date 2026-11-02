@@ -17,8 +17,8 @@ workspace to install a product in another application.
 - Git and a feature branch.
 
 ```bash
-git clone https://github.com/n3wth/n3wth.git
-cd n3wth
+git clone https://github.com/n3wth/personal-site.git
+cd personal-site
 git switch -c docs/my-change
 npm install --global npm@11.19.1
 npm ci
@@ -32,9 +32,9 @@ creating an app-local lockfile or installing another copy of UI.
 
 | Path | Responsibility | Start or validate |
 | --- | --- | --- |
-| [packages/ui](https://github.com/n3wth/n3wth/tree/HEAD/packages/ui) | Public `@n3wth/ui` package | `npm run check -w @n3wth/ui` |
-| [packages/site-config](https://github.com/n3wth/n3wth/tree/HEAD/packages/site-config) | Private shared origins and metadata helpers | `npm run check -w @n3wth/site-config` |
-| [apps/portfolio/src/content/docs](https://github.com/n3wth/n3wth/tree/HEAD/apps/portfolio/src/content/docs) | This Starlight documentation site | `npm run dev` |
+| [packages/ui](https://github.com/n3wth/personal-site/tree/HEAD/packages/ui) | Public `@n3wth/ui` package | `npm run check -w @n3wth/ui` |
+| [packages/site-config](https://github.com/n3wth/personal-site/tree/HEAD/packages/site-config) | Private shared origins and metadata helpers | `npm run check -w @n3wth/site-config` |
+| [apps/portfolio/src/content/docs](https://github.com/n3wth/personal-site/tree/HEAD/apps/portfolio/src/content/docs) | This Starlight documentation site | `npm run dev` |
 
 The portfolio shares its Astro build with this documentation. Its
 public content is not an installable developer product. r3's core server,
@@ -85,4 +85,4 @@ The portfolio and documentation deploy together through Cloudflare workflows. Ve
 | Metadata validation reports missing HTML | Build the relevant applications before checking generated metadata |
 | r3 runtime tests are missing here | Run core development and tests in [n3wth/r3](https://github.com/n3wth/r3) |
 
-Source: [workspace instructions](https://github.com/n3wth/n3wth/blob/HEAD/AGENTS.md), [build scripts](https://github.com/n3wth/n3wth/blob/HEAD/package.json), and [UI release process](https://github.com/n3wth/n3wth/blob/HEAD/docs/workspace/npm-release.md).
+Source: [workspace instructions](https://github.com/n3wth/personal-site/blob/HEAD/AGENTS.md), [build scripts](https://github.com/n3wth/personal-site/blob/HEAD/package.json), and [UI release process](https://github.com/n3wth/personal-site/blob/HEAD/docs/workspace/npm-release.md).

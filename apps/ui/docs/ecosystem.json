@@ -3,7 +3,7 @@
     {
       "id": "n3wth",
       "domain": "n3wth.com",
-      "repository": "n3wth/n3wth",
+      "repository": "n3wth/personal-site",
       "rootDirectory": ".",
       "checkCommand": "npm run lint && npm test -- --run && npm run build"
     },

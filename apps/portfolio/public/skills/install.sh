@@ -2,7 +2,7 @@
 # Antigravity CLI skills installer. Optional skill IDs select a subset.
 set -e
 SKILLS_INSTALL_HOME="${SKILLS_INSTALL_HOME:-$HOME}"
-SKILLS_REPO="https://github.com/n3wth/n3wth.git"
+SKILLS_REPO="https://github.com/n3wth/personal-site.git"
 print_error() { printf '%s\n' "$1" >&2; }
 print_success() { printf '%s\n' "$1"; }
 print_warning() { printf '%s\n' "$1"; }

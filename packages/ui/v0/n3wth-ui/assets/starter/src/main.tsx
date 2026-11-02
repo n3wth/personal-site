@@ -19,7 +19,7 @@ function App() {
         <SiteText as="div"><output aria-live="polite">Clicked {count} times</output></SiteText>
       </SiteSection>
     </SiteContainer>
-    <SiteFooter sourceHref="https://github.com/n3wth/n3wth/tree/main/packages/ui" />
+    <SiteFooter sourceHref="https://github.com/n3wth/personal-site/tree/main/packages/ui" />
   </N3wthProvider>
 }
 

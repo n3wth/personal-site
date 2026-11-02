@@ -247,7 +247,7 @@ export interface SiteFooterProps extends HTMLAttributes<HTMLElement> {
   separator?: boolean
 }
 
-export function SiteFooter({ brand = <a href="https://n3wth.com">Oliver Newth</a>, links, sourceHref = 'https://github.com/n3wth/n3wth', legalLinks, signup, inlineSignup = false, separator = true, children, className, ...props }: SiteFooterProps) {
+export function SiteFooter({ brand = <a href="https://n3wth.com">Oliver Newth</a>, links, sourceHref = 'https://github.com/n3wth/personal-site', legalLinks, signup, inlineSignup = false, separator = true, children, className, ...props }: SiteFooterProps) {
   const footerLinks = links ?? <>
     <a href="https://n3wth.com/library">Library</a>
     <a href="https://skills.n3wth.com">Skills</a>
