@@ -476,7 +476,7 @@ body {
   }
 }
 
-/* ---------- Night-field home ---------- */
+/* ---------- Full-viewport home ---------- */
 .home-opening {
   display: flex;
   flex-direction: column;

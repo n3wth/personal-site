@@ -1,0 +1,25 @@
+.home-opening-scene { overflow: hidden; position: relative; min-height: 100svh; }
+.home-artwork { position: absolute; inset: 0; }
+.home-landscape-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.home-contours { position: absolute; inset: 0; width: 100%; height: 100%; }
+.home-contours path { vector-effect: non-scaling-stroke; stroke-width: 1; stroke-linecap: round; }
+.home-contours__current { stroke: currentColor; stroke-width: 1.5; opacity: 0; stroke-dasharray: .06 2; }
+
+@media (max-width: 767px) {
+  .home-artwork { width: max(100%, calc(100svh * 1.6)); left: 22%; transform: translateX(-22%); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-contours__current { animation: contour-passage 23s linear infinite; }
+  .home-contours__current--1 { animation-delay: -13s; animation-duration: 31s; }
+  .home-contours__current--2 { animation-delay: -6s; animation-duration: 29s; }
+  .home-contours__current--3 { animation-delay: -21s; animation-duration: 37s; }
+  .home-contours.is-paused .home-contours__current { animation-play-state: paused; }
+}
+
+@keyframes contour-passage {
+  0%, 65% { stroke-dashoffset: .06; opacity: 0; }
+  68% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { stroke-dashoffset: -1; opacity: 0; }
+}

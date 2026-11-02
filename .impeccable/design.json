@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-02T00:00:00Z",
+  "title": "Design System: Newth sites",
+  "extensions": {
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Existing shared interface state transitions." },
+      { "name": "homepage-currents", "value": "23s / 31s / 29s / 37s linear infinite", "purpose": "Four autonomous contour passages with quiet intervals and opacity fades; disabled for reduced motion and paused offscreen or in hidden tabs." }
+    ],
+    "breakpoints": [
+      { "name": "portfolio-artwork", "value": "768px" },
+      { "name": "portfolio-desktop-navigation", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Ghost button",
+      "kind": "button",
+      "description": "Existing portfolio pill action with a restrained border and brighter hover ink.",
+      "html": "<button class=\"ds-button\">View project</button>",
+      "css": ".ds-button{display:inline-flex;align-items:center;gap:.625rem;font-family:var(--font-sans);font-size:12px;font-weight:500;letter-spacing:.02em;color:var(--color-text-secondary);border:1px solid var(--color-border-emphasized);background:transparent;padding:.8125rem 1.5rem;border-radius:999px;cursor:pointer;transition:border-color .3s,color .3s}.ds-button:hover{border-color:rgba(255,255,255,.32);color:var(--color-text-primary)}.ds-button:focus-visible{outline:2px solid var(--color-accent);outline-offset:3px}"
+    },
+    {
+      "name": "Solid button",
+      "kind": "button",
+      "description": "Existing filled portfolio action using shared ink and canvas.",
+      "html": "<button class=\"ds-solid\">Download resume</button>",
+      "css": ".ds-solid{display:inline-flex;font-family:var(--font-sans);font-size:12px;font-weight:500;letter-spacing:.02em;color:var(--color-background-body);border:1px solid var(--color-text-primary);background:var(--color-text-primary);padding:.8125rem 1.5rem;border-radius:999px;cursor:pointer}.ds-solid:hover{background:var(--color-text-primary)}.ds-solid:focus-visible{outline:2px solid var(--color-accent);outline-offset:3px}"
+    },
+    {
+      "name": "Surface card",
+      "kind": "card",
+      "description": "Existing subtle portfolio container with tonal hover and a fine border.",
+      "html": "<div class=\"ds-cell\">Project specimen</div>",
+      "css": ".ds-cell{position:relative;border-radius:16px;background:rgba(255,255,255,.012);border:1px solid rgba(255,255,255,.055);color:var(--color-text-primary);transition:background .35s,border-color .35s}.ds-cell:hover{background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.09)}"
+    },
+    {
+      "name": "Source link chip",
+      "kind": "chip",
+      "description": "Wrapping cited source links beneath portfolio search answers.",
+      "html": "<a class=\"ds-source\" href=\"#source\">Source title</a>",
+      "css": ".ds-source{display:inline-flex;align-items:center;min-height:44px;max-width:100%;padding:6px 12px;border:1px solid var(--color-border);border-radius:999px;color:var(--color-text-secondary);overflow-wrap:anywhere}.ds-source:hover,.ds-source:focus-visible{color:var(--color-text-primary);border-color:currentColor}.ds-source:focus-visible{outline:2px solid var(--color-accent);outline-offset:3px}"
+    },
+    {
+      "name": "Text link",
+      "kind": "custom",
+      "description": "Existing inline content link underlines on hover or keyboard focus.",
+      "html": "<a class=\"ds-link\" href=\"#content\">Read more</a>",
+      "css": ".ds-link{color:var(--color-text-primary);text-decoration:none;text-underline-offset:.2em;text-decoration-thickness:1px}.ds-link:hover,.ds-link:focus-visible{text-decoration-line:underline}.ds-link:focus-visible{outline:2px solid var(--color-accent);outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "",
+    "overview": "One visual system, with small differences for each site's content. This applies to portfolio, UI docs, Kit, Skills, Garden, r3 and future apps.",
+    "keyCharacteristics": [],
+    "rules": [],
+    "dos": [],
+    "donts": []
+  }
+}
