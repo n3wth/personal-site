@@ -39,7 +39,7 @@ The current dependency path is **Portfolio → @n3wth/ui → Astryx**. Notes now
 - `@n3wth/ui/primitives` exposes native component APIs, including `Outline`.
 - `@n3wth/ui/site` adds the site's page and reading compositions, including `ReadingOutline`.
 
-The [shared build configuration](https://github.com/n3wth/n3wth/blob/main/packages/ui/vite.config.ts) also normalizes the JSX development-runtime calls shipped in this Astryx version. This happens once inside UI. The portfolio does not need an application-owned shim for that integration.
+The [shared build configuration](https://github.com/n3wth/personal-site/blob/main/packages/ui/vite.config.ts) also normalizes the JSX development-runtime calls shipped in this Astryx version. This happens once inside UI. The portfolio does not need an application-owned shim for that integration.
 
 These examples describe the monorepo checkout. Check the exports of a published package before copying them into another project; the [getting-started guide](https://ui.n3wth.com/docs/getting-started) explains the workspace setup.
 
@@ -76,15 +76,15 @@ import { ReadingOutline } from '@n3wth/ui/site'
 <ReadingOutline items={items} collapsible />
 ```
 
-The shared [ReadingOutline implementation](https://github.com/n3wth/n3wth/blob/main/packages/ui/src/site/ReadingOutline.tsx) still renders Astryx's `Outline`, which owns scroll-spy and anchor navigation. Astryx's `useCollapsible` owns disclosure state. Our composition supplies the label, disclosure button, linked content region and compact styling. With `collapsible`, it starts closed; without it, the outline remains visible.
+The shared [ReadingOutline implementation](https://github.com/n3wth/personal-site/blob/main/packages/ui/src/site/ReadingOutline.tsx) still renders Astryx's `Outline`, which owns scroll-spy and anchor navigation. Astryx's `useCollapsible` owns disclosure state. Our composition supplies the label, disclosure button, linked content region and compact styling. With `collapsible`, it starts closed; without it, the outline remains visible.
 
-The portfolio's [ThinkingNote page](https://github.com/n3wth/n3wth/blob/main/apps/portfolio/src/pages/ThinkingNote.tsx) selects headings through level three and renders the collapsible outline with the label "Contents". The shared package owns its presentation.
+The portfolio's [ThinkingNote page](https://github.com/n3wth/personal-site/blob/main/apps/portfolio/src/pages/ThinkingNote.tsx) selects headings through level three and renders the collapsible outline with the label "Contents". The shared package owns its presentation.
 
 ## What types and tests establish
 
 A required label prop can catch a missing label at compile time. It cannot establish whether the label is useful, the text has enough contrast, or the whole page meets WCAG. Those questions remain part of implementation and review.
 
-Our [ReadingOutline tests](https://github.com/n3wth/n3wth/blob/main/packages/ui/src/site/ReadingOutline.test.tsx) check the closed default, disclosure state, visibility and matching anchor URLs. Browser checks confirmed that the mobile outline opens and closes and that the article fits the tested mobile and desktop widths. Those checks establish specific behavior; they are not an accessibility certification or proof that another library would perform worse.
+Our [ReadingOutline tests](https://github.com/n3wth/personal-site/blob/main/packages/ui/src/site/ReadingOutline.test.tsx) check the closed default, disclosure state, visibility and matching anchor URLs. Browser checks confirmed that the mobile outline opens and closes and that the article fits the tested mobile and desktop widths. Those checks establish specific behavior; they are not an accessibility certification or proof that another library would perform worse.
 
 The initial oversized table of contents is a reminder of that boundary. Correct primitive behavior does not automatically produce a good reading interface.
 
@@ -94,7 +94,7 @@ For these sites, I would keep the shared UI layer over Astryx. It gives a correc
 
 I would consider shadcn where owning and changing component source is a central requirement. For an Angular application, I would evaluate Material in that application's context. In each case, I would test a real page before treating component documentation or required props as evidence of the finished experience.
 
-Next: [shared UI examples](https://ui.n3wth.com/components) · [theme ownership](https://ui.n3wth.com/docs/theming) · [portfolio note reader source](https://github.com/n3wth/n3wth/blob/main/apps/portfolio/src/pages/ThinkingNote.tsx)
+Next: [shared UI examples](https://ui.n3wth.com/components) · [theme ownership](https://ui.n3wth.com/docs/theming) · [portfolio note reader source](https://github.com/n3wth/personal-site/blob/main/apps/portfolio/src/pages/ThinkingNote.tsx)
 
 Follow-up: [Choose UI component ownership](/thinking/choose-ui-component-ownership) explains the maintenance decision behind the shared layer.
 

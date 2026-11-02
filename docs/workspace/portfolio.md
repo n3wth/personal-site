@@ -2,7 +2,7 @@
 
 Verified 2026-09-06 against local source and GitHub/Vercel CLIs.
 
-- Source: n3wth/n3wth main at 2452a9d4754dae5554df68e8ae2cf933223466a7.
+- Source: n3wth/personal-site main at 2452a9d4754dae5554df68e8ae2cf933223466a7.
 - Destination feature branch: feature/personal-sites-workspace in work/sites-workspace. Existing repository history is retained.
 - React 19, Vite 7, Tailwind 4, TypeScript 5.9, Node 24 and npm lockfile.
 - Required local command: npm run check (ESLint, Vitest and production build).

@@ -1,15 +1,20 @@
 # UI npm releases
 
-`packages/ui` in `n3wth/n3wth` is the release source starting with 2.0.0.
+`packages/ui` in `n3wth/personal-site` is the release source starting with 2.0.0.
 The former `n3wth/ui` repository is historical; retire its publishing workflow
 after the first verified monorepo release. Do not publish from both repositories.
+
+After the repository rename, publishing is paused with
+`UI_NPM_PUBLISH_ENABLED=false`. Update npm's Trusted Publisher repository to
+`personal-site` before re-enabling this variable. The former `n3wth/n3wth`
+name now belongs to the profile README repository.
 
 ## First release cutover
 
 1. Merge the validated release preparation into main. Keep the repository
    variable `UI_NPM_PUBLISH_ENABLED` unset until the npm trust change is complete.
 2. In npm's @n3wth/ui Trusted Publisher settings, change GitHub owner to `n3wth`,
-   repository to `n3wth`, workflow filename to `publish-ui.yml`, and leave
+   repository to `personal-site`, workflow filename to `publish-ui.yml`, and leave
    environment blank. Allow `npm publish`. No npm token is required.
 3. Set repository Actions variable `UI_NPM_PUBLISH_ENABLED=true`. Run Release UI
    on main. The workflow checks the library, installs the exact tarball into

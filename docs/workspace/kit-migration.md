@@ -4,7 +4,7 @@ Imported tracked snapshot from n3wth/kit main 336a097e19773e1b63b242795256f54837
 
 Preserve direct dependency versions from the source lock, including registry @n3wth/ui 0.9.1 and Stripe 22.0.0. UI adoption is a separate compatibility change; this app does not consume workspace UI 0.9.2. The nested cli directory remains a standalone package with its own lockfile and publishing unchanged.
 
-Vercel must keep existing Kit project/domain and change repository to n3wth/n3wth, root apps/kit, Node24 and include files outside root. Install uses root npm11.19.1 lock, build uses app Next build, output stays Next default. Next tracing and Turbopack use workspace root. Ignore script selects affected Kit changes.
+Vercel must keep existing Kit project/domain and change repository to n3wth/personal-site, root apps/kit, Node24 and include files outside root. Install uses root npm11.19.1 lock, build uses app Next build, output stays Next default. Next tracing and Turbopack use workspace root. Ignore script selects affected Kit changes.
 
 Preserve STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in their existing Vercel scopes. No secret values are stored here. Webhook and waitlist routes remain unchanged; migration validation must not submit transactions or subscriptions. Preserve /r registry JSON, docs/blog routes and fonts.
 

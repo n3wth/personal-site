@@ -203,7 +203,7 @@ export const projects: Project[] = [
     tech: ['React', 'TypeScript', 'Tailwind CSS'],
     url: '/projects/ui',
     docs: '/docs/ui/quickstart',
-    github: 'https://github.com/n3wth/n3wth/tree/main/packages/ui',
+    github: 'https://github.com/n3wth/personal-site/tree/main/packages/ui',
   },
   {
     id: 'hop-flights',

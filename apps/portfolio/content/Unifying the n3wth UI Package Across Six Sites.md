@@ -14,9 +14,9 @@ Six apps in the n3wth monorepo — garden, kit, r3-web, skills, portfolio, ui-do
 
 ## What actually shipped
 
-The chain was short. A fix landed in [PR #381](https://github.com/n3wth/n3wth/pull/381), "align shared theme, docs, and package behavior" — it synchronized the theme hook across callers and stopped a system theme change from silently overwriting a user's saved preference. That patch bumped `@n3wth/ui` to 2.1.1.
+The chain was short. A fix landed in [PR #381](https://github.com/n3wth/personal-site/pull/381), "align shared theme, docs, and package behavior" — it synchronized the theme hook across callers and stopped a system theme change from silently overwriting a user's saved preference. That patch bumped `@n3wth/ui` to 2.1.1.
 
-Changesets then opened its usual release PR, [#382](https://github.com/n3wth/n3wth/pull/382), which fanned that single version bump out to every dependent app in the workspace: garden, kit, portfolio, r3-web, skills, ui-docs each got a patch release that updates their `@n3wth/ui` dependency to match. I merged it the same morning.
+Changesets then opened its usual release PR, [#382](https://github.com/n3wth/personal-site/pull/382), which fanned that single version bump out to every dependent app in the workspace: garden, kit, portfolio, r3-web, skills, ui-docs each got a patch release that updates their `@n3wth/ui` dependency to match. I merged it the same morning.
 
 ## Why the exact pin, not a range
 
@@ -32,4 +32,4 @@ The cost is real: nobody gets a stray patch for free, and a bump means touching 
 
 ## What's still in flight
 
-Two related cleanups from the same session haven't merged yet: removing the retired Vercel deployment fallback ([PR #384](https://github.com/n3wth/n3wth/pull/384)) and adding a `docs.n3wth.com` link to the shared `SiteFooter` component ([PR #385](https://github.com/n3wth/n3wth/pull/385)), which would propagate to every app that uses the default footer. Both are open, not landed — the UI version unification is the one piece of this week's cleanup that's actually done.
+Two related cleanups from the same session haven't merged yet: removing the retired Vercel deployment fallback ([PR #384](https://github.com/n3wth/personal-site/pull/384)) and adding a `docs.n3wth.com` link to the shared `SiteFooter` component ([PR #385](https://github.com/n3wth/personal-site/pull/385)), which would propagate to every app that uses the default footer. Both are open, not landed — the UI version unification is the one piece of this week's cleanup that's actually done.

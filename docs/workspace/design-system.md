@@ -6,7 +6,7 @@ The root [DESIGN.md](../../DESIGN.md) and [STYLE.md](../../STYLE.md) define curr
 
 Sites → `@n3wth/ui` → Astryx. Only the UI package depends on Astryx; applications import `@n3wth/ui/primitives` for native controls, `@n3wth/ui/site` for site compositions and `@n3wth/ui/site.css` for the complete foundation. Tailwind consumers use `@n3wth/ui/tailwind-theme.css`. The design check rejects direct Astryx imports or dependencies in applications.
 
-[Astryx](https://github.com/facebook/astryx) is the external package supplying control behavior and accessibility. [UI](https://github.com/n3wth/n3wth/tree/main/packages/ui) owns the pinned Astryx version, React runtime integration, Newth theme, typography and shared site layout. Applications own content, routes, data and specialized interactions. Add reusable design decisions to UI rather than redefining them per site.
+[Astryx](https://github.com/facebook/astryx) is the external package supplying control behavior and accessibility. [UI](https://github.com/n3wth/personal-site/tree/main/packages/ui) owns the pinned Astryx version, React runtime integration, Newth theme, typography and shared site layout. Applications own content, routes, data and specialized interactions. Add reusable design decisions to UI rather than redefining them per site.
 
 Import one complete stylesheet: `@n3wth/ui/site.css` for new sites, or `@n3wth/ui/styles` when legacy component styles are needed. The latter already includes the site foundation and fonts; do not import both.
 

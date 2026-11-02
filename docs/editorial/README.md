@@ -82,6 +82,8 @@ Link counts are not the success criterion. Record accepted useful contributions,
 
 ## Weekly maintenance and replenishment
 
+Pull requests validate every reviewed manuscript's hash and claims. Live outbound-link checks run for changed manuscripts or review records; changing the source registry checks every reviewed manuscript's links. Run the Editorial evidence workflow manually for a full live-link audit, including unchanged manuscripts.
+
 During the Sunday daily run, review the previous seven days without publishing an extra piece. Measure release completion, source-check failures, time to publish, social receipts, referral visits and accepted upstream contributions. Read available site analytics and search performance through their connectors; do not fabricate unavailable data. Compare at 7 and 28 days and avoid causal conclusions from small samples. Track indexed pages, search queries and engaged visits alongside rankings. Refresh source links and correct decayed claims.
 
 Keep at least seven unreleased briefs. When the queue drops below seven, add ten distinct research-grounded briefs with roughly the same 2:1 garden/portfolio mix. Re-read current GBrain work, site inventory, Semrush and original sources. Preserve the rule that a brief is not an approved article. Stop generating near-duplicates when a topic would be better handled as a correction to an existing page.

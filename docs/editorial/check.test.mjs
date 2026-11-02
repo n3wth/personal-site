@@ -5,7 +5,7 @@ import { cp, mkdir, mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/pr
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
-import { hash, isChallenge, outboundLinks, selectNext, validateBacklog, validateLinkReport, validateReview } from './check.mjs'
+import { hash, isChallenge, outboundLinks, reviewsForChanges, selectNext, validateBacklog, validateLinkReport, validateReview } from './check.mjs'
 
 const sources = JSON.parse(readFileSync(new URL('./sources.json', import.meta.url)))
 const backlog = JSON.parse(readFileSync(new URL('./backlog.json', import.meta.url)))
@@ -19,6 +19,15 @@ const makeReview = (text = article) => ({
   claims: ['beir', 'memory', 'prov'].map(sourceId => ({ text: 'A claim.', kind: 'sourced', sourceId, sourcePassage: 'Test evidence', limitation: 'Test only', verdict: 'supported' }))
 })
 const linkResult = url => ({ url, finalUrl: url, checkedAt: new Date(now).toISOString(), status: 200, ok: true, bodySha256: hash('Source content'), title: 'Source', error: null })
+
+test('live links are checked for changed manuscripts, changed reviews, all source changes, and full audits', () => {
+  const reviews = [{ id: 'G01', contentPath: 'article.md' }, { id: 'G02', contentPath: 'second.md' }]
+  assert.deepEqual(reviewsForChanges(reviews, ['article.md']), [reviews[0]])
+  assert.deepEqual(reviewsForChanges(reviews, ['docs/editorial/reviews/G02.json']), [reviews[1]])
+  assert.deepEqual(reviewsForChanges(reviews, ['docs/editorial/sources.json']), reviews)
+  assert.deepEqual(reviewsForChanges(reviews), reviews)
+  assert.deepEqual(reviewsForChanges(reviews, ['docs/editorial/backlog.json', 'unreviewed.md']), [])
+})
 
 test('an HTTP 200 challenge page is not valid source evidence', () => {
   assert.equal(isChallenge('<html><title>Client Challenge</title></html>'), true)

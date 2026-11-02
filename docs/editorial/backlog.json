@@ -699,7 +699,7 @@
         "System Design"
       ],
       "grounding": [
-        "Public n3wth/n3wth AGENTS.md and docs/workspace/deployment.md"
+        "Public n3wth/personal-site AGENTS.md and docs/workspace/deployment.md"
       ],
       "originalAsset": "Use this monorepo history as the public worked example.",
       "url": "https://garden.n3wth.com/design-system-release-ownership"
@@ -1055,7 +1055,7 @@
         "G19"
       ],
       "grounding": [
-        "Public n3wth/n3wth AGENTS.md and docs/workspace/deployment.md"
+        "Public n3wth/personal-site AGENTS.md and docs/workspace/deployment.md"
       ],
       "originalAsset": "Ground diagrams in the current public monorepo, not confidential work.",
       "url": "https://n3wth.com/thinking/design-system-maintenance-boundary"

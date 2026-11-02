@@ -110,7 +110,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/n3wth/n3wth.git",
+    "url": "git+https://github.com/n3wth/personal-site.git",
     "directory": "packages/ui"
   },
   "homepage": "https://ui.n3wth.com",
