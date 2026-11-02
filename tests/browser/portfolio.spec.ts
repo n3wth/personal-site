@@ -2,6 +2,46 @@ import { test, expect } from '@playwright/test'
 import { MathUtils, PerspectiveCamera, Vector3 } from 'three'
 import { layoutWritingGroves, type WritingNode } from '../../apps/portfolio/src/lib/writingGroves'
 
+test('prefix search lists elephant-goldfish without an empty answer', async ({ page }, testInfo) => {
+  await page.route('**/api/search', route => route.fulfill({
+    json: { answer: 'No relevant information found. Try another search.' },
+  }))
+  await page.goto('/work')
+  await page.getByRole('button', { name: 'Search', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Search n3wth.com' })
+  await expect(dialog.getByRole('option', { name: 'Work', exact: true })).toBeVisible()
+  await expect(dialog.getByRole('option', { name: 'elephant-goldfish', exact: true })).toBeVisible()
+  const input = dialog.getByRole('combobox')
+  const elapsed = await input.evaluate(async (element) => {
+    const started = performance.now()
+    const proto = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
+    proto?.set?.call(element, 'elepha')
+    element.dispatchEvent(new Event('input', { bubbles: true }))
+    const ready = () => document.querySelector('.command-palette-mark')?.textContent === 'elepha'
+    while (!ready()) {
+      if (performance.now() - started > 500) break
+      await new Promise(resolve => requestAnimationFrame(resolve))
+    }
+    return performance.now() - started
+  })
+  expect(elapsed).toBeLessThan(150)
+  const option = dialog.getByRole('option', { name: 'elephant-goldfish', exact: true })
+  await expect(option).toBeVisible()
+  await expect(option.locator('.command-palette-mark')).toHaveText('elepha')
+  await expect(option.locator('.command-palette-mark')).toHaveCSS('font-style', 'normal')
+  expect(Number(await option.locator('.command-palette-mark').evaluate(el => getComputedStyle(el).fontWeight))).toBeGreaterThanOrEqual(600)
+  await expect(page.getByText('No relevant information found. Try another search.')).toHaveCount(0)
+  await page.waitForResponse('**/api/search')
+  await expect(page.getByText(/No relevant information found/)).toHaveCount(0)
+  await expect(option).toBeVisible()
+  await dialog.screenshot({ path: testInfo.outputPath('search-elepha.png') })
+  await input.focus()
+  await page.keyboard.press('ArrowDown')
+  await expect(input).toHaveAttribute('aria-activedescendant', /command-palette-option-/)
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+})
+
 test('long search answers remain scrollable without hiding local results', async ({ page }, testInfo) => {
   await page.route('**/api/search', route => route.fulfill({ json: {
     answer: 'This is an example answer about the projects and experience on this portfolio. '.repeat(28)
