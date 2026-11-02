@@ -14,8 +14,8 @@ function StoryPulse({ d, seed }: { d: string; seed: number }) {
   return <>
     <defs>
       <linearGradient id={id} x1="0" y1="1" x2="1" y2="0">
-        <stop offset="0" stopColor={`var(--color-icon-${colors[seed % 4]})`} />
-        <stop offset="1" stopColor={`var(--color-icon-${colors[(seed + 1) % 4]})`} />
+        <stop offset="0" stopColor={`var(--story-color-${colors[seed % 4]})`} />
+        <stop offset="1" stopColor={`var(--story-color-${colors[(seed + 1) % 4]})`} />
       </linearGradient>
     </defs>
     <path className="section-story__pulse" d={d} pathLength="1" stroke={`url(#${id})`} style={{
@@ -24,8 +24,8 @@ function StoryPulse({ d, seed }: { d: string; seed: number }) {
   </>
 }
 
-function LitStoryLine({ d, seed }: { d: string; seed: number }) {
-  return <><path d={d} /><StoryPulse d={d} seed={seed} /></>
+function LitStoryLine({ d, seed, surface = false }: { d: string; seed: number; surface?: boolean }) {
+  return <><path d={d} data-story-surface={surface ? '' : undefined} /><StoryPulse d={d} seed={seed} /></>
 }
 
 function WorkStory() {
@@ -33,7 +33,7 @@ function WorkStory() {
     {Array.from({ length: 7 }, (_, i) => <LitStoryLine key={i} seed={i + 10}
       d={`M -2400 ${170 + i * 28} H -100 C 280 ${170 + i * 28}, 480 ${475 + i * 20}, 790 ${370 + i * 20} S 1150 ${180 + i * 28}, 1500 ${220 + i * 28} S 2500 ${300 + i * 28}, 3600 ${220 + i * 28}`} />)}
     {Array.from({ length: 5 }, (_, i) => <g key={i} data-story-light={i * 2} className="section-story__plane" style={phase(i)}>
-      <LitStoryLine seed={i + 3} d={`M ${690 + i * 40} ${580 - i * 10} V ${190 + i * 24} L ${950 + i * 32} ${105 + i * 26} V ${480 + i * 8} Z`} />
+      <LitStoryLine seed={i + 3} surface d={`M ${690 + i * 40} ${580 - i * 10} V ${190 + i * 24} L ${950 + i * 32} ${105 + i * 26} V ${480 + i * 8} Z`} />
     </g>)}
   </>
 }
@@ -125,7 +125,7 @@ function LibraryStory() {
   return <g transform="translate(850 390) rotate(-22)">
     {Array.from({ length: 9 }, (_, i) => <g key={i} transform={`translate(${(i - 4) * 4} 0) rotate(${(i - 4) * 8} 0 235)`}>
       <g data-story-light={i} className="section-story__page" style={phase(i)}>
-      <LitStoryLine seed={i + 25} d="M 0 235 C -143 125 -219 -5 -192 -205 C -77 -185 57 -151 142 -74 C 128 73 79 183 0 235 Z" />
+      <LitStoryLine seed={i + 25} surface d="M 0 235 C -143 125 -219 -5 -192 -205 C -77 -185 57 -151 142 -74 C 128 73 79 183 0 235 Z" />
       <path className="section-story__quiet" d="M 0 235 C -30 57 -107 -90 -192 -205" />
       </g>
     </g>)}
@@ -142,8 +142,8 @@ function ContactStory() {
   return <>
     <defs>
       {colors.map((color, i) => <linearGradient key={color} id={`${spectrum}-${i}`} gradientUnits="userSpaceOnUse" x1="924" y1="350" x2="660" y2="100">
-        <stop offset="0" stopColor={`var(--color-icon-${color})`} />
-        <stop offset="1" stopColor={`var(--color-icon-${colors[(i + 1) % colors.length]})`} />
+        <stop offset="0" stopColor={`var(--story-color-${color})`} />
+        <stop offset="1" stopColor={`var(--story-color-${colors[(i + 1) % colors.length]})`} />
       </linearGradient>)}
     </defs>
     {[0, 180].map((rotation, side) => <g key={rotation} data-story-side={side} transform={`rotate(${rotation} 924 350)`}>

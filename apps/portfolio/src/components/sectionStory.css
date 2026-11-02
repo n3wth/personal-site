@@ -1,3 +1,12 @@
+.portfolio-story-hero {
+  --story-cool: var(--color-icon-cyan);
+  --story-warm: var(--color-icon-yellow);
+  --story-color-cyan: var(--story-cool);
+  --story-color-green: color-mix(in srgb, var(--story-cool) 70%, var(--story-warm));
+  --story-color-yellow: var(--story-warm);
+  --story-color-red: color-mix(in srgb, var(--story-warm) 70%, var(--story-cool));
+}
+
 .section-story {
   position: absolute;
   inset: 0;
@@ -6,6 +15,30 @@
   /* Opaque muted ink preserves the weight where neutral strokes overlap. */
   color: color-mix(in srgb, var(--color-text-primary) 40%, var(--color-background-body));
 }
+
+/* Neighboring hues carry each material; the opposing temperature carries light. */
+.portfolio-story-hero:has(.section-story--thinking) { --story-cool: var(--color-icon-green); }
+.portfolio-story-hero:has(.section-story--art) { --story-warm: var(--color-icon-red); }
+.portfolio-story-hero:has(.section-story--library) { --story-cool: var(--color-icon-yellow); --story-warm: var(--color-icon-red); }
+.portfolio-story-hero:has(.section-story--contact) { --story-warm: var(--color-icon-red); }
+.portfolio-story-hero:has(.section-story--projects) {
+  --story-color-green: var(--color-icon-green);
+  --story-color-red: var(--color-icon-red);
+}
+
+.section-story [data-story-light] > path:not(.section-story__pulse):not(.section-story__contact-spectrum):not([data-art-loop]) {
+  stroke: color-mix(in srgb, var(--story-cool) 38%, currentColor);
+}
+
+.section-story [data-story-surface] {
+  fill: var(--story-cool);
+  fill-opacity: .09;
+}
+
+/* The still composition retains material and depth before hydration and with reduced motion. */
+.section-story [data-story-face] { fill: var(--story-color-green); fill-opacity: .12; }
+.section-story [data-face-shade=".5"] { fill: var(--story-cool); fill-opacity: .08; }
+.section-story [data-face-shade=".75"] { fill: var(--story-warm); fill-opacity: .1; }
 
 .section-story svg {
   --story-size: min(135vw, 88svh);
