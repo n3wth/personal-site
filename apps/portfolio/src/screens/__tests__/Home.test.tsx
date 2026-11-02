@@ -3,7 +3,6 @@ import { cleanup, render, screen } from '@testing-library/react'
 import Home from '../Home'
 import { Nav } from '../../components/Nav'
 
-vi.mock('../../components/NightField', () => new Promise(() => {}))
 vi.mock('../../lib/analytics', () => ({ track: vi.fn() }))
 
 afterEach(() => {
@@ -12,7 +11,7 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-describe('Homepage without a ready scene', () => {
+describe('Contour homepage', () => {
   it.each([false, true])('keeps identity available (WebGL: %s)', (webgl) => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
       webgl ? { getExtension: () => null, getParameter: () => 'hardware' } as unknown as WebGLRenderingContext : null
@@ -29,6 +28,11 @@ describe('Homepage without a ready scene', () => {
     expect(screen.queryByRole('link', { name: 'Explore my projects' })).toBeNull()
     expect(screen.queryByText('I build new ways to work with AI.')).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Site chapters' })).toBeNull()
+    const landscape = screen.getByRole('region', { name: 'Contour landscape' })
+    expect(landscape.querySelector('svg')).toBeInTheDocument()
+    expect(landscape.querySelectorAll('.home-contours__current')).toHaveLength(4)
+    expect(landscape.querySelector('img')).toHaveAttribute('src', '/images/contour-landscape.webp')
+    expect(landscape.querySelector('canvas')).toBeNull()
   })
 
 })

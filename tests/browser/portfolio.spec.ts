@@ -1,6 +1,4 @@
 import { test, expect } from '@playwright/test'
-import { MathUtils, PerspectiveCamera, Vector3 } from 'three'
-import { layoutWritingGroves, type WritingNode } from '../../apps/portfolio/src/lib/writingGroves'
 
 test('prefix search lists elephant-goldfish without an empty answer', async ({ page }, testInfo) => {
   await page.route('**/api/search', route => route.fulfill({
@@ -358,14 +356,6 @@ test('page content and footer are readable without client JavaScript', async ({ 
 })
 
 test('the project action reaches the projects page after a cold route load', async ({ page }) => {
-  // Keep GPU startup out of this routing check. Scene rendering is covered by
-  // the home-page checks; this also exercises navigation while it is loading.
-  let releaseScene: () => void = () => {}
-  const pendingScene = new Promise<void>(resolve => { releaseScene = resolve })
-  await page.route('**/_astro/NightField.*.js', async route => {
-    await pendingScene
-    await route.continue()
-  })
   await page.route('**/assets/Projects-*.js', async route => {
     await new Promise(resolve => setTimeout(resolve, 600))
     await route.continue()
@@ -379,7 +369,6 @@ test('the project action reaches the projects page after a cold route load', asy
     await expect(page.getByRole('heading', { level: 1, name: 'Projects' })).toHaveCount(1)
     await expect(page.locator('.section-story--projects')).toBeInViewport()
   } finally {
-    releaseScene()
     await page.unrouteAll({ behavior: 'wait' })
   }
 })
@@ -559,86 +548,38 @@ test('route hints do not prefetch other origins', async ({ page }) => {
   await expect(page.locator('link[rel="prefetch"][href="https://example.com/projects"]')).toHaveCount(0)
 })
 
-test('hybrid planting remains navigable with motion', async ({ page }, testInfo) => {
-  test.setTimeout(60_000)
-  const errors: string[] = []
-  page.on('pageerror', error => errors.push(error.message))
-  await page.addInitScript(() => {
-    const original = WebGL2RenderingContext.prototype.drawElements
-    let draws = 0
-    Object.defineProperty(window, '__sceneDraws', { get: () => draws })
-    WebGL2RenderingContext.prototype.drawElements = function (...args) {
-      draws++
-      return original.apply(this, args)
-    }
-  })
+test('contour light respects motion preferences and pauses offscreen', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
-  await expect(page.locator('.night-field-stage.is-settled')).toBeVisible({ timeout: 45_000 })
-  const notes = page.locator('.world-portal-link[aria-label="Notes"]')
-  await expect(notes).toBeVisible()
-  await notes.focus()
-  await page.screenshot({ path: testInfo.outputPath('hybrid-planting.png') })
-  // Real WebGL draw calls stop below the scene and resume when it returns.
-  const draws = () => page.evaluate(() => Reflect.get(window, '__sceneDraws') as number)
-  expect(await draws()).toBeGreaterThan(0)
-  // Scroll fully past the scene; an edge touching the viewport still intersects.
+  const art = page.locator('.home-contours')
+  await expect(art).toBeVisible()
+  await expect.poll(() => art.evaluate(el => el.getAnimations({ subtree: true }).some(a => a.playState === 'running'))).toBe(true)
   await page.evaluate(() => {
     const spacer = document.createElement('div')
-    spacer.id = 'test-scroll-room'
     spacer.style.height = '200vh'
     document.body.append(spacer)
     window.scrollTo(0, document.body.scrollHeight)
   })
-  await expect.poll(() => page.locator('.night-field-stage').evaluate(element => element.getBoundingClientRect().bottom)).toBeLessThan(0)
-  // Late model uploads can request one final frame; continuous drawing must stop.
-  await expect.poll(async () => {
-    const before = await draws()
-    await page.waitForTimeout(500)
-    return await draws() - before
-  }).toBe(0)
-  const paused = await draws()
-  await page.evaluate(() => {
-    document.getElementById('test-scroll-room')?.remove()
-    window.scrollTo(0, 0)
-  })
-  await expect.poll(draws).toBeGreaterThan(paused)
-  await notes.press('Enter')
-  await expect(page).toHaveURL(/\/thinking#notes$/)
-  expect(errors).toEqual([])
+  await expect(art).toHaveClass(/is-paused/)
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await expect(art).not.toHaveClass(/is-paused/)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect.poll(() => art.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0)
+  await expect(page.locator('.home-landscape-image')).toBeVisible()
 })
 
-test('a selected plant opens a compact, dismissible reading card', async ({ page }, testInfo) => {
-  const node: WritingNode = { id: '/thinking/test-note', title: 'Connected thoughts', description: 'A short note about shared ideas.', stage: 'evergreen', tags: ['ideas'], linkCount: 0 }
-  await page.route('**/writing/world.json', route => route.fulfill({ json: { nodes: [node], edges: [] } }))
+
+test('home artwork needs no WebGL models or scene data', async ({ page }) => {
+  const requests: string[] = []
+  page.on('request', request => {
+    if (/\/models\/|writing\/world\.json|NightField.*\.js/.test(request.url())) requests.push(request.url())
+  })
   await page.goto('/')
-  await expect(page.locator('.night-field-stage.is-settled')).toBeVisible({ timeout: 45_000 })
-  const canvas = await page.locator('.night-field-stage canvas').boundingBox()
-  const aspect = canvas!.width / canvas!.height
-  const compact = aspect < 1.35
-  const spread = compact ? Math.max(1, Math.min(1.35, aspect) / .5) : 1
-  const [plant] = layoutWritingGroves([node], compact, spread)
-  // Project the fixture's hit target through the scene's fitted camera.
-  const camera = new PerspectiveCamera(Math.max(compact ? 54 : 48, MathUtils.radToDeg(2 * Math.atan((compact ? .25 : .68) / aspect))), aspect)
-  camera.position.set(0, compact ? 14 : 7, compact ? 26 : 22 + Math.max(0, 1.8 - aspect) * 14)
-  camera.lookAt(0, compact ? 1 : 2, -30)
-  camera.updateMatrixWorld()
-  const point = new Vector3(plant.x, plant.height * .65, plant.z).project(camera)
-  const select = () => page.mouse.click(canvas!.x + (point.x + 1) * canvas!.width / 2, canvas!.y + (1 - point.y) * canvas!.height / 2)
-  await select()
-  const card = page.getByRole('region', { name: 'Selected writing' })
-  await expect(card).toBeVisible()
-  await expect(card.getByRole('heading')).toHaveText(node.title)
-  await expect(card.getByRole('link')).toHaveCount(1)
-  await expect(card.getByRole('link', { name: 'Read', exact: true })).toHaveAttribute('href', node.id)
-  await page.screenshot({ path: testInfo.outputPath('selected-note.png') })
-  await card.getByRole('button', { name: 'Close note' }).click()
-  await expect(card).toHaveCount(0)
-  await select()
-  await expect(card).toBeVisible()
-  await page.keyboard.press('Escape')
-  await expect(card).toHaveCount(0)
+  await expect(page.locator('.home-landscape-image')).toBeVisible()
+  await expect(page.locator('canvas')).toHaveCount(0)
+  expect(requests).toEqual([])
 })
+
 
 test('search leaves composition keys to the input method', async ({ page }) => {
   await page.goto('/work')
@@ -679,14 +620,6 @@ test('AI answers start automatically after typing pauses', async ({ page }, test
   await expect(page).toHaveURL(/\/work$/)
 })
 
-test('asset-free scene labels attach when Canvas mounts synchronously', async ({ page }) => {
-  await page.route('**/models/**', route => route.abort())
-  await page.goto('/')
-  const triangle = page.locator('.world-portal-link[aria-label="Pink Triangle"]')
-  await expect(triangle).toBeVisible()
-  await expect(triangle).toHaveAttribute('href', '/art#pink-triangle')
-})
-
 for (const route of ['/', '/work', '/art', '/thinking', '/library', '/contact']) {
   test(`${route} renders without runtime errors or horizontal overflow`, async ({ page }, testInfo) => {
     const errors: string[] = []
@@ -697,21 +630,10 @@ for (const route of ['/', '/work', '/art', '/thinking', '/library', '/contact'])
     await expect(page.locator('header').first()).toBeVisible()
     if (route !== '/') await expect(page.locator('h1').first()).toBeVisible()
     if (route === '/') {
-      test.setTimeout(60_000)
-      await expect(page.locator('.night-field-stage.is-settled')).toBeVisible({ timeout: 45_000 })
-      await expect(page.locator('.night-field-loader')).toHaveAttribute('data-ready', 'true')
-      for (const name of ['Art', 'Work', 'Thinking', 'Contact', 'Notes', 'Pink Triangle']) {
-        const label = page.locator(`.world-portal-link[aria-label="${name}"]`)
-        await expect(label).toBeVisible()
-        await expect(label).toHaveCSS('opacity', '0')
-      }
-      const work = page.locator('.world-portal-link[aria-label="Work"]')
-      await work.focus()
-      await expect(work).toHaveCSS('opacity', '1')
-      await work.click({ trial: true })
-      const screenshot = testInfo.outputPath('portfolio-home.png')
-      await page.screenshot({ path: screenshot })
-      await testInfo.attach('portfolio-home', { path: screenshot, contentType: 'image/png' })
+      await expect(page.locator('.home-landscape-image')).toBeVisible()
+      await expect(page.locator('.home-contours')).toBeVisible()
+      await expect(page.locator('canvas')).toHaveCount(0)
+      await page.screenshot({ path: testInfo.outputPath('portfolio-home.png') })
     }
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true)
     expect(errors).toEqual([])
@@ -726,11 +648,11 @@ test('home keeps ordinary writing navigation when WebGL is unavailable', async (
     } as typeof getContext
   })
   await page.goto('/')
-  await expect(page.locator('section[aria-label="Explore the night scene"] img')).toBeVisible()
+  await expect(page.locator('section[aria-label="Contour landscape"] img')).toBeVisible()
   await expect(page.locator('canvas')).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Explore my projects' })).toHaveCount(0)
   await expect(page.getByText('I build new ways to work with AI.', { exact: true })).toHaveCount(0)
-  const scene = await page.getByRole('region', { name: 'Explore the night scene' }).boundingBox()
+  const scene = await page.getByRole('region', { name: 'Contour landscape' }).boundingBox()
   expect(scene!.height).toBeGreaterThanOrEqual(page.viewportSize()!.height)
   const thinking = page.locator('#primary-navigation').getByRole('link', { name: 'Thinking', exact: true })
   if (!await thinking.isVisible()) await page.getByRole('button', { name: 'Open menu', exact: true }).click()
@@ -744,41 +666,19 @@ test('home keeps ordinary writing navigation when WebGL is unavailable', async (
   await expect(page.getByRole('heading', { level: 1, name: '5 Whys', exact: true })).toBeVisible()
 })
 
-test('home primary navigation works before the scene settles', async ({ page }) => {
-  // Hold the lazy scene module so navigation is tested during loading,
-  // independently of the runner's graphics speed. Full scene coverage stays above.
-  let releaseScene!: () => void
-  let sceneRequested = false
-  const sceneReady = new Promise<void>(resolve => { releaseScene = resolve })
-  await page.route('**/_astro/NightField.*.js', async route => {
-    sceneRequested = true
-    await sceneReady
-    await route.continue().catch(() => {}) // The page may have closed after a failed assertion.
-  })
-  try {
-    await page.goto('/', { waitUntil: 'domcontentloaded' })
-    await expect.poll(() => sceneRequested).toBe(true)
-    await expect(page.locator('.night-field-loader img')).toBeVisible()
-    await expect(page.getByRole('progressbar')).toHaveCount(0)
-    await expect(page.locator('.night-field-loader-track')).toHaveCount(0)
-    await expect(page.getByRole('navigation', { name: 'Scene destinations' })).toHaveCount(0)
-    const navigation = page.locator('#primary-navigation')
-    if (!await navigation.getByRole('link', { name: 'Work', exact: true }).isVisible()) {
-      await page.getByRole('button', { name: 'Open menu', exact: true }).click()
-    }
-    for (const name of ['Work', 'Art', 'Thinking', 'Library']) {
-      const link = navigation.getByRole('link', { name, exact: true })
-      await expect(link).toBeVisible()
-      const box = await link.boundingBox()
-      expect(box?.height).toBeGreaterThanOrEqual(44)
-    }
-    await expect(page.locator('h1')).toHaveCount(1)
-    await navigation.getByRole('link', { name: 'Work', exact: true }).click()
-    await expect(page).toHaveURL(/\/work$/)
-  } finally {
-    releaseScene()
+test('home remains composed before its light layer hydrates', async ({ page }) => {
+  await page.route('**/_astro/Home.*.js', route => route.abort())
+  await page.goto('/')
+  await expect(page.locator('.home-landscape-image')).toBeVisible()
+  await expect(page.getByRole('progressbar')).toHaveCount(0)
+  const navigation = page.locator('#primary-navigation')
+  if (!await navigation.getByRole('link', { name: 'Work', exact: true }).isVisible()) {
+    await page.getByRole('button', { name: 'Open menu', exact: true }).click()
   }
+  await navigation.getByRole('link', { name: 'Work', exact: true }).click()
+  await expect(page).toHaveURL(/\/work$/)
 })
+
 
 test('compact header is flush and its menu remains usable over photographs', async ({ page }, testInfo) => {
   test.skip(page.viewportSize()!.width >= 1024, 'Compact navigation only')

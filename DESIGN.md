@@ -1,3 +1,26 @@
+---
+name: Newth sites
+description: Shared neutral surfaces, Suisse typography and autonomous line artwork.
+colors:
+  canvas: "#08090b"
+  surface: "#0d0e10"
+  ink: "#f2f3f5"
+  supporting: "#9aa0a8"
+  paragraph: "#e8e8ed"
+  cyan: "#64d2ff"
+  green: "#30d158"
+  gold: "#ffd60a"
+  coral: "#ff6961"
+typography:
+  body:
+    fontFamily: "Suisse Intl, system-ui, -apple-system, sans-serif"
+    fontWeight: 400
+  code:
+    fontFamily: "Geist Mono, ui-monospace, 'SF Mono', Menlo, Monaco, monospace"
+rounded:
+  button: "9999px"
+---
+
 # Site design
 
 One visual system, with small differences for each site's content. This applies to portfolio, UI docs, Kit, Skills, Garden, r3 and future apps.
@@ -23,7 +46,7 @@ Change the lowest appropriate shared layer. Do not copy shared components, CSS o
 - One persistent top navbar. Do not stack a second sticky mobile heading or section selector beneath it.
 - Portfolio uses a flush, solid header below 1024px, with an attached menu and 44px touch targets. Desktop keeps the floating navigation. Other sites opt into the shared compact bar when appropriate.
 - Center section hero artwork horizontally and vertically in the available space between the navigation and copy at every width. Size the artwork from that space; keep the page title and description at the lower left.
-- The homepage shows the same still image throughout scene loading, without a visible progress bar or loading label. Reveal the terrain as soon as it is ready; navigation stays available and reduced motion removes the fade.
+- The homepage renders the approved contour artwork in initial HTML and preloads its WebP from the server-rendered head. Ordinary navigation stays available without waiting for hydration or artwork animation; no model-loading state is involved.
 - The homepage scene fills the opening viewport without an introduction or project-action strip. Keep a screen-reader heading and ordinary navigation available.
 - For a few section or documentation destinations, use `SiteSectionLinks`: plain wrapping links in page flow, without a selected-section marker. Persistent desktop sidebars may track the current section.
 - For a grouped documentation hierarchy on compact screens, put the pages in the top navigation menu and show the documentation context in its brand path. Include every page, mark the current page and close after navigation; do not add a second navigation row.
@@ -61,7 +84,11 @@ Thinking is the vertical-alignment exception: its tree grows from the bottom edg
 
 Extend each motif naturally beyond its frame: Work currents and Art ripples reach the sides, Projects' central thread passes through the top and bottom, Library's bundled page edges continue downward, and Contact's two forms connect outward. Clip extensions at the hero boundary and keep text legible with a flat canvas-colored backing directly behind the copy.
 
-The portfolio homepage combines one hybrid planting with its existing art and navigation landmarks in one canvas, camera and lighting system. Keep the opening predominantly visual, with a subdued landscape and crisp stars; let the scene fill the opening viewport. Landmark labels appear on hover or keyboard focus. Keep the main navigation available on touch. Use detailed models across screen sizes and retain their material maps. Writing appears as slender leafy plants with illuminated buds and flower heads, replacing the separate forest and decorative garden. Leave breathing room between stems, vary heights, and keep other landmarks clear. Plants sway gently with individual timing and strength. Each discovery cycle sends at most two or three simultaneous pulses along nearby actual connections, with matching travel time and soft fades. Leave several quiet seconds between bursts. Animals move slowly, fire embers stay sparse, and shooting stars are occasional accents. A selected tree exposes its title, description and an explicit local reading link; its full set of connections is highlighted. Keep selection usable by touch and dismissible with Escape. Thinking remains a searchable, keyboard-accessible reading index independent of WebGL. Reduced motion keeps the world still. Render the animated scene at 30 fps with pixel density capped at 1.5; suspend continuous rendering offscreen and in hidden tabs. Calculate wind once per plant and share it across its instances.
+The homepage uses the approved static contour plate (`contour-landscape.webp`, 1586 × 992, approximately 126KB), covered across the opening viewport. An open valley sits between the left arched fold and tall right ridge. Existing shared navigation floats above the artwork; the page heading remains available to screen readers. There are no visible introduction, landmark labels or plant-discovery controls.
+
+Four thin non-scaling SVG currents follow selected contours in existing cyan, green and gold theme colors. Each runs autonomously with linear travel, separate opacity fades, quiet intervals and differing cycle lengths (23–37 seconds). Animation pauses offscreen and in hidden tabs. Reduced motion retains the complete static plate without animated currents. The homepage imports no WebGL scene or model dependency.
+
+Below 768px, preserve the artwork's left-fold framing using its expanded landscape width and 22% horizontal anchor, rather than squeezing the full composition into the viewport. Keep navigation legible at its ordinary size. This replacement is local to Home: existing NightField components and article demonstrations retain their separate implementation and purpose.
 
 On desktop, main section hero descriptions stay on one line. Keep useful actions such as the resume and contact links in the content immediately after the hero, rather than within the opening scene. Descriptions wrap naturally on mobile and tablet.
 
@@ -83,7 +110,6 @@ Use selective Further reading previews after an article: publisher, linked title
 - Clicking to a different page starts at the top. Explicit anchor links go to their targets. Preserve browser Back scroll restoration.
 - Give controls visible keyboard focus and usable touch targets. Expose selected state for real controls, not decorative navigation that scrolls away.
 - Use functional motion sparingly and respect reduced motion. Demonstrations must use the actual documented API.
-- Software WebGL keeps the portfolio scene's models, textures and navigation at native pixel resolution, without shadow maps, environment reflections or postprocessing. Hardware rendering retains the full effects. Test navigation during a deliberately held scene load separately from scene readiness.
 
 ## Review
 

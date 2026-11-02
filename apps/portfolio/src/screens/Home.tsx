@@ -1,86 +1,41 @@
+import { useEffect, useRef } from 'react'
 import { withTheme } from '../components/withTheme'
-import { Component, Suspense, lazy, useCallback, useEffect, useState } from 'react'
-import type { ReactNode } from 'react'
-import { getSceneGraphics } from '../lib/sceneGraphics'
+import './home.css'
 
-/* The front door is a field at night (three.js, lazy so the rest of the
-   site never pays for it): every glowing structure is one of Oliver's
-   works standing in for a page, and colored light — the medium of the
-   art — is the only color on the site. The header provides ordinary
-   navigation for keyboard, touch, and no-WebGL visitors. */
-
-const NightField = lazy(() => import('../components/NightField'))
-
-/* Static night: the FLORA playa photograph, for browsers without WebGL
-   or when the GL context dies. Same mood, zero JS. */
-function StaticNight() {
-  return (
-    <img
-      src="/images/hero-playa.webp"
-      alt=""
-      aria-hidden
-      className="absolute inset-0 h-full w-full object-cover"
-    />
-  )
-}
-
-/* Catches three.js/context crashes at runtime and swaps in the still. */
-class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false }
-  static getDerivedStateFromError() {
-    return { failed: true }
-  }
-  render() {
-    return this.state.failed
-      ? (<><StaticNight /><div className="night-field-loader-tint" /></>)
-      : this.props.children
-  }
-}
+const passages = [
+  { color: 'cyan', d: 'M 75 548 C 150 550 200 440 295 439 S 405 450 465 490' },
+  { color: 'yellow', d: 'M 0 774 C 155 813 288 890 424 915 S 730 950 900 918' },
+  { color: 'green', d: 'M 996 622 C 952 649 1160 651 1310 628 S 1435 590 1490 563' },
+  { color: 'cyan', d: 'M 1100 570 C 1025 592 1180 608 1315 596 S 1435 585 1480 568' },
+] as const
 
 function Home() {
-
-  const [reducedMotion, setReducedMotion] = useState(true)
-  const [graphics, setGraphics] = useState<ReturnType<typeof getSceneGraphics>>('unavailable')
+  const landscape = useRef<SVGSVGElement>(null)
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-      setGraphics(getSceneGraphics())
-    })
-    return () => cancelAnimationFrame(frame)
+    const svg = landscape.current
+    if (!svg || typeof IntersectionObserver === 'undefined') return
+    let visible = true
+    const sync = () => svg.classList.toggle('is-paused', document.hidden || !visible)
+    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync() })
+    observer.observe(svg)
+    document.addEventListener('visibilitychange', sync)
+    sync()
+    return () => { observer.disconnect(); document.removeEventListener('visibilitychange', sync) }
   }, [])
 
-  const onEnter = useCallback(
-    (href: string) => window.location.assign(href),
-    []
-  )
-
-  return (
-    <div className="home-opening">
+  return <div className="home-opening">
     <h1 className="sr-only">Oliver Newth</h1>
-    <section aria-label="Explore the night scene" className="bleed relative home-opening-scene">
-      {graphics !== 'unavailable' ? (
-        <SceneBoundary>
-          <Suspense
-            fallback={(
-              <div className="night-field-loader" data-ready="false">
-                <StaticNight />
-                <div className="night-field-loader-tint" />
-                <span className="sr-only" role="status">Loading scene</span>
-              </div>
-            )}
-          >
-            <NightField onEnter={onEnter} reducedMotion={reducedMotion} softwareRendering={graphics === 'software'} />
-          </Suspense>
-        </SceneBoundary>
-      ) : (
-        <>
-          <StaticNight />
-          <div className="night-field-loader-tint" />
-        </>
-      )}
+    <section aria-label="Contour landscape" className="bleed home-opening-scene">
+      <div className="home-artwork">
+      <img className="home-landscape-image" src="/images/contour-landscape.webp" width="1586" height="992" alt="" fetchPriority="high" />
+      <svg ref={landscape} className="home-contours" viewBox="0 0 1586 992" fill="none" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid slice">
+        {passages.map(({ color, d }, i) => <g key={i} style={{ color: `var(--color-icon-${color})` }}>
+          <path d={d} pathLength="1" className={`home-contours__current home-contours__current--${i}`} />
+        </g>)}
+      </svg>
+      </div>
     </section>
-    </div>
-  )
+  </div>
 }
 
 export default withTheme(Home)
