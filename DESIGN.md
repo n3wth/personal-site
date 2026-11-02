@@ -85,6 +85,8 @@ Use selective Further reading previews after an article: publisher, linked title
 
 ## Review
 
+Section hero color follows the existing semantic palette with local harmonies: cyan and gold for Work, green and gold for Thinking, cyan and coral for Art and Contact, and gold and coral for Library. Projects retains the full four-color spectrum. Use these same local roles for currents, reflections, echoes and ambient light. Quiet structural edges retain a trace of the scene hue; Work planes and Library pages retain translucent material color between passages. Reduced motion and server-rendered artwork keep structural color and Projects face shading without animation. Reading surfaces, controls and navigation keep their shared neutral theme.
+
 UI documentation groups live semantic swatches by purpose (surfaces, text and borders, status). Typography specimens render shared type roles; compact comparison layouts preserve interactive examples and code. These are documentation layouts, not new application control styles.
 
 Check the rendered result at narrow mobile, intermediate and desktop widths, in every supported theme. Look for overwritten spacing, doubled headers, code overflow, misleading active states and footer inconsistencies. Test a cold load and navigation from a scrolled page. Shared changes require checking relevant consumers, not only the UI showcase.

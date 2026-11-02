@@ -472,6 +472,11 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
       if (reducedMotion === 'reduce') {
         await expect(artwork).toHaveAttribute('data-story-paused', '')
         await expect(hero.locator('.section-story__transfer')).toHaveCount(0)
+        const materials = hero.locator('[data-story-face], [data-story-surface]')
+        for (const material of await materials.all()) {
+          await expect(material).not.toHaveCSS('fill', 'none')
+          expect(Number(await material.evaluate(element => getComputedStyle(element).fillOpacity))).toBeGreaterThan(0)
+        }
       } else {
         await expect(artwork).not.toHaveAttribute('data-story-paused', '')
         const initial = await artwork.innerHTML()
