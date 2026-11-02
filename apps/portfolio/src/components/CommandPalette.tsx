@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, ReactElement } from 'react'
 import { Search, X, RotateCcw } from 'lucide-react'
-import { searchItems } from '../lib/search'
+import { highlightRanges, searchItems } from '../lib/search'
 import { answerLinkHref } from '../lib/answerLinks'
 import { track } from '../lib/analytics'
-import type { ResultGroup, SearchItem } from '../lib/search'
+import type { HighlightRange, ResultGroup, SearchItem } from '../lib/search'
 import articleMeta from '../data/article-index.json'
+import gardenSearch from '../data/garden-search.json'
 import { ecosystem, kitPrimitives, uiTiers, uiHooks } from '../data/library'
 import { navigation, projects } from '../data/content'
 
@@ -16,12 +17,12 @@ const AI_MIN_CHARS = 2
  * One input over four properties: this site's routes, every Thinking piece,
  * every kit primitive and @n3wth/ui component, and all of the garden.
  *
- * The garden is the reason this file is careful about imports. It is a few
- * hundred notes and roughly 50KB of JSON, so it arrives through a dynamic
- * import the first time the palette opens and never touches the entry chunk.
- * Everything else is small, static, and derived from the same modules the
- * pages themselves render from, so the palette can't drift out of sync with
- * what actually ships.
+ * Pages, projects, articles, and garden notes all come from data the build
+ * already wrote. The garden list is generated with the notes and imported
+ * here, so the first keystroke can filter it without waiting on a chunk or
+ * a network round trip. The other groups are derived from the same modules
+ * the pages themselves render from, so the palette can't drift out of sync
+ * with what actually ships.
  *
  * Article metadata is generated from the registry during the existing local
  * content build. Importing the registry itself also pulls interactive article
@@ -103,10 +104,38 @@ const PROJECTS: SearchItem[] = projects
     id: `project-${project.id}`,
     title: project.name,
     subtitle: project.description,
+    tags: [project.focus, ...project.tech].filter((tag): tag is string => Boolean(tag)),
     href: project.url,
     external: project.url.startsWith('http'),
     group: 'Projects',
   }))
+
+interface GardenNote {
+  title: string
+  href: string
+  /** Empty string, not undefined, when the note carried no description. */
+  description: string
+  tags?: string[]
+  section: string | null
+}
+
+/** src/data/garden-search.json — the note list built with the rest of the writing. */
+interface GardenSearchIndex {
+  notes: GardenNote[]
+}
+
+const GARDEN: SearchItem[] = (gardenSearch as GardenSearchIndex).notes.map((note) => ({
+  id: `garden-${note.href}`,
+  title: note.title,
+  subtitle:
+    [note.description, note.section]
+      .filter((part): part is string => Boolean(part && part.length > 0))
+      .join(' · ') || undefined,
+  tags: note.tags,
+  href: note.href,
+  external: false,
+  group: 'Garden' as ResultGroup,
+}))
 
 const ELSEWHERE: SearchItem[] = [
   ...ecosystem.filter(property => !PROJECTS.some(project => project.href === property.href)).map((property) => ({
@@ -121,8 +150,45 @@ const ELSEWHERE: SearchItem[] = [
 
 const STATIC_ITEMS: SearchItem[] = [
   ...PAGES, ...PROJECTS,
-  ...THINKING, ...KIT, ...UI, ...HOOKS, ...ELSEWHERE,
+  ...THINKING, ...KIT, ...UI, ...HOOKS, ...GARDEN, ...ELSEWHERE,
 ]
+
+/** The answer service says this, exactly, when retrieval has nothing to add. */
+const NO_ANSWER = 'No relevant information found.'
+
+/**
+ * A local hit is already on screen. Hide the abstain sentence, including the
+ * tokens streamed before it finishes, so the two never contradict.
+ */
+function answerContradicts(text: string, hasMatches: boolean): boolean {
+  if (!hasMatches) return false
+  const value = text.trim()
+  if (value.length === 0) return false
+  return NO_ANSWER.startsWith(value) || value.startsWith(NO_ANSWER)
+}
+
+function Marked({ text, query }: { text: string; query: string }) {
+  const ranges = query ? highlightRanges(text, query) : []
+  if (ranges.length === 0) return text
+  const nodes: Array<string | ReactElement> = []
+  let cursor = 0
+  ranges.forEach((range: HighlightRange, index: number) => {
+    if (range.start < cursor) return
+    if (range.start > cursor) nodes.push(text.slice(cursor, range.start))
+    nodes.push(
+      <span key={index} className="command-palette-mark">{text.slice(range.start, range.end)}</span>
+    )
+    cursor = range.end
+  })
+  if (cursor < text.length) nodes.push(text.slice(cursor))
+  return nodes
+}
+
+function matchHint(item: SearchItem, query: string): string | null {
+  if (!query || highlightRanges(item.title, query).length > 0) return null
+  if (item.subtitle && highlightRanges(item.subtitle, query).length > 0) return item.subtitle
+  return item.tags?.find((tag) => highlightRanges(tag, query).length > 0) ?? null
+}
 
 /** The answer endpoint returns markdown links only ([text](href)) — this
     splits on that one pattern rather than pulling in a markdown parser
@@ -143,27 +209,16 @@ function renderAnswerLinks(text: string): Array<string | { label: string; href: 
 }
 
 /** An empty input is a worse first impression than a short opinionated list. */
-const START_HERE: SearchItem[] = navigation.map(({ name, href, description }) => ({
-  id: `page-${href.slice(1)}`,
-  title: name,
-  subtitle: description,
-  href,
-  group: 'Pages',
-}))
-
-interface GardenNote {
-  title: string
-  href: string
-  /** Empty string, not undefined, when llms.txt carried no description. */
-  description: string
-  section: string | null
-}
-
-/** src/data/garden-search.json — the note list, kept out of the main bundle
-    and pulled in the first time the palette opens. */
-interface GardenSearchIndex {
-  notes: GardenNote[]
-}
+const START_HERE: SearchItem[] = [
+  ...navigation.map(({ name, href, description }) => ({
+    id: `page-${href.slice(1)}`,
+    title: name,
+    subtitle: description,
+    href,
+    group: 'Pages' as const,
+  })),
+  ...PROJECTS,
+]
 
 interface RenderGroup {
   group: ResultGroup
@@ -184,8 +239,6 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const navigate = useCallback((href: string) => window.location.assign(href), [])
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
-  const [gardenItems, setGardenItems] = useState<SearchItem[]>([])
-  const [gardenReady, setGardenReady] = useState(false)
   const [entered, setEntered] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
   const [askState, setAskState] = useState<'idle' | 'loading' | 'answered' | 'error'>('idle')
@@ -199,46 +252,11 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const openerRef = useRef<HTMLElement | null>(null)
-  const requestedGarden = useRef(false)
 
   /** Tracks the current AI request; increments on each new query to detect stale responses */
   const aiRequestVersion = useRef(0)
   /** AbortController for the current AI request */
   const aiAbortController = useRef<AbortController | null>(null)
-
-  /* The garden lands on first open and stays for the session. A failed fetch
-     clears the latch so the next open tries again; the other four groups are
-     already on screen either way.
-
-     No abort flag here on purpose: StrictMode mounts effects twice in dev, so
-     a flag set by the first teardown would cancel the only request the latch
-     ever allows and leave the garden permanently missing in development. */
-  useEffect(() => {
-    if (!open || requestedGarden.current) return
-    requestedGarden.current = true
-
-    import('../data/garden-search.json')
-      .then((module) => {
-        const index = module.default as GardenSearchIndex
-        setGardenItems(
-          index.notes.map((note) => ({
-            id: `garden-${note.href}`,
-            title: note.title,
-            subtitle:
-              [note.description, note.section]
-                .filter((part): part is string => Boolean(part && part.length > 0))
-                .join(' · ') || undefined,
-            href: note.href,
-            external: false,
-            group: 'Garden' as ResultGroup,
-          }))
-        )
-        setGardenReady(true)
-      })
-      .catch(() => {
-        requestedGarden.current = false
-      })
-  }, [open])
 
   /* Every open starts clean: empty query, first result active, focus in the
      input, and a note of where focus came from so Escape can hand it back. */
@@ -275,11 +293,10 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     }
   }, [open])
 
-  const items = useMemo(() => [...STATIC_ITEMS, ...gardenItems], [gardenItems])
   const trimmed = query.trim()
   const matches = useMemo(
-    () => (trimmed.length === 0 ? START_HERE : searchItems(items, trimmed)),
-    [items, trimmed]
+    () => (trimmed.length === 0 ? START_HERE : searchItems(STATIC_ITEMS, trimmed)),
+    [trimmed]
   )
 
   /* Groups appear in the order their best result did, so the strongest match
@@ -627,12 +644,89 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             </button>
           </div>
 
-          {trimmed.length >= AI_MIN_CHARS && (
+          <p role="status" aria-live="polite" className="sr-only">
+            {flat.length === 0
+              ? (askState === 'loading' || askState === 'answered' ? '' : 'No results')
+              : `${matches.length} result${matches.length === 1 ? '' : 's'}`}
+          </p>
+
+          {/* Local results paint with the keystroke. The answer below never gates them. */}
+          <div
+            ref={listRef}
+            id={LIST_ID}
+            role="listbox"
+            aria-label="Search results"
+            className={`min-h-0 flex-1 overflow-y-auto overscroll-contain${flat.length === 0 && (askState === 'loading' || askState === 'answered') ? '' : ' py-2'}`}
+          >
+            {flat.length === 0 ? (askState === 'loading' || askState === 'answered' ? null : (
+              <p className="px-4 py-6 font-sans text-sm leading-relaxed" style={{ color: 'var(--ink-dim)' }}>
+                {`Nothing matches “${trimmed}”. Try one word instead of a phrase.`}
+              </p>
+            )) : (
+              rendered.map((group) => {
+                const labelId = `command-palette-group-${group.group.toLowerCase()}`
+                return (
+                  <div key={group.group} role="group" aria-labelledby={labelId} className="pb-1">
+                    <p
+                      id={labelId}
+                      className="px-4 pb-1 pt-3 font-sans text-xs"
+                      style={{ color: 'var(--ink-dim)', fontWeight: 500, letterSpacing: '0.04em' }}
+                    >
+                      {group.group}
+                    </p>
+                    {group.items.map((item, offset) => {
+                      const index = group.startIndex + offset
+                      const isActive = index === safeIndex
+                      const hint = matchHint(item, trimmed)
+                      return (
+                        <a
+                          key={item.id}
+                          id={optionId(index)}
+                          role="option"
+                          aria-selected={isActive}
+                          tabIndex={-1}
+                          href={item.href}
+                          target={item.external ? '_blank' : undefined}
+                          rel={item.external ? 'noreferrer' : undefined}
+                          onClick={onResultClick(item)}
+                          onMouseMove={() => setActiveIndex(index)}
+                          className="flex items-center px-4 py-2"
+                          style={{
+                            minHeight: '44px',
+                            background: isActive
+                              ? 'color-mix(in srgb, var(--ink) 6%, transparent)'
+                              : 'transparent',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          <span
+                            className="min-w-0 truncate font-sans text-sm"
+                            style={{ color: 'var(--ink)', fontWeight: 400 }}
+                          >
+                            <Marked text={item.title} query={trimmed} />
+                            {hint ? (
+                              <span style={{ color: 'var(--ink-dim)', fontWeight: 400 }}>
+                                {' · '}
+                                <Marked text={hint} query={trimmed} />
+                              </span>
+                            ) : null}
+                          </span>
+                        </a>
+                      )
+                    })}
+                  </div>
+                )
+              })
+            )}
+          </div>
+
+          {trimmed.length >= AI_MIN_CHARS && (askState === 'loading' || askState === 'error' || (askState === 'answered' && answerText.length > 0 && !answerContradicts(answerText, flat.length > 0))) && (
             <div
               className="max-h-[40vh] shrink-0 overflow-y-auto overscroll-contain px-4 py-3"
               role="region"
               aria-label="Search answer"
               tabIndex={askState === 'answered' ? 0 : undefined}
+              style={flat.length > 0 ? { borderTop: '1px solid var(--rail)' } : undefined}
             >
               {askState === 'loading' && (
                 <div className="command-palette-loading" role="status" aria-label="Searching">
@@ -654,7 +748,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                   </button>
                 </p>
               )}
-              {askState === 'answered' && (
+              {askState === 'answered' && !answerContradicts(answerText, flat.length > 0) && (
                 <div>
                 <p
                   className="font-sans text-sm leading-relaxed"
@@ -699,77 +793,6 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
               )}
             </div>
           )}
-
-          <p role="status" aria-live="polite" className="sr-only">
-            {askState === 'loading' ? 'Searching' : flat.length === 0
-              ? 'No results'
-              : `${matches.length} result${matches.length === 1 ? '' : 's'}`}
-          </p>
-
-          {/* Results */}
-          <div
-            ref={listRef}
-            id={LIST_ID}
-            role="listbox"
-            aria-label="Search results"
-            className={`min-h-0 flex-1 overflow-y-auto overscroll-contain${flat.length === 0 && (askState === 'loading' || askState === 'answered') ? '' : ' py-2'}`}
-          >
-            {flat.length === 0 ? (askState === 'loading' || askState === 'answered' ? null : (
-              <p className="px-4 py-6 font-sans text-sm leading-relaxed" style={{ color: 'var(--ink-dim)' }}>
-                {gardenReady
-                  ? `Nothing matches “${trimmed}”. Try one word instead of a phrase.`
-                  : `Nothing matches “${trimmed}” yet; the garden notes are still loading.`}
-              </p>
-            )) : (
-              rendered.map((group) => {
-                const labelId = `command-palette-group-${group.group.toLowerCase()}`
-                return (
-                  <div key={group.group} role="group" aria-labelledby={labelId} className="pb-1">
-                    <p
-                      id={labelId}
-                      className={trimmed ? 'px-4 pb-1 pt-3 font-sans text-xs' : 'sr-only'}
-                      style={{ color: 'var(--ink-dim)', fontWeight: 500, letterSpacing: '0.04em' }}
-                    >
-                      {group.group}
-                    </p>
-                    {group.items.map((item, offset) => {
-                      const index = group.startIndex + offset
-                      const isActive = index === safeIndex
-                      return (
-                        <a
-                          key={item.id}
-                          id={optionId(index)}
-                          role="option"
-                          aria-selected={isActive}
-                          tabIndex={-1}
-                          href={item.href}
-                          target={item.external ? '_blank' : undefined}
-                          rel={item.external ? 'noreferrer' : undefined}
-                          onClick={onResultClick(item)}
-                          onMouseMove={() => setActiveIndex(index)}
-                          className="flex items-center px-4 py-2"
-                          style={{
-                            minHeight: '44px',
-                            background: isActive
-                              ? 'color-mix(in srgb, var(--ink) 6%, transparent)'
-                              : 'transparent',
-                            textDecoration: 'none',
-                          }}
-                        >
-                          <span
-                            className="truncate font-sans text-sm"
-                            style={{ color: 'var(--ink)', fontWeight: isActive ? 500 : 400 }}
-                          >
-                            {item.title}
-                          </span>
-                        </a>
-                      )
-                    })}
-                  </div>
-                )
-              })
-            )}
-          </div>
 
         </div>
       </div>
