@@ -565,17 +565,17 @@ test('contour light respects motion preferences and pauses offscreen', async ({ 
   await expect(art).not.toHaveClass(/is-paused/)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expect.poll(() => art.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0)
-  await expect(page.locator('.home-landscape-image')).toBeVisible()
+  await expect(page.locator('.home-contours__terrain')).toBeVisible()
 })
 
 
-test('home artwork needs no WebGL models or scene data', async ({ page }) => {
+test('home artwork needs no raster image, WebGL models or scene data', async ({ page }) => {
   const requests: string[] = []
   page.on('request', request => {
-    if (/\/models\/|writing\/world\.json|NightField.*\.js/.test(request.url())) requests.push(request.url())
+    if (/contour-landscape\.webp|\/models\/|writing\/world\.json|NightField.*\.js/.test(request.url())) requests.push(request.url())
   })
   await page.goto('/')
-  await expect(page.locator('.home-landscape-image')).toBeVisible()
+  await expect(page.locator('.home-contours__terrain')).toBeVisible()
   await expect(page.locator('canvas')).toHaveCount(0)
   expect(requests).toEqual([])
 })
@@ -630,7 +630,7 @@ for (const route of ['/', '/work', '/art', '/thinking', '/library', '/contact'])
     await expect(page.locator('header').first()).toBeVisible()
     if (route !== '/') await expect(page.locator('h1').first()).toBeVisible()
     if (route === '/') {
-      await expect(page.locator('.home-landscape-image')).toBeVisible()
+      await expect(page.locator('.home-contours__terrain')).toBeVisible()
       await expect(page.locator('.home-contours')).toBeVisible()
       await expect(page.locator('canvas')).toHaveCount(0)
       await page.screenshot({ path: testInfo.outputPath('portfolio-home.png') })
@@ -648,7 +648,7 @@ test('home keeps ordinary writing navigation when WebGL is unavailable', async (
     } as typeof getContext
   })
   await page.goto('/')
-  await expect(page.locator('section[aria-label="Contour landscape"] img')).toBeVisible()
+  await expect(page.locator('.home-contours__terrain')).toBeVisible()
   await expect(page.locator('canvas')).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Explore my projects' })).toHaveCount(0)
   await expect(page.getByText('I build new ways to work with AI.', { exact: true })).toHaveCount(0)
@@ -669,7 +669,7 @@ test('home keeps ordinary writing navigation when WebGL is unavailable', async (
 test('home remains composed before its light layer hydrates', async ({ page }) => {
   await page.route('**/_astro/Home.*.js', route => route.abort())
   await page.goto('/')
-  await expect(page.locator('.home-landscape-image')).toBeVisible()
+  await expect(page.locator('.home-contours__terrain')).toBeVisible()
   await expect(page.getByRole('progressbar')).toHaveCount(0)
   const navigation = page.locator('#primary-navigation')
   if (!await navigation.getByRole('link', { name: 'Work', exact: true }).isVisible()) {
