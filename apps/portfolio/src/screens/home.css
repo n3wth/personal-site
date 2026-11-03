@@ -1,12 +1,16 @@
 .home-opening-scene {
   --home-neutral-ink: color-mix(in oklab, var(--color-text-primary) 78%, var(--color-background-body));
   --home-ink-ice: var(--color-icon-cyan);
+  --home-accent-ice: color-mix(in oklch shorter hue, var(--color-icon-yellow) 85%, var(--color-icon-red));
   --home-ground-ice: color-mix(in oklch shorter hue, var(--color-icon-cyan) 70%, var(--color-icon-red));
   --home-ink-coral: color-mix(in oklch shorter hue, var(--color-icon-red) 85%, var(--color-icon-yellow));
+  --home-accent-coral: color-mix(in oklch shorter hue, var(--color-icon-cyan) 65%, var(--color-icon-green));
   --home-ground-coral: color-mix(in oklch shorter hue, var(--color-icon-cyan) 45%, var(--color-icon-green));
   --home-ink-gold: color-mix(in oklch shorter hue, var(--color-icon-yellow) 85%, var(--color-icon-red));
+  --home-accent-gold: color-mix(in oklch shorter hue, var(--color-icon-red) 50%, var(--color-icon-cyan));
   --home-ground-gold: color-mix(in oklch shorter hue, var(--color-icon-cyan) 85%, var(--color-icon-red));
   --home-ink-seafoam: color-mix(in oklch shorter hue, var(--color-icon-cyan) 60%, var(--color-icon-green));
+  --home-accent-seafoam: color-mix(in oklch shorter hue, var(--color-icon-red) 85%, var(--color-icon-yellow));
   --home-ground-seafoam: color-mix(in oklch shorter hue, var(--color-icon-red) 60%, var(--color-icon-cyan));
   overflow: hidden;
   position: relative;

@@ -105,6 +105,22 @@ describe('continuous ribbon surface', () => {
     expect(parseFloat(svg.style.getPropertyValue('--home-flow-offset'))).toBeLessThan(first)
   })
 
+  it('keeps flow moving without rewriting colors during a palette hold', () => {
+    const host = document.createElement('div')
+    host.innerHTML = '<svg><g data-home-plane/></svg>'
+    const svg = host.querySelector('svg')!, plane = svg.querySelector('g')!
+    const flow = createHomeFlow(svg), colors = vi.spyOn(plane.style, 'setProperty')
+    flow.update(3)
+    const first = svg.style.getPropertyValue('--home-flow-offset')
+    flow.update(4)
+    expect(colors).toHaveBeenCalledTimes(1)
+    expect(svg.style.getPropertyValue('--home-flow-offset')).not.toBe(first)
+    flow.update(6)
+    expect(colors).toHaveBeenCalledTimes(2)
+    flow.reset()
+    expect(colors).toHaveBeenCalledTimes(3)
+  })
+
   it('retains the still ribbon when native metrics fail', () => {
     const host = document.createElement('div')
     host.innerHTML = '<svg><path data-home-flow-full="0"/><path data-home-flow-front="0"/></svg>'

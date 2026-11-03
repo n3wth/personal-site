@@ -21,19 +21,22 @@ export function createHomeFlow(svg: SVGSVGElement) {
   const backdrop = svg.closest<HTMLElement>('.home-opening-scene')
   const palette = ['ice', 'coral', 'gold', 'seafoam']
   let lastFrame = -1
+  let lastEnergy = -1, lastIndex = -1, lastTransition = -1
   const draw = (time: number) => {
+    svg.style.setProperty('--home-flow-offset', `${-time * 260}px`)
     const energy = smooth((time - .35) / 2.4)
     const phase = Math.max(0, time - 2.75) / 8, index = Math.floor(phase) % palette.length
     const transition = smooth((phase % 1 - .25) / .75)
-    const blend = (role: 'ink' | 'ground') => `color-mix(in ${role === 'ink' ? 'oklch shorter hue' : 'oklab'}, var(--home-${role}-${palette[index]}) ${(1 - transition) * 100}%, var(--home-${role}-${palette[(index + 1) % 4]}))`
+    if (energy === lastEnergy && index === lastIndex && transition === lastTransition) return
+    lastEnergy = energy; lastIndex = index; lastTransition = transition
+    const blend = (role: 'ink' | 'ground' | 'accent') => `color-mix(in ${role === 'ground' ? 'oklab' : 'oklch shorter hue'}, var(--home-${role}-${palette[index]}) ${(1 - transition) * 100}%, var(--home-${role}-${palette[(index + 1) % 4]}))`
     const background = `color-mix(in oklab, ${blend('ground')} ${energy * 18}%, var(--color-background-body))`
     if (backdrop) backdrop.style.backgroundColor = background
     const ink = `color-mix(in oklab, ${blend('ink')} ${energy * 88}%, var(--home-neutral-ink))`
     if (plane) {
       plane.style.stroke = ink
-      plane.style.setProperty('--home-flow-ink', `color-mix(in oklab, ${ink} 55%, var(--color-text-primary))`)
+      plane.style.setProperty('--home-flow-ink', `color-mix(in oklab, ${blend('accent')} ${energy * 70}%, var(--color-text-primary))`)
     }
-    svg.style.setProperty('--home-flow-offset', `${-time * 260}px`)
     if (skin) skin.style.fill = background
   }
   return {
