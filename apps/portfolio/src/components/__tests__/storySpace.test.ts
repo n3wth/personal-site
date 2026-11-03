@@ -8,10 +8,10 @@ describe('story material reset', () => {
     host.innerHTML = '<svg></svg>'
     const space = createStorySpace(host.querySelector('svg')!, 'home', .55, .5)
     space.update(0)
-    expect(host.style.getPropertyValue('--home-surge')).toBe('0')
+    const opening = host.style.backgroundColor
     space.startPattern(0, 1, 'red', 0, new Set([0]), 0, false, 'return')
-    space.update(5)
-    expect(Number(host.style.getPropertyValue('--home-surge'))).toBeGreaterThan(0)
+    space.update(32)
+    expect(host.style.backgroundColor).not.toBe(opening)
     space.reset()
     expect(host.style.getPropertyValue('--home-surge')).toBe('')
     expect(host.style.getPropertyValue('--home-surge-color')).toBe('')

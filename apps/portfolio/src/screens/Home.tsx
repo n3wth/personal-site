@@ -1,19 +1,12 @@
-import { useId, useRef } from 'react'
+import { useRef } from 'react'
 import { withTheme } from '../components/withTheme'
 import { useStoryInteractions } from '../components/storyInteractions'
-import { homeContour } from '../components/homeFlow'
+import { ribbonFrame } from '../components/ribbonSurface'
 import './home.css'
 
-const contours = Array.from({ length: 40 }, (_, i) => homeContour((i / 39) ** 1.35))
-const passages = [
-  { color: 'cyan', index: 5 },
-  { color: 'yellow', index: 29 },
-  { color: 'green', index: 17 },
-  { color: 'cyan', index: 11 },
-] as const
+const opening = ribbonFrame()
 
 function Home() {
-  const contourId = useId()
   const landscape = useRef<SVGSVGElement>(null)
   useStoryInteractions(landscape, 'home')
 
@@ -22,19 +15,14 @@ function Home() {
     <section aria-label="Contour landscape" className="bleed home-opening-scene">
       <div className="home-artwork">
       <svg ref={landscape} className="home-contours" viewBox="0 0 1586 992" fill="none" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid slice">
-        <defs><g id={contourId}>{contours.map(({ d }, i) => <path key={i} d={d} />)}</g></defs>
-        <use href={`#${contourId}`} className="home-contours__echo" />
-        <use href={`#${contourId}`} className="home-contours__echo home-contours__echo--answer" />
-        <g data-home-plane>
-        <g className="home-contours__terrain">
-          {contours.map(({ d, route }, i) => <g key={i} data-story-light={i % 5 === 0 || i === 39 ? Math.round(i / 39 * 8) : undefined}>
-            <path d={d} data-story-decoration="" />
-            {(i % 5 === 0 || i === 39) && <path d={route} style={{ opacity: 0 }} />}
+        <path d={opening.echoes.join(' ')} className="home-contours__echo" data-story-decoration="" />
+        <path d={opening.echoes.join(' ')} className="home-contours__echo home-contours__echo--answer" data-story-decoration="" />
+        <g data-home-plane className="home-contours__terrain">
+          {[...opening.patches].sort((a, b) => a.depth - b.depth || a.index - b.index).map(patch => <g key={patch.index} data-ribbon-patch={patch.index}>
+            <path d={patch.surface} className="home-ribbon__skin" data-story-decoration="" />
+            <path d={patch.strands} className="home-ribbon__strands" data-story-decoration="" />
+            <path d={patch.accents} className="home-contours__accent" data-story-decoration="" />
           </g>)}
-        </g>
-        {passages.map(({ color, index }) => <g key={index} style={{ color: `var(--color-icon-${color})` }}>
-          <path d={contours[index].d} className="home-contours__accent" data-story-decoration="" />
-        </g>)}
         </g>
       </svg>
       </div>
