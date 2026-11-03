@@ -586,11 +586,23 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
   const result = await page.locator('.home-opening-scene').evaluate(scene => new Promise<{
-    maxTrails: number; maxWidth: number; maxOpacityRate: number; invalid: boolean; white: boolean; difference: boolean; surfaceMismatch: boolean
+    maxTrails: number; maxWidth: number; maxOpacityRate: number; minContrast: number; colorArrival: number; maxLuminanceRate: number; invalid: boolean; white: boolean; difference: boolean; surfaceMismatch: boolean
   }>(resolve => {
-    const result = { maxTrails: 0, maxWidth: 0, maxOpacityRate: 0, invalid: false, white: false, difference: false, surfaceMismatch: false }
+    const result = { maxTrails: 0, maxWidth: 0, maxOpacityRate: 0, minContrast: Infinity, colorArrival: Infinity, maxLuminanceRate: 0, invalid: false, white: false, difference: false, surfaceMismatch: false }
+    const pixel = document.createElement('canvas')
+    pixel.width = pixel.height = 1
+    const context = pixel.getContext('2d')!
+    const rgb = (color: string) => {
+      context.clearRect(0, 0, 1, 1)
+      context.fillStyle = color
+      context.fillRect(0, 0, 1, 1)
+      return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(value => value / 255)
+    }
+    const luminance = (channels: number[]) => channels.reduce((sum, value, i) => sum + (value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4) * [.2126, .7152, .0722][i], 0)
+    const neutral = rgb(getComputedStyle(scene).getPropertyValue('--color-text-primary'))
     const started = performance.now()
     let previousTime = started
+    let previousLight: number[] | undefined
     const opacities = new Map<SVGPathElement, number>()
     const sample = (now: number) => {
       if (now - previousTime >= 100) {
@@ -598,6 +610,12 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
         result.maxTrails = Math.max(result.maxTrails, paths.length)
         const skin = scene.querySelector('.home-ribbon__skin')!
         result.surfaceMismatch ||= getComputedStyle(skin).fill !== getComputedStyle(scene).backgroundColor
+        const ink = rgb(getComputedStyle(scene.querySelector('.home-ribbon__strands')!).stroke)
+        const light = [luminance(ink), luminance(rgb(getComputedStyle(scene).backgroundColor))]
+        result.minContrast = Math.min(result.minContrast, (Math.max(...light) + .05) / (Math.min(...light) + .05))
+        if (Math.max(...ink.map((value, i) => Math.abs(value - neutral[i]))) > 16 / 255) result.colorArrival = Math.min(result.colorArrival, (now - started) / 1000)
+        if (previousLight) result.maxLuminanceRate = Math.max(result.maxLuminanceRate, ...light.map((value, i) => Math.abs(value - previousLight![i]) * 1000 / (now - previousTime)))
+        previousLight = light
         for (const path of paths) {
           const width = Number.parseFloat(getComputedStyle(path).strokeWidth)
           if (Number.isFinite(width)) result.maxWidth = Math.max(result.maxWidth, width)
@@ -619,6 +637,9 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
   expect(result.maxTrails).toBe(3)
   expect(result.maxWidth).toBeLessThan(4)
   expect(result.maxOpacityRate).toBeLessThan(2)
+  expect(result.minContrast).toBeGreaterThan(6)
+  expect(result.colorArrival).toBeLessThan(3)
+  expect(result.maxLuminanceRate).toBeLessThan(.75)
   expect(result.invalid || result.white || result.difference || result.surfaceMismatch).toBe(false)
   await page.screenshot({ path: testInfo.outputPath('homepage-full-cycle.png') })
 })

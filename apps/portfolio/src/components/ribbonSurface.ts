@@ -13,21 +13,27 @@ const curves: readonly (readonly RibbonVector[])[] = [
   [[1040, 550, 100], [1380, 400, 0], [1350, 100, 0], [1760, 100, 0]],
 ]
 
-function center(u: number) {
+const waveSpeed = 1.1
+
+function center(u: number, time: number) {
   const clamped = Math.max(0, Math.min(1, u))
   const index = Math.min(3, Math.floor(clamped * 4)), t = clamped * 4 - index, q = 1 - t
   const [a, b, c, d] = curves[index]
   const point = add(add(mul(a, q ** 3), mul(b, 3 * q * q * t)), add(mul(c, 3 * q * t * t), mul(d, t ** 3)))
   const tangent = mul(add(add(mul(sub(b, a), q * q), mul(sub(c, b), 2 * q * t)), mul(sub(d, c), t * t)), 12)
-  return { point: add(point, mul(tangent, u - clamped)), tangent: unit(tangent) }
+  const phase = clamped * Math.PI * 2 - time * waveSpeed, envelope = Math.sin(clamped * Math.PI) ** 2
+  const bend = 18 * envelope * Math.sin(phase)
+  const slope = 18 * (Math.PI * Math.sin(clamped * Math.PI * 2) * Math.sin(phase) + envelope * Math.PI * 2 * Math.cos(phase))
+  return { point: add(add(point, mul(tangent, u - clamped)), [0, bend, 0]), tangent: unit(add(tangent, [0, slope, 0])) }
 }
 
 export function ribbonSection(u: number, time = 0) {
-  const { point, tangent } = center(u)
+  const { point, tangent } = center(u, time)
   // The fixed viewing-axis frame prevents the strands from collapsing edge-on.
   const across = unit(cross([0, 0, 1], tangent)), normal = cross(tangent, across)
   const clamped = Math.max(0, Math.min(1, u))
-  const twist = (.25 + .08 * Math.sin(time * .16)) * Math.sin(clamped * Math.PI * 2) * Math.sin(clamped * Math.PI) ** 2
+  const phase = clamped * Math.PI * 2
+  const twist = (.25 * Math.sin(phase) + .24 * Math.sin(phase - time * waveSpeed)) * Math.sin(clamped * Math.PI) ** 2
   const direction = add(mul(across, Math.cos(twist)), mul(normal, Math.sin(twist)))
   const halfWidth = 110
   return { center: point, tangent, direction, halfWidth, normal: cross(tangent, direction) }

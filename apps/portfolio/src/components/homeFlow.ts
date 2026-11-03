@@ -7,16 +7,16 @@ export function createHomeFlow(svg: SVGSVGElement) {
   const skin = svg.querySelector<SVGPathElement>('.home-ribbon__skin')
   const foreground = svg.querySelector<SVGPathElement>('.home-ribbon__front')
   const backdrop = svg.closest<HTMLElement>('.home-opening-scene')
-  const palette = ['cyan', 'red', 'yellow', 'green']
+  const palette = ['ice', 'coral', 'gold', 'seafoam']
   let lastFrame = -1
   const draw = (time: number) => {
-    const energy = smooth((time - 12) / 24), frame = ribbonFrame(time)
-    const phase = time / 24, index = Math.floor(phase) % palette.length
-    const blend = (offset: number) => `color-mix(in oklch shorter hue, var(--color-icon-${palette[(index + offset) % 4]}) ${(1 - smooth(phase % 1)) * 100}%, var(--color-icon-${palette[(index + offset + 1) % 4]}))`
-    const color = blend(0), ground = blend(2)
-    const background = `color-mix(in oklab, ${ground} ${energy * 22}%, var(--color-background-body))`
+    const energy = smooth((time - .35) / 2.4), frame = ribbonFrame(time)
+    const phase = Math.max(0, time - 2.75) / 8, index = Math.floor(phase) % palette.length
+    const transition = smooth((phase % 1 - .25) / .75)
+    const blend = (role: 'ink' | 'ground') => `color-mix(in ${role === 'ink' ? 'oklch shorter hue' : 'oklab'}, var(--home-${role}-${palette[index]}) ${(1 - transition) * 100}%, var(--home-${role}-${palette[(index + 1) % 4]}))`
+    const background = `color-mix(in oklab, ${blend('ground')} ${energy * 18}%, var(--color-background-body))`
     if (backdrop) backdrop.style.backgroundColor = background
-    if (plane) plane.style.stroke = `color-mix(in oklab, ${color} ${energy * 100}%, var(--color-text-primary))`
+    if (plane) plane.style.stroke = `color-mix(in oklab, ${blend('ink')} ${energy * 88}%, var(--color-text-primary))`
     strands?.setAttribute('d', frame.strands)
     skin?.setAttribute('d', frame.surface)
     if (skin) skin.style.fill = background

@@ -3,9 +3,11 @@ import { ribbonFrame, ribbonPoint, ribbonSection } from '../ribbonSurface'
 import { createHomeFlow } from '../homeFlow'
 import { crossing } from '../storyInteractions'
 
+const motionTimes = Array.from({ length: 13 }, (_, i) => i / 2)
+
 describe('continuous ribbon surface', () => {
   it('keeps a perpendicular, constant-width frame through the bend', () => {
-    for (const time of [0, 10, 20, 30, 40]) for (let u = 0; u <= 1; u += .005) {
+    for (const time of motionTimes) for (let u = 0; u <= 1; u += .005) {
       const section = ribbonSection(u, time), a = ribbonPoint(u, -1, time), b = ribbonPoint(u, 1, time)
       expect(Math.hypot(...section.direction)).toBeCloseTo(1)
       expect(section.direction.reduce((sum, value, i) => sum + value * section.tangent[i], 0)).toBeCloseTo(0)
@@ -16,7 +18,7 @@ describe('continuous ribbon surface', () => {
 
   it('keeps strands separated and prevents the inner edge from doubling back', () => {
     const h = .0001
-    for (const time of [0, 10, 20, 30, 40]) for (let u = .002; u < .999; u += .004) {
+    for (const time of motionTimes) for (let u = .002; u < .999; u += .004) {
       const a = ribbonSection(u - h).center, b = ribbonSection(u + h).center, section = ribbonSection(u, time)
       const dx = b[0] - a[0], dy = b[1] - a[1]
       const gap = Math.abs(dx * section.direction[1] - dy * section.direction[0]) / Math.hypot(dx, dy) * 220 / 27
@@ -29,24 +31,27 @@ describe('continuous ribbon surface', () => {
   })
 
   it('has one crossing with the outgoing sweep safely in front of the incoming tail', () => {
-    const points = Array.from({ length: 201 }, (_, i) => ribbonSection(i / 200).center)
     const xy = (p: readonly number[]) => ({ x: p[0], y: p[1] })
-    let count = 0
-    for (let i = 0; i < 100; i++) for (let j = 100; j < 200; j++) {
-      if (j - i < 12) continue
-      const hit = crossing(xy(points[i]), xy(points[i + 1]), xy(points[j]), xy(points[j + 1]))
-      if (!hit) continue
-      count++
-      const rear = (i + hit.first) / 200, front = (j + hit.second) / 200
-      for (const offset of [-.06, 0, .06]) for (const other of [-.06, 0, .06]) {
-        expect(ribbonSection(front + offset).center[2] - ribbonSection(rear + other).center[2]).toBeGreaterThan(220)
+    for (const time of motionTimes) {
+      const points = Array.from({ length: 201 }, (_, i) => ribbonSection(i / 200, time).center)
+      let count = 0
+      for (let i = 0; i < 100; i++) for (let j = 100; j < 200; j++) {
+        if (j - i < 12) continue
+        const hit = crossing(xy(points[i]), xy(points[i + 1]), xy(points[j]), xy(points[j + 1]))
+        if (!hit) continue
+        count++
+        const rear = (i + hit.first) / 200, front = (j + hit.second) / 200
+        for (const offset of [-.06, 0, .06]) for (const other of [-.06, 0, .06]) {
+          expect(ribbonSection(front + offset, time).center[2] - ribbonSection(rear + other, time).center[2]).toBeGreaterThan(220)
+        }
       }
+      expect(count).toBe(1)
     }
-    expect(count).toBe(1)
   })
 
   it('moves immediately and smoothly while keeping both ends offscreen', () => {
-    expect(ribbonPoint(.4, 1, 1)).not.toEqual(ribbonPoint(.4, 1, 0))
+    const start = ribbonSection(.65, 0).center, after = ribbonSection(.65, 1).center
+    expect(Math.hypot(after[0] - start[0], after[1] - start[1])).toBeGreaterThan(10)
     for (let time = 0; time <= 120; time += .5) {
       for (const across of [-1, 0, 1]) {
         expect(ribbonPoint(-2, across, time)[0]).toBeLessThan(0)

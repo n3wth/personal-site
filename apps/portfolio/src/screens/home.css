@@ -1,8 +1,12 @@
 .home-opening-scene {
-  --story-color-cyan: var(--color-icon-cyan);
-  --story-color-green: var(--color-icon-green);
-  --story-color-yellow: var(--color-icon-yellow);
-  --story-color-red: var(--color-icon-red);
+  --home-ink-ice: var(--color-icon-cyan);
+  --home-ground-ice: color-mix(in oklch shorter hue, var(--color-icon-cyan) 70%, var(--color-icon-red));
+  --home-ink-coral: color-mix(in oklch shorter hue, var(--color-icon-red) 85%, var(--color-icon-yellow));
+  --home-ground-coral: color-mix(in oklch shorter hue, var(--color-icon-cyan) 45%, var(--color-icon-green));
+  --home-ink-gold: color-mix(in oklch shorter hue, var(--color-icon-yellow) 85%, var(--color-icon-red));
+  --home-ground-gold: color-mix(in oklch shorter hue, var(--color-icon-cyan) 85%, var(--color-icon-red));
+  --home-ink-seafoam: color-mix(in oklch shorter hue, var(--color-icon-cyan) 60%, var(--color-icon-green));
+  --home-ground-seafoam: color-mix(in oklch shorter hue, var(--color-icon-red) 60%, var(--color-icon-cyan));
   overflow: hidden;
   position: relative;
   min-height: 100svh;
