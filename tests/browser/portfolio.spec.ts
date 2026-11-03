@@ -624,9 +624,11 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
 test('home artwork needs no raster image, WebGL models or scene data', async ({ page }) => {
   const requests: string[] = []
   page.on('request', request => {
-    if (/contour-landscape\.webp|\/models\/|writing\/world\.json|NightField.*\.js/.test(request.url())) requests.push(request.url())
+    if (/contour-landscape\.webp|\/models\/|writing\/world\.json|NightField.*\.js|storyInteractions.*\.js/.test(request.url())) requests.push(request.url())
   })
-  await page.goto('/')
+  const response = await page.goto('/')
+  expect((await response!.body()).byteLength).toBeLessThan(190_000)
+  await expect(page.locator('astro-island[component-url*="Home."]')).not.toHaveAttribute('ssr', '')
   await expect(page.locator('.home-contours__terrain')).toBeVisible()
   await expect(page.locator('canvas')).toHaveCount(0)
   expect(requests).toEqual([])

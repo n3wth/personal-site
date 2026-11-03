@@ -1,12 +1,18 @@
-import { ribbonEase as smooth, ribbonFrame } from './ribbonSurface'
+import { useEffect, type RefObject } from 'react'
+import { ribbonEase as smooth, ribbonEcho, ribbonFrame } from './ribbonSurface'
 
 export function createHomeFlow(svg: SVGSVGElement) {
   const plane = svg.querySelector<SVGGElement>('[data-home-plane]')
-  const patches = [...svg.querySelectorAll<SVGGElement>('[data-ribbon-patch]')].sort((a, b) => Number(a.dataset.ribbonPatch) - Number(b.dataset.ribbonPatch))
+  const patches = [...svg.querySelectorAll<SVGGElement>('[data-ribbon-patch]')]
+    .sort((a, b) => Number(a.dataset.ribbonPatch) - Number(b.dataset.ribbonPatch))
+    .map(group => {
+      const [skin, strands, accent] = [...group.children] as SVGPathElement[]
+      return { group, skin, strands, accent }
+    })
   const echoes = [...svg.querySelectorAll<SVGPathElement>('.home-contours__echo')]
   const backdrop = svg.closest<HTMLElement>('.home-opening-scene')
   const palette = ['cyan', 'red', 'yellow', 'green']
-  let lastTime = -1
+  let lastFrame = -1
   const draw = (time: number) => {
     const energy = smooth((time - 12) / 24), frame = ribbonFrame(time)
     const phase = time / 24, index = Math.floor(phase) % palette.length
@@ -14,35 +20,76 @@ export function createHomeFlow(svg: SVGSVGElement) {
     const color = blend(0), ground = blend(2)
     const background = `color-mix(in oklab, ${ground} ${energy * (18 + 10 * Math.sin(time * .04) ** 2)}%, var(--color-background-body))`
     if (backdrop) backdrop.style.backgroundColor = background
+    if (plane) plane.style.stroke = `color-mix(in oklab, ${color} ${energy * 100}%, var(--color-text-primary))`
+    const answer = blend(1)
     for (const [order, patch] of frame.patches.sort((a, b) => a.depth - b.depth || a.index - b.index).entries()) {
-      const group = patches[patch.index]
-      if (!group) continue
-      const [skin, strands, accent] = [...group.children] as SVGPathElement[]
+      const nodes = patches[patch.index]
+      if (!nodes) continue
+      const { group, skin, strands, accent } = nodes
       skin.setAttribute('d', patch.surface)
       strands.setAttribute('d', patch.strands)
       accent.setAttribute('d', patch.accents)
       const front = smooth((patch.facing + .2) / .4)
       skin.style.fill = `color-mix(in oklab, ${color} ${energy * (5 + (1 - front) * 12)}%, ${background})`
       const light = Math.exp(-(((patch.u - ((time * .045) % 1.8 - .4)) / .15) ** 2))
-      strands.style.stroke = `color-mix(in oklab, ${color} ${energy * 100}%, var(--color-text-primary))`
       strands.style.opacity = String(.32 + .68 * smooth(patch.exposure / .35))
-      accent.style.stroke = `color-mix(in oklab, ${blend(1)} ${(35 + light * 65) * energy}%, var(--color-text-primary))`
+      accent.style.stroke = `color-mix(in oklab, ${answer} ${(35 + light * 65) * energy}%, var(--color-text-primary))`
       if (plane && plane.children[order] !== group) plane.insertBefore(group, plane.children[order] ?? null)
     }
     const rehearsal = smooth((.5 - .5 * Math.cos(time * Math.PI * 2 / 64) - .12) / .5)
     echoes.forEach((echo, i) => {
       const wave = (.5 - .5 * Math.cos((time - i * 17) * Math.PI * 2 / 52)) * energy * rehearsal
-      const echoFrame = wave > .001 ? ribbonFrame(Math.max(0, time + (i === 0 ? -9 : 9) * rehearsal)) : frame
-      echo.setAttribute('d', echoFrame.echoes.join(' '))
+      if (wave > .001) echo.setAttribute('d', ribbonEcho(Math.max(0, time + (i === 0 ? -9 : 9) * rehearsal)))
       echo.style.opacity = String(wave * .35)
     })
   }
   return {
     update(time: number) {
-      if (time - lastTime < 1 / 30) return
-      lastTime = time
+      // Absorb browser timestamp rounding at frame boundaries.
+      const frame = Math.floor((time + .0005) * 30)
+      if (frame === lastFrame) return
+      lastFrame = frame
       draw(time)
     },
-    reset() { lastTime = -1; draw(0) },
+    reset() { lastFrame = -1; draw(0) },
   }
+}
+
+export function useHomeFlow(ref: RefObject<SVGSVGElement | null>) {
+  useEffect(() => {
+    const svg = ref.current
+    if (!svg) return
+    const flow = createHomeFlow(svg), media = matchMedia('(prefers-reduced-motion: reduce)')
+    let visible = typeof IntersectionObserver === 'undefined', frame = 0, elapsed = 0
+    let previous: number | undefined
+    const tick = (now: number) => {
+      if (previous !== undefined) elapsed += Math.min(now - previous, 100) / 1000
+      previous = now
+      flow.update(elapsed)
+      frame = requestAnimationFrame(tick)
+    }
+    const sync = () => {
+      cancelAnimationFrame(frame)
+      previous = undefined
+      const paused = media.matches || document.hidden || !visible
+      svg.toggleAttribute('data-story-paused', paused)
+      if (media.matches) flow.reset()
+      if (!paused) frame = requestAnimationFrame(tick)
+    }
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting
+      sync()
+    })
+    observer?.observe(svg.parentElement ?? svg)
+    media.addEventListener('change', sync)
+    document.addEventListener('visibilitychange', sync)
+    sync()
+    return () => {
+      cancelAnimationFrame(frame)
+      observer?.disconnect()
+      media.removeEventListener('change', sync)
+      document.removeEventListener('visibilitychange', sync)
+      svg.removeAttribute('data-story-paused')
+    }
+  }, [ref])
 }

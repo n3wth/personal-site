@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { ribbonCamera, ribbonFrame, ribbonPoint, ribbonSection } from '../ribbonSurface'
+import { describe, expect, it, vi } from 'vitest'
+import { ribbonCamera, ribbonEcho, ribbonFrame, ribbonPoint, ribbonSection } from '../ribbonSurface'
 import { createHomeFlow } from '../homeFlow'
 
 describe('continuous ribbon surface', () => {
@@ -39,11 +39,33 @@ describe('continuous ribbon surface', () => {
     host.className = 'home-opening-scene'
     host.innerHTML = '<svg><path class="home-contours__echo"/><path class="home-contours__echo"/><g data-home-plane><g data-ribbon-patch="0"><path/><path/><path/></g></g></svg>'
     const svg = host.querySelector('svg')!, flow = createHomeFlow(svg), echo = svg.querySelector<SVGPathElement>('.home-contours__echo')!
+    flow.update(0)
+    expect(echo.hasAttribute('d')).toBe(false)
     flow.update(32)
     expect(Number(echo.style.opacity)).toBeGreaterThan(0)
     flow.update(64)
     expect(echo.style.opacity).toBe('0')
     flow.reset()
     expect(svg.querySelector('[data-ribbon-patch] path')?.getAttribute('d')).toBe(ribbonFrame().patches[0].surface)
+  })
+
+  it('projects the same six echo strands without building the whole surface', () => {
+    const { patches } = ribbonFrame(32)
+    const expected = [4, 10, 16, 22, 28, 34].flatMap(strand => patches.map(patch => `M ${patch.strands.split('M ')[strand + 1].trim()}`)).join(' ')
+    expect(ribbonEcho(32)).toBe(expected)
+  })
+
+  it('draws at a steady 30fps on a 60Hz clock without duplicate-frame work', () => {
+    const host = document.createElement('div')
+    host.innerHTML = '<svg><g data-home-plane><g data-ribbon-patch="0"><path/><path/><path/></g></g></svg>'
+    const svg = host.querySelector('svg')!, skin = svg.querySelector('path')!, flow = createHomeFlow(svg)
+    const writes = vi.spyOn(skin, 'setAttribute')
+    for (let frame = 0; frame <= 120; frame++) {
+      const before = writes.mock.calls.length
+      flow.update(Math.round(frame / 60 * 10_000) / 10_000)
+      expect(writes.mock.calls.length - before).toBe(frame % 2 === 0 ? 1 : 0)
+    }
+    expect(writes).toHaveBeenCalledTimes(61)
+    writes.mockRestore()
   })
 })
