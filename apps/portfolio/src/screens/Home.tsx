@@ -1,15 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useId, useRef } from 'react'
 import { withTheme } from '../components/withTheme'
+import { useStoryInteractions } from '../components/storyInteractions'
+import { homeContour } from '../components/homeFlow'
 import './home.css'
 
-const contours = Array.from({ length: 40 }, (_, i) => {
-  const depth = (i / 39) ** 1.35
-  return `M -180 ${520 + depth * 650}
-    C 30 ${420 + depth * 700}, 140 ${340 + depth * 680}, 300 ${440 + depth * 570}
-    S 500 ${690 + depth * 330}, 760 ${690 + depth * 350}
-    S 1090 ${650 + depth * 330}, 1230 ${470 + depth * 540}
-    S 1430 ${250 + depth * 730}, 1760 ${340 + depth * 820}`
-})
+const contours = Array.from({ length: 40 }, (_, i) => homeContour((i / 39) ** 1.35))
 const passages = [
   { color: 'cyan', index: 5 },
   { color: 'yellow', index: 29 },
@@ -18,31 +13,29 @@ const passages = [
 ] as const
 
 function Home() {
+  const contourId = useId()
   const landscape = useRef<SVGSVGElement>(null)
-  useEffect(() => {
-    const svg = landscape.current
-    if (!svg || typeof IntersectionObserver === 'undefined') return
-    let visible = true
-    const sync = () => svg.classList.toggle('is-paused', document.hidden || !visible)
-    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync() })
-    observer.observe(svg)
-    document.addEventListener('visibilitychange', sync)
-    sync()
-    return () => { observer.disconnect(); document.removeEventListener('visibilitychange', sync) }
-  }, [])
+  useStoryInteractions(landscape, 'home')
 
   return <div className="home-opening">
     <h1 className="sr-only">Oliver Newth</h1>
     <section aria-label="Contour landscape" className="bleed home-opening-scene">
       <div className="home-artwork">
       <svg ref={landscape} className="home-contours" viewBox="0 0 1586 992" fill="none" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid slice">
+        <defs><g id={contourId}>{contours.map(({ d }, i) => <path key={i} d={d} />)}</g></defs>
+        <use href={`#${contourId}`} className="home-contours__echo" />
+        <use href={`#${contourId}`} className="home-contours__echo home-contours__echo--answer" />
+        <g data-home-plane>
         <g className="home-contours__terrain">
-          {contours.map((d, i) => <path key={i} d={d} />)}
+          {contours.map(({ d, route }, i) => <g key={i} data-story-light={i % 5 === 0 || i === 39 ? Math.round(i / 39 * 8) : undefined}>
+            <path d={d} data-story-decoration="" />
+            {(i % 5 === 0 || i === 39) && <path d={route} style={{ opacity: 0 }} />}
+          </g>)}
         </g>
-        {passages.map(({ color, index }, i) => <g key={i} style={{ color: `var(--color-icon-${color})` }}>
-          <path d={contours[index]} className="home-contours__accent" />
-          <path d={contours[index]} pathLength="1" className={`home-contours__current home-contours__current--${i}`} />
+        {passages.map(({ color, index }) => <g key={index} style={{ color: `var(--color-icon-${color})` }}>
+          <path d={contours[index].d} className="home-contours__accent" data-story-decoration="" />
         </g>)}
+        </g>
       </svg>
       </div>
     </section>

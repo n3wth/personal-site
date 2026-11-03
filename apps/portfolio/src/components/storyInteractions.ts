@@ -54,7 +54,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
     sources.forEach(path => { path.style.opacity = '0' })
     const artRoutes = kind === 'art' ? createArtRoutes(svg) : []
     const lines: Line[] = [...svg.querySelectorAll<SVGPathElement>('path')]
-      .filter(path => !path.matches(pulseSelector) && !path.matches('[data-story-face], [data-story-border], [data-story-halo], [data-story-halo-loop], [data-story-wall]') && !path.closest('defs'))
+      .filter(path => !path.matches(pulseSelector) && !path.matches('[data-story-decoration], [data-story-face], [data-story-border], [data-story-halo], [data-story-halo-loop], [data-story-wall]') && !path.closest('defs'))
       .filter(path => kind !== 'art' || !path.closest('[data-story-light]') || path.hasAttribute('data-art-route'))
       .map(path => {
         const length = path.getTotalLength()
@@ -81,7 +81,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
     saveJourney()
     window.addEventListener('pagehide', saveJourney)
 
-    let nextBurst = 0
+    let nextBurst = kind === 'home' ? 300 : 0
     let synchronized = false, ordered = false, longChase = false, white = false, burstDuration = 500
     let patternColor = '', sceneTime = 0
     let psychedelic = false
@@ -92,7 +92,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
     let nextPerformance = 45000 + Math.random() * 45000, awaitingAnswer = false
     let order = new Map<Line, number>()
     const seeded = new Set<Line>()
-    const pulseLimit = () => lines.length * 4
+    const pulseLimit = () => kind === 'home' ? 12 : lines.length * 4
 
     function clearTransfers() {
       transfers.forEach(pulse => { pulse.path.remove(); pulse.echoes.forEach(path => path.remove()) })
@@ -137,7 +137,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
           if (psychedelic && !white) {
             echo.dataset.spectrumFrom = `var(--story-color-${colors[(index + color) % colors.length]})`
             echo.dataset.spectrumTo = `var(--story-color-${colors[(index + color + 1) % colors.length]})`
-            if (index === 1) echo.style.mixBlendMode = 'difference'
+            if (index === 1 && kind !== 'home') echo.style.mixBlendMode = 'difference'
           }
           svg!.insertBefore(echo, path)
           return echo
@@ -200,7 +200,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
       lastTime = now
       sceneTime = journeyOffset + time / 1000
       const energy = storyEnergy(sceneTime)
-      space.update(sceneTime)
+      space.update(sceneTime, time / 1000)
       if (time > breathStart + breathDuration + 4000) {
         breathStart = time + 5000 + Math.random() * 7000
         breathDuration = 14000 + Math.random() * 9000
@@ -228,7 +228,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
         }
         motifExpansion = time < expansionUntil
         const answering = awaitingAnswer
-        const accent: StoryAccent = !answering && kind === 'projects' && time >= nextPerformance
+        const accent: StoryAccent = !answering && (kind === 'projects' || kind === 'home') && time >= nextPerformance
           ? motifExpansion ? 'return' : Math.random() < .5 ? 'depth' : 'suspend' : null
         if (accent) nextPerformance = time + 90000 + Math.random() * 60000
         awaitingAnswer = accent === 'suspend'
@@ -236,7 +236,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
         ordered = !synchronized && (motifOrdered || motifExpansion || !!accent)
         longChase = Math.random() < (kind === 'work' ? .55 : ordered ? .35 : .2)
         if (kind === 'work' && motifExpansion) longChase = true
-        white = synchronized && Math.random() < .4
+        white = kind !== 'home' && synchronized && Math.random() < .4
         psychedelic = !accent && !answering && !white && energy > .45 && time >= nextAccent && Math.random() < .12
         if (psychedelic) nextAccent = time + 35000 + Math.random() * 45000
         burstDuration = tuning.duration * space.profile.speed * (.85 + Math.random() * .3) * (longChase ? 2 + Math.random() : 1)
