@@ -30,14 +30,10 @@ describe('Contour homepage', () => {
     expect(screen.queryByRole('navigation', { name: 'Site chapters' })).toBeNull()
     const landscape = screen.getByRole('region', { name: 'Contour landscape' })
     expect(landscape.querySelector('svg')).toBeInTheDocument()
-    expect(landscape.querySelectorAll('.home-contours__accent')).toHaveLength(4)
-    expect(landscape.querySelectorAll('defs path')).toHaveLength(40)
+    expect(landscape.querySelectorAll('[data-ribbon-patch]')).toHaveLength(54)
+    expect(landscape.querySelectorAll('.home-ribbon__skin')).toHaveLength(54)
     expect(landscape.querySelectorAll('.home-contours__echo')).toHaveLength(2)
-    expect(landscape.querySelectorAll('.home-contours__terrain [data-story-light]')).toHaveLength(9)
     expect(landscape.querySelector('img, image')).toBeNull()
-    for (const path of landscape.querySelectorAll('.home-contours__accent')) {
-      expect([...landscape.querySelectorAll('defs path')].some(contour => contour.getAttribute('d') === path.getAttribute('d'))).toBe(true)
-    }
     expect(landscape.querySelector('canvas')).toBeNull()
   })
 

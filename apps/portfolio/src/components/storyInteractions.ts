@@ -53,7 +53,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
     const sources = [...svg.querySelectorAll<SVGPathElement>(pulseSelector)]
     sources.forEach(path => { path.style.opacity = '0' })
     const artRoutes = kind === 'art' ? createArtRoutes(svg) : []
-    const lines: Line[] = [...svg.querySelectorAll<SVGPathElement>('path')]
+    const lines: Line[] = (kind === 'home' ? [] : [...svg.querySelectorAll<SVGPathElement>('path')])
       .filter(path => !path.matches(pulseSelector) && !path.matches('[data-story-decoration], [data-story-face], [data-story-border], [data-story-halo], [data-story-halo-loop], [data-story-wall]') && !path.closest('defs'))
       .filter(path => kind !== 'art' || !path.closest('[data-story-light]') || path.hasAttribute('data-art-route'))
       .map(path => {
@@ -201,6 +201,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
       sceneTime = journeyOffset + time / 1000
       const energy = storyEnergy(sceneTime)
       space.update(sceneTime, time / 1000)
+      if (kind === 'home') { frame = requestAnimationFrame(tick); return }
       if (time > breathStart + breathDuration + 4000) {
         breathStart = time + 5000 + Math.random() * 7000
         breathDuration = 14000 + Math.random() * 9000

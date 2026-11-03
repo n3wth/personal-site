@@ -555,10 +555,9 @@ test('contour light respects motion preferences and pauses offscreen', async ({ 
   const scene = page.locator('.home-opening-scene')
   await expect(art).toBeVisible()
   await expect(page.locator('.home-contours__echo').first()).toHaveCSS('opacity', '0')
-  await expect(page.locator('.section-story__transfer').first()).toBeAttached({ timeout: 5000 })
-  const plane = page.locator('[data-home-plane]')
-  const initial = await plane.getAttribute('transform')
-  await expect.poll(() => plane.getAttribute('transform')).not.toBe(initial)
+  const plane = page.locator('[data-ribbon-patch="24"] .home-ribbon__strands')
+  const initial = await plane.getAttribute('d')
+  await expect.poll(() => plane.getAttribute('d')).not.toBe(initial)
   await page.evaluate(() => {
     const spacer = document.createElement('div')
     spacer.style.height = '200vh'
@@ -566,10 +565,10 @@ test('contour light respects motion preferences and pauses offscreen', async ({ 
     window.scrollTo(0, document.body.scrollHeight)
   })
   await expect(art).toHaveAttribute('data-story-paused', '')
-  const paused = await plane.getAttribute('transform')
+  const paused = await plane.getAttribute('d')
   const pausedBackground = await scene.evaluate(el => (el as HTMLElement).style.backgroundColor)
   await page.waitForTimeout(150)
-  expect(await plane.getAttribute('transform')).toBe(paused)
+  expect(await plane.getAttribute('d')).toBe(paused)
   expect(await scene.evaluate(el => (el as HTMLElement).style.backgroundColor)).toBe(pausedBackground)
   await page.evaluate(() => window.scrollTo(0, 0))
   await expect(art).not.toHaveAttribute('data-story-paused', '')
@@ -587,25 +586,27 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
   const result = await page.locator('.home-opening-scene').evaluate(scene => new Promise<{
-    maxTrails: number; maxWidth: number; maxSurgeRate: number; invalid: boolean; white: boolean; difference: boolean
+    maxTrails: number; maxWidth: number; maxOpacityRate: number; invalid: boolean; white: boolean; difference: boolean
   }>(resolve => {
-    const result = { maxTrails: 0, maxWidth: 0, maxSurgeRate: 0, invalid: false, white: false, difference: false }
+    const result = { maxTrails: 0, maxWidth: 0, maxOpacityRate: 0, invalid: false, white: false, difference: false }
     const started = performance.now()
-    let previousTime = started, previousSurge = 0
+    let previousTime = started
+    const opacities = new Map<SVGPathElement, number>()
     const sample = (now: number) => {
       if (now - previousTime >= 100) {
-        const paths = [...scene.querySelectorAll<SVGPathElement>('.section-story__transfer')]
+        const paths = [...scene.querySelectorAll<SVGPathElement>('svg path')]
         result.maxTrails = Math.max(result.maxTrails, paths.length)
         for (const path of paths) {
-          const width = Number.parseFloat(path.style.strokeWidth)
+          const width = Number.parseFloat(getComputedStyle(path).strokeWidth)
           if (Number.isFinite(width)) result.maxWidth = Math.max(result.maxWidth, width)
-          result.invalid ||= /NaN|Infinity/.test(path.getAttribute('transform') ?? '')
+          result.invalid ||= /NaN|Infinity/.test(path.getAttribute('d') ?? '')
           result.white ||= path.getAttribute('stroke') === 'white'
           result.difference ||= path.style.mixBlendMode === 'difference'
+          const opacity = Number(getComputedStyle(path).opacity)
+          const previous = opacities.get(path) ?? opacity
+          result.maxOpacityRate = Math.max(result.maxOpacityRate, Math.abs(opacity - previous) * 1000 / (now - previousTime))
+          opacities.set(path, opacity)
         }
-        const surge = Number((scene as HTMLElement).style.getPropertyValue('--home-surge'))
-        result.maxSurgeRate = Math.max(result.maxSurgeRate, Math.abs(surge - previousSurge) * 1000 / (now - previousTime))
-        previousSurge = surge
         previousTime = now
       }
       if (now - started >= 98_000) resolve(result)
@@ -613,10 +614,9 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
     }
     requestAnimationFrame(sample)
   }))
-  expect(result.maxTrails).toBeGreaterThan(0)
-  expect(result.maxTrails).toBeLessThanOrEqual(48)
+  expect(result.maxTrails).toBe(164)
   expect(result.maxWidth).toBeLessThan(4)
-  expect(result.maxSurgeRate).toBeLessThan(.5)
+  expect(result.maxOpacityRate).toBeLessThan(2)
   expect(result.invalid || result.white || result.difference).toBe(false)
   await page.screenshot({ path: testInfo.outputPath('homepage-full-cycle.png') })
 })

@@ -124,7 +124,7 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
       return active[0]?.color ?? null
     },
     update(time: number, elapsed = time) {
-      home?.update(elapsed)
+      if (home) { home.update(elapsed); return }
       const energy = storyEnergy(time)
       if (halos.length) {
         nextHalo ??= time + 10 + Math.random() * 8
