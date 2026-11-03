@@ -57,10 +57,11 @@ export function ribbonCamera(time: number) {
   const vertical: RibbonVector = [sz * cy + cz * sx * sy, cz * cx, sz * sy - cz * sx * cy]
   const forward = cross(horizontal, vertical), viewpoint = ribbonEase(.5 - .5 * Math.cos(time * Math.PI * 2 / 88))
   const focus: RibbonVector = [793 + depth * (viewpoint - .5) * 520, 496 + depth * (viewpoint - .5) * 240, 0]
+  const offsetX = 793 + Math.sin(time * .13) * 22, offsetY = 496 + Math.sin(time * .11) * 16
   return {
     project(point: RibbonVector): RibbonVector {
       const relative = sub(point, focus)
-      return [793 + Math.sin(time * .13) * 22 + dot(relative, horizontal), 496 + Math.sin(time * .11) * 16 + dot(relative, vertical), dot(relative, forward)]
+      return [offsetX + dot(relative, horizontal), offsetY + dot(relative, vertical), dot(relative, forward)]
     },
     facing(normal: RibbonVector) { return dot(normal, forward) },
   }
@@ -69,15 +70,19 @@ export function ribbonCamera(time: number) {
 const knots = [-2, -1, -.5, ...Array.from({ length: 49 }, (_, i) => i / 48), 1.5, 2, 3]
 const xy = (point: RibbonVector) => `${point[0].toFixed(2)} ${point[1].toFixed(2)}`
 
-export function ribbonFrame(time = 0) {
+function ribbonCurves(time: number, strands: readonly number[]) {
   const camera = ribbonCamera(time)
+  const sample = (u: number) => {
+    const section = ribbonSection(u, time), point = camera.project(section.center)
+    return { point, width: sub(camera.project(add(section.center, mul(section.direction, section.halfWidth))), point) }
+  }
   const sections = knots.map(u => {
-    const section = ribbonSection(u, time), before = ribbonSection(u - .0001, time), after = ribbonSection(u + .0001, time)
-    return Array.from({ length: 40 }, (_, i) => {
+    const section = sample(u), before = sample(u - .0001), after = sample(u + .0001)
+    const derivative = mul(sub(after.point, before.point), 5000), widthDerivative = mul(sub(after.width, before.width), 5000)
+    // Orthographic projection is affine across the ribbon's width.
+    return strands.map(i => {
       const v = i / 39 * 2 - 1
-      const point = camera.project(add(section.center, mul(section.direction, v * section.halfWidth)))
-      const p = camera.project(add(before.center, mul(before.direction, v * before.halfWidth))), q = camera.project(add(after.center, mul(after.direction, v * after.halfWidth)))
-      return { point, derivative: mul(sub(q, p), 5000) }
+      return { point: add(section.point, mul(section.width, v)), derivative: add(derivative, mul(widthDerivative, v)) }
     })
   })
   const edge = (patch: number, strand: number) => {
@@ -88,6 +93,19 @@ export function ribbonFrame(time = 0) {
     const { a, b, c, d } = edge(patch, strand)
     return `M ${xy(a)} C ${xy(c)} ${xy(d)} ${xy(b)}`
   }
+  return { camera, edge, command }
+}
+
+const strands = Array.from({ length: 40 }, (_, i) => i)
+const echoStrands = [4, 10, 16, 22, 28, 34]
+
+export function ribbonEcho(time: number) {
+  const { command } = ribbonCurves(time, echoStrands)
+  return echoStrands.map((_, strand) => knots.slice(0, -1).map((_, patch) => command(patch, strand)).join(' ')).join(' ')
+}
+
+export function ribbonFrame(time = 0) {
+  const { camera, edge, command } = ribbonCurves(time, strands)
   const patches = knots.slice(0, -1).map((u, index) => {
     const left = edge(index, 0), right = edge(index, 39), middle = (u + knots[index + 1]) / 2, section = ribbonSection(middle, time)
     return {
@@ -98,8 +116,5 @@ export function ribbonFrame(time = 0) {
       exposure: Math.min(1, Math.hypot(left.a[0] - right.a[0], left.a[1] - right.a[1]) / (section.halfWidth * 2)),
     }
   })
-  return {
-    patches,
-    echoes: [4, 10, 16, 22, 28, 34].map(strand => knots.slice(0, -1).map((_, patch) => command(patch, strand)).join(' ')),
-  }
+  return { patches }
 }

@@ -1,5 +1,3 @@
-import { createHomeFlow } from './homeFlow'
-
 const storageKey = 'n3wth-story-journey'
 const paletteSpace = typeof CSS !== 'undefined' && CSS.supports?.('color', 'color-mix(in oklab, red, blue)') ? 'oklab' : 'srgb'
 export type StoryAccent = 'return' | 'depth' | 'suspend' | null
@@ -17,7 +15,6 @@ export function pulseEnvelope(t: number, smoothing: number) {
   return smooth(t / (.16 + smoothing * .24)) * (1 - smooth((t - (.7 - smoothing * .12)) / (.3 + smoothing * .12)))
 }
 const profiles: Record<string, { speed: number; gap: number; chorus: number }> = {
-  home: { speed: 1.2, gap: 2, chorus: .15 },
   art: { speed: 1, gap: 1.4, chorus: .25 },
   thinking: { speed: 1.4, gap: 2, chorus: .08 },
   work: { speed: .8, gap: 1.6, chorus: .1 },
@@ -48,14 +45,13 @@ export function saveStoryJourney(journey: { epoch: number; color: number }) {
 
 /** Fixed geometry; light travels through the stack and shades each solid face. */
 export function createStorySpace(svg: SVGSVGElement, kind: string, amount: number, smoothing: number) {
-  const home = kind === 'home' ? createHomeFlow(svg) : null
   const faces = [...svg.querySelectorAll<SVGPathElement>('[data-story-face]')]
   const borders = [...svg.querySelectorAll<SVGPathElement>('[data-story-border]')]
   const halos = [...svg.querySelectorAll<SVGPathElement>('[data-story-halo]')]
   const walls = [...svg.querySelectorAll<SVGPathElement>('[data-story-wall]')]
   let haloStart: number | undefined
   let nextHalo: number | undefined
-  const backdrop = svg.closest<HTMLElement>('.portfolio-story-hero, .home-opening-scene')
+  const backdrop = svg.closest<HTMLElement>('.portfolio-story-hero')
   let crescendo: { start: number; duration: number; color: string } | null = null
   const palette = ['cyan', 'green', 'yellow', 'red']
   const ink = (index: number) => `var(--story-color-${palette[index]})`
@@ -78,14 +74,9 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
   let initialized = false
   let orderedUntil = 0
   const reset = () => {
-    home?.reset()
     svg.style.filter = ''
     svg.style.color = ''
     if (backdrop) backdrop.style.backgroundColor = ''
-    if (kind === 'home') {
-      backdrop?.style.removeProperty('--home-surge')
-      backdrop?.style.removeProperty('--home-surge-color')
-    }
     crescendo = null
     outlines.forEach(({ path, stroke, fill, fillOpacity }) => { path.style.stroke = stroke; path.style.fill = fill; path.style.fillOpacity = fillOpacity })
     lastAttentionTime = undefined
@@ -123,8 +114,7 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
       active.sort((a, b) => strength(b, time) - strength(a, time))
       return active[0]?.color ?? null
     },
-    update(time: number, elapsed = time) {
-      if (home) { home.update(elapsed); return }
+    update(time: number) {
       const energy = storyEnergy(time)
       if (halos.length) {
         nextHalo ??= time + 10 + Math.random() * 8
@@ -158,11 +148,8 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
       const wake = trace.reduce((total, value) => total + value, 0) / trace.length
       const ambient = (1.5 + wake * 5 + meeting * 1.5) * amount * atmosphere
       const ground = ambient > 0 ? `color-mix(in srgb, ${ambientColor} ${ambient}%, var(--color-background-body))` : 'var(--color-background-body)'
-      if (kind === 'home') {
-        backdrop?.style.setProperty('--home-surge', String(bloom * .35))
-        backdrop?.style.setProperty('--home-surge-color', crescendo?.color ?? ambientColor)
-      } else if (backdrop) backdrop.style.backgroundColor = bloom > 0 ? `color-mix(in srgb, ${crescendo!.color} ${bloom * 65}%, ${ground})` : ambient > 0 ? ground : ''
-      svg.style.color = bloom > 0 && kind !== 'home' ? `color-mix(in srgb, var(--color-background-body) ${bloom * 100}%, color-mix(in srgb, var(--color-text-primary) 40%, var(--color-background-body)))` : ''
+      if (backdrop) backdrop.style.backgroundColor = bloom > 0 ? `color-mix(in srgb, ${crescendo!.color} ${bloom * 65}%, ${ground})` : ambient > 0 ? ground : ''
+      svg.style.color = bloom > 0 ? `color-mix(in srgb, var(--color-background-body) ${bloom * 100}%, color-mix(in srgb, var(--color-text-primary) 40%, var(--color-background-body)))` : ''
       if (!initialized) {
         lights.forEach(light => { light.next = time + Math.random() * 5 })
         initialized = true
@@ -187,7 +174,6 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
         wall.style.opacity = String(amount * (.025 + tunnel * wave * .65) * (1 - layer * .045))
       })
       outlines.forEach(({ path, layer }) => {
-        if (kind === 'home') return
         const weight = (attention[layer] * .12 + trace[layer] * .08) * (1 - energy * .5)
         const quiet = `color-mix(in srgb, ${ambientColor} ${24 + weight * 100}%, currentColor)`
         // Neutral edges become ink over lit faces instead of muddy grey on color.
