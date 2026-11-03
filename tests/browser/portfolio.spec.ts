@@ -552,22 +552,74 @@ test('contour light respects motion preferences and pauses offscreen', async ({ 
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
   const art = page.locator('.home-contours')
+  const scene = page.locator('.home-opening-scene')
   await expect(art).toBeVisible()
-  await expect.poll(() => art.evaluate(el => el.getAnimations({ subtree: true }).some(a => a.playState === 'running'))).toBe(true)
+  await expect(page.locator('.home-contours__echo').first()).toHaveCSS('opacity', '0')
+  await expect(page.locator('.section-story__transfer').first()).toBeAttached({ timeout: 5000 })
+  const plane = page.locator('[data-home-plane]')
+  const initial = await plane.getAttribute('transform')
+  await expect.poll(() => plane.getAttribute('transform')).not.toBe(initial)
   await page.evaluate(() => {
     const spacer = document.createElement('div')
     spacer.style.height = '200vh'
     document.body.append(spacer)
     window.scrollTo(0, document.body.scrollHeight)
   })
-  await expect(art).toHaveClass(/is-paused/)
+  await expect(art).toHaveAttribute('data-story-paused', '')
+  const paused = await plane.getAttribute('transform')
+  const pausedBackground = await scene.evaluate(el => (el as HTMLElement).style.backgroundColor)
+  await page.waitForTimeout(150)
+  expect(await plane.getAttribute('transform')).toBe(paused)
+  expect(await scene.evaluate(el => (el as HTMLElement).style.backgroundColor)).toBe(pausedBackground)
   await page.evaluate(() => window.scrollTo(0, 0))
-  await expect(art).not.toHaveClass(/is-paused/)
+  await expect(art).not.toHaveAttribute('data-story-paused', '')
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expect.poll(() => art.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0)
+  await expect.poll(() => scene.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0)
+  await expect(page.locator('.home-contours__echo').first()).toHaveCSS('opacity', '0')
   await expect(page.locator('.home-contours__terrain')).toBeVisible()
 })
 
+
+test('homepage effects stay bounded through a complete color cycle', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'portfolio-1440', 'One full-cycle rendering check covers the shared controller.')
+  test.setTimeout(120_000)
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/')
+  const result = await page.locator('.home-opening-scene').evaluate(scene => new Promise<{
+    maxTrails: number; maxWidth: number; maxSurgeRate: number; invalid: boolean; white: boolean; difference: boolean
+  }>(resolve => {
+    const result = { maxTrails: 0, maxWidth: 0, maxSurgeRate: 0, invalid: false, white: false, difference: false }
+    const started = performance.now()
+    let previousTime = started, previousSurge = 0
+    const sample = (now: number) => {
+      if (now - previousTime >= 100) {
+        const paths = [...scene.querySelectorAll<SVGPathElement>('.section-story__transfer')]
+        result.maxTrails = Math.max(result.maxTrails, paths.length)
+        for (const path of paths) {
+          const width = Number.parseFloat(path.style.strokeWidth)
+          if (Number.isFinite(width)) result.maxWidth = Math.max(result.maxWidth, width)
+          result.invalid ||= /NaN|Infinity/.test(path.getAttribute('transform') ?? '')
+          result.white ||= path.getAttribute('stroke') === 'white'
+          result.difference ||= path.style.mixBlendMode === 'difference'
+        }
+        const surge = Number((scene as HTMLElement).style.getPropertyValue('--home-surge'))
+        result.maxSurgeRate = Math.max(result.maxSurgeRate, Math.abs(surge - previousSurge) * 1000 / (now - previousTime))
+        previousSurge = surge
+        previousTime = now
+      }
+      if (now - started >= 98_000) resolve(result)
+      else requestAnimationFrame(sample)
+    }
+    requestAnimationFrame(sample)
+  }))
+  expect(result.maxTrails).toBeGreaterThan(0)
+  expect(result.maxTrails).toBeLessThanOrEqual(48)
+  expect(result.maxWidth).toBeLessThan(4)
+  expect(result.maxSurgeRate).toBeLessThan(.5)
+  expect(result.invalid || result.white || result.difference).toBe(false)
+  await page.screenshot({ path: testInfo.outputPath('homepage-full-cycle.png') })
+})
 
 test('home artwork needs no raster image, WebGL models or scene data', async ({ page }) => {
   const requests: string[] = []

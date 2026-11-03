@@ -1,26 +1,19 @@
-.home-opening-scene { overflow: hidden; position: relative; min-height: 100svh; }
+.home-opening-scene {
+  --story-color-cyan: var(--color-icon-cyan);
+  --story-color-green: var(--color-icon-green);
+  --story-color-yellow: var(--color-icon-yellow);
+  --story-color-red: var(--color-icon-red);
+  overflow: hidden;
+  position: relative;
+  min-height: 100svh;
+  background-color: var(--color-background-body);
+}
+.home-opening-scene::before { content: ''; position: absolute; inset: 0; background-color: var(--home-surge-color, transparent); opacity: var(--home-surge, 0); pointer-events: none; }
 .home-artwork { position: absolute; inset: 0; }
-.home-contours { position: absolute; inset: 0; width: 100%; height: 100%; }
-.home-contours path { vector-effect: non-scaling-stroke; stroke-width: 1; stroke-linecap: round; }
-.home-contours__terrain { stroke: color-mix(in srgb, var(--color-text-primary) 40%, var(--color-background-body)); }
-.home-contours__accent { stroke: color-mix(in srgb, currentColor 45%, var(--color-background-body)); }
-.home-contours__current { stroke: currentColor; stroke-width: 1.5; opacity: 0; stroke-dasharray: .06 2; }
-
-@media (max-width: 767px) {
-  .home-artwork { width: max(100%, calc(100svh * 1.6)); left: 22%; transform: translateX(-22%); }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .home-contours__current { animation: contour-passage 23s linear infinite; }
-  .home-contours__current--1 { animation-delay: -13s; animation-duration: 31s; }
-  .home-contours__current--2 { animation-delay: -6s; animation-duration: 29s; }
-  .home-contours__current--3 { animation-delay: -21s; animation-duration: 37s; }
-  .home-contours.is-paused .home-contours__current { animation-play-state: paused; }
-}
-
-@keyframes contour-passage {
-  0%, 65% { stroke-dashoffset: .06; opacity: 0; }
-  68% { opacity: 1; }
-  95% { opacity: 1; }
-  100% { stroke-dashoffset: -1; opacity: 0; }
-}
+.home-contours { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; color: color-mix(in srgb, var(--color-text-primary) 80%, var(--color-background-body)); shape-rendering: geometricPrecision; }
+.home-contours path { vector-effect: non-scaling-stroke; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
+.home-contours__terrain { stroke: inherit; }
+[data-home-plane] { stroke: currentColor; }
+.home-contours .home-contours__accent { stroke: currentColor; stroke-width: 1.8; }
+.home-contours__echo { stroke: var(--color-icon-cyan); opacity: 0; }
+.home-contours__echo--answer { stroke: var(--color-icon-red); }
