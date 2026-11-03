@@ -554,8 +554,8 @@ test('contour light respects motion preferences and pauses offscreen', async ({ 
   const art = page.locator('.home-contours')
   const scene = page.locator('.home-opening-scene')
   await expect(art).toBeVisible()
-  await expect(page.locator('.home-contours__echo').first()).toHaveCSS('opacity', '0')
-  const plane = page.locator('[data-ribbon-patch="24"] .home-ribbon__strands')
+  await expect(page.locator('.home-contours__echo')).toHaveCount(0)
+  const plane = page.locator('.home-ribbon__strands')
   const initial = await plane.getAttribute('d')
   await expect.poll(() => plane.getAttribute('d')).not.toBe(initial)
   await page.evaluate(() => {
@@ -575,7 +575,7 @@ test('contour light respects motion preferences and pauses offscreen', async ({ 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expect.poll(() => art.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0)
   await expect.poll(() => scene.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0)
-  await expect(page.locator('.home-contours__echo').first()).toHaveCSS('opacity', '0')
+  await expect(page.locator('.home-contours__echo')).toHaveCount(0)
   await expect(page.locator('.home-contours__terrain')).toBeVisible()
 })
 
@@ -586,9 +586,9 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
   const result = await page.locator('.home-opening-scene').evaluate(scene => new Promise<{
-    maxTrails: number; maxWidth: number; maxOpacityRate: number; invalid: boolean; white: boolean; difference: boolean
+    maxTrails: number; maxWidth: number; maxOpacityRate: number; invalid: boolean; white: boolean; difference: boolean; surfaceMismatch: boolean
   }>(resolve => {
-    const result = { maxTrails: 0, maxWidth: 0, maxOpacityRate: 0, invalid: false, white: false, difference: false }
+    const result = { maxTrails: 0, maxWidth: 0, maxOpacityRate: 0, invalid: false, white: false, difference: false, surfaceMismatch: false }
     const started = performance.now()
     let previousTime = started
     const opacities = new Map<SVGPathElement, number>()
@@ -596,6 +596,8 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
       if (now - previousTime >= 100) {
         const paths = [...scene.querySelectorAll<SVGPathElement>('svg path')]
         result.maxTrails = Math.max(result.maxTrails, paths.length)
+        const skin = scene.querySelector('.home-ribbon__skin')!
+        result.surfaceMismatch ||= getComputedStyle(skin).fill !== getComputedStyle(scene).backgroundColor
         for (const path of paths) {
           const width = Number.parseFloat(getComputedStyle(path).strokeWidth)
           if (Number.isFinite(width)) result.maxWidth = Math.max(result.maxWidth, width)
@@ -614,10 +616,10 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
     }
     requestAnimationFrame(sample)
   }))
-  expect(result.maxTrails).toBe(164)
+  expect(result.maxTrails).toBe(3)
   expect(result.maxWidth).toBeLessThan(4)
   expect(result.maxOpacityRate).toBeLessThan(2)
-  expect(result.invalid || result.white || result.difference).toBe(false)
+  expect(result.invalid || result.white || result.difference || result.surfaceMismatch).toBe(false)
   await page.screenshot({ path: testInfo.outputPath('homepage-full-cycle.png') })
 })
 
@@ -627,7 +629,7 @@ test('home artwork needs no raster image, WebGL models or scene data', async ({ 
     if (/contour-landscape\.webp|\/models\/|writing\/world\.json|NightField.*\.js|storyInteractions.*\.js/.test(request.url())) requests.push(request.url())
   })
   const response = await page.goto('/')
-  expect((await response!.body()).byteLength).toBeLessThan(190_000)
+  expect((await response!.body()).byteLength).toBeLessThan(130_000)
   await expect(page.locator('astro-island[component-url*="Home."]')).not.toHaveAttribute('ssr', '')
   await expect(page.locator('.home-contours__terrain')).toBeVisible()
   await expect(page.locator('canvas')).toHaveCount(0)

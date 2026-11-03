@@ -15,14 +15,10 @@ function Home() {
     <section aria-label="Contour landscape" className="bleed home-opening-scene">
       <div className="home-artwork">
       <svg ref={landscape} className="home-contours" viewBox="0 0 1586 992" fill="none" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid slice">
-        <path className="home-contours__echo" />
-        <path className="home-contours__echo home-contours__echo--answer" />
         <g data-home-plane className="home-contours__terrain">
-          {[...opening.patches].sort((a, b) => a.depth - b.depth || a.index - b.index).map(patch => <g key={patch.index} data-ribbon-patch={patch.index}>
-            <path d={patch.surface} className="home-ribbon__skin" />
-            <path d={patch.strands} className="home-ribbon__strands" />
-            <path d={patch.accents} className="home-contours__accent" />
-          </g>)}
+          <path d={opening.strands} className="home-ribbon__strands" />
+          <path d={opening.surface} className="home-ribbon__skin" />
+          <path d={opening.foreground} className="home-ribbon__front" />
         </g>
       </svg>
       </div>
