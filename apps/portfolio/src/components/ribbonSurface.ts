@@ -13,43 +13,38 @@ const curves: readonly (readonly RibbonVector[])[] = [
   [[1040, 550, 100], [1380, 400, 0], [1350, 100, 0], [1760, 100, 0]],
 ]
 
-const waveSpeed = 1.1
-
-function center(u: number, time: number) {
+function center(u: number) {
   const clamped = Math.max(0, Math.min(1, u))
   const index = Math.min(3, Math.floor(clamped * 4)), t = clamped * 4 - index, q = 1 - t
   const [a, b, c, d] = curves[index]
   const point = add(add(mul(a, q ** 3), mul(b, 3 * q * q * t)), add(mul(c, 3 * q * t * t), mul(d, t ** 3)))
   const tangent = mul(add(add(mul(sub(b, a), q * q), mul(sub(c, b), 2 * q * t)), mul(sub(d, c), t * t)), 12)
-  const phase = clamped * Math.PI * 2 - time * waveSpeed, envelope = Math.sin(clamped * Math.PI) ** 2
-  const bend = 18 * envelope * Math.sin(phase)
-  const slope = 18 * (Math.PI * Math.sin(clamped * Math.PI * 2) * Math.sin(phase) + envelope * Math.PI * 2 * Math.cos(phase))
-  return { point: add(add(point, mul(tangent, u - clamped)), [0, bend, 0]), tangent: unit(add(tangent, [0, slope, 0])) }
+  return { point: add(point, mul(tangent, u - clamped)), tangent: unit(tangent) }
 }
 
-export function ribbonSection(u: number, time = 0) {
-  const { point, tangent } = center(u, time)
+export function ribbonSection(u: number) {
+  const { point, tangent } = center(u)
   // The fixed viewing-axis frame prevents the strands from collapsing edge-on.
   const across = unit(cross([0, 0, 1], tangent)), normal = cross(tangent, across)
   const clamped = Math.max(0, Math.min(1, u))
   const phase = clamped * Math.PI * 2
-  const twist = (.25 * Math.sin(phase) + .24 * Math.sin(phase - time * waveSpeed)) * Math.sin(clamped * Math.PI) ** 2
+  const twist = .25 * Math.sin(phase) * Math.sin(clamped * Math.PI) ** 2
   const direction = add(mul(across, Math.cos(twist)), mul(normal, Math.sin(twist)))
   const halfWidth = 110
   return { center: point, tangent, direction, halfWidth, normal: cross(tangent, direction) }
 }
 
-export function ribbonPoint(u: number, across: number, time = 0): RibbonVector {
-  const section = ribbonSection(u, time)
+export function ribbonPoint(u: number, across: number): RibbonVector {
+  const section = ribbonSection(u)
   return add(section.center, mul(section.direction, across * section.halfWidth))
 }
 
 const knots = [-2, ...Array.from({ length: 49 }, (_, i) => i / 48), 3]
 const xy = (point: RibbonVector) => `${point[0].toFixed(2)} ${point[1].toFixed(2)}`
 
-export function ribbonFrame(time = 0) {
+export function ribbonFrame() {
   const sample = (u: number) => {
-    const section = ribbonSection(u, time)
+    const section = ribbonSection(u)
     return { point: section.center, width: mul(section.direction, section.halfWidth) }
   }
   const sections = knots.map(u => {
@@ -80,5 +75,9 @@ export function ribbonFrame(time = 0) {
     strands: path(0),
     surface: `M ${xy(sections[front][0].point)} ${commands[0].slice(front).join(' ')} L ${xy(sections.at(-1)![27].point)} ${right} Z`,
     foreground: path(front),
+    flow: [3, 7, 11, 15, 19, 23].map(strand => ({
+      full: `M ${xy(sections[0][strand].point)} ${commands[strand].join(' ')}`,
+      front: `M ${xy(sections[front][strand].point)} ${commands[strand].slice(front).join(' ')}`,
+    })),
   }
 }
