@@ -2,11 +2,19 @@ import { useEffect, useRef } from 'react'
 import { withTheme } from '../components/withTheme'
 import './home.css'
 
+const contours = Array.from({ length: 40 }, (_, i) => {
+  const depth = (i / 39) ** 1.35
+  return `M -180 ${520 + depth * 650}
+    C 30 ${420 + depth * 700}, 140 ${340 + depth * 680}, 300 ${440 + depth * 570}
+    S 500 ${690 + depth * 330}, 760 ${690 + depth * 350}
+    S 1090 ${650 + depth * 330}, 1230 ${470 + depth * 540}
+    S 1430 ${250 + depth * 730}, 1760 ${340 + depth * 820}`
+})
 const passages = [
-  { color: 'cyan', d: 'M 75 548 C 150 550 200 440 295 439 S 405 450 465 490' },
-  { color: 'yellow', d: 'M 0 774 C 155 813 288 890 424 915 S 730 950 900 918' },
-  { color: 'green', d: 'M 996 622 C 952 649 1160 651 1310 628 S 1435 590 1490 563' },
-  { color: 'cyan', d: 'M 1100 570 C 1025 592 1180 608 1315 596 S 1435 585 1480 568' },
+  { color: 'cyan', index: 5 },
+  { color: 'yellow', index: 29 },
+  { color: 'green', index: 17 },
+  { color: 'cyan', index: 11 },
 ] as const
 
 function Home() {
@@ -27,10 +35,13 @@ function Home() {
     <h1 className="sr-only">Oliver Newth</h1>
     <section aria-label="Contour landscape" className="bleed home-opening-scene">
       <div className="home-artwork">
-      <img className="home-landscape-image" src="/images/contour-landscape.webp" width="1586" height="992" alt="" fetchPriority="high" />
       <svg ref={landscape} className="home-contours" viewBox="0 0 1586 992" fill="none" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid slice">
-        {passages.map(({ color, d }, i) => <g key={i} style={{ color: `var(--color-icon-${color})` }}>
-          <path d={d} pathLength="1" className={`home-contours__current home-contours__current--${i}`} />
+        <g className="home-contours__terrain">
+          {contours.map((d, i) => <path key={i} d={d} />)}
+        </g>
+        {passages.map(({ color, index }, i) => <g key={i} style={{ color: `var(--color-icon-${color})` }}>
+          <path d={contours[index]} className="home-contours__accent" />
+          <path d={contours[index]} pathLength="1" className={`home-contours__current home-contours__current--${i}`} />
         </g>)}
       </svg>
       </div>

@@ -31,7 +31,11 @@ describe('Contour homepage', () => {
     const landscape = screen.getByRole('region', { name: 'Contour landscape' })
     expect(landscape.querySelector('svg')).toBeInTheDocument()
     expect(landscape.querySelectorAll('.home-contours__current')).toHaveLength(4)
-    expect(landscape.querySelector('img')).toHaveAttribute('src', '/images/contour-landscape.webp')
+    expect(landscape.querySelectorAll('.home-contours__terrain path')).toHaveLength(40)
+    expect(landscape.querySelector('img, image')).toBeNull()
+    for (const path of landscape.querySelectorAll('.home-contours__current')) {
+      expect([...landscape.querySelectorAll('.home-contours__terrain path')].some(contour => contour.getAttribute('d') === path.getAttribute('d'))).toBe(true)
+    }
     expect(landscape.querySelector('canvas')).toBeNull()
   })
 

@@ -1,8 +1,9 @@
 .home-opening-scene { overflow: hidden; position: relative; min-height: 100svh; }
 .home-artwork { position: absolute; inset: 0; }
-.home-landscape-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .home-contours { position: absolute; inset: 0; width: 100%; height: 100%; }
 .home-contours path { vector-effect: non-scaling-stroke; stroke-width: 1; stroke-linecap: round; }
+.home-contours__terrain { stroke: color-mix(in srgb, var(--color-text-primary) 40%, var(--color-background-body)); }
+.home-contours__accent { stroke: color-mix(in srgb, currentColor 45%, var(--color-background-body)); }
 .home-contours__current { stroke: currentColor; stroke-width: 1.5; opacity: 0; stroke-dasharray: .06 2; }
 
 @media (max-width: 767px) {
