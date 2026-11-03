@@ -624,8 +624,10 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
         const skin = scene.querySelector('.home-ribbon__skin')!
         result.surfaceMismatch ||= getComputedStyle(skin).fill !== getComputedStyle(scene).backgroundColor
         const ink = rgb(getComputedStyle(scene.querySelector('.home-ribbon__strands')!).stroke)
-        const light = [luminance(ink), luminance(rgb(getComputedStyle(scene).backgroundColor))]
-        result.minContrast = Math.min(result.minContrast, (Math.max(...light) + .05) / (Math.min(...light) + .05))
+        const accent = rgb(getComputedStyle(scene.querySelector('.home-ribbon__flow')!).stroke)
+        const ground = luminance(rgb(getComputedStyle(scene).backgroundColor))
+        const light = [luminance(ink), luminance(accent), ground]
+        result.minContrast = Math.min(result.minContrast, ...light.slice(0, 2).map(value => (Math.max(value, ground) + .05) / (Math.min(value, ground) + .05)))
         if (Math.max(...ink.map((value, i) => Math.abs(value - neutral[i]))) > 16 / 255) result.colorArrival = Math.min(result.colorArrival, (now - started) / 1000)
         if (previousLight) result.maxLuminanceRate = Math.max(result.maxLuminanceRate, ...light.map((value, i) => Math.abs(value - previousLight![i]) * 1000 / (now - previousTime)))
         previousLight = light
