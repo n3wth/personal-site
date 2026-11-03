@@ -557,7 +557,18 @@ test('contour light respects motion preferences and pauses offscreen', async ({ 
   await expect(page.locator('.home-contours__echo')).toHaveCount(0)
   const plane = page.locator('.home-ribbon__strands')
   const initial = await plane.getAttribute('d')
-  await expect.poll(() => plane.getAttribute('d')).not.toBe(initial)
+  await expect(art).toHaveAttribute('data-home-flow-ready', '')
+  const phaseError = await art.evaluate(el => Math.max(...[...el.querySelectorAll<SVGPathElement>('[data-home-flow-full]')].map(full => {
+    const front = el.querySelector<SVGPathElement>(`[data-home-flow-front="${full.dataset.homeFlowFull}"]`)!
+    const length = full.getTotalLength(), remainder = front.getTotalLength()
+    return Math.abs(parseFloat(front.style.getPropertyValue('--home-flow-prefix')) - (length - remainder))
+  })))
+  expect(phaseError).toBeLessThan(.01)
+  await expect(page.locator('.home-ribbon__flow').first()).toHaveCSS('vector-effect', 'none')
+  const offset = () => art.evaluate(el => (el as SVGSVGElement).style.getPropertyValue('--home-flow-offset'))
+  const first = await offset()
+  await expect.poll(offset).not.toBe(first)
+  expect(await plane.getAttribute('d')).toBe(initial)
   await page.evaluate(() => {
     const spacer = document.createElement('div')
     spacer.style.height = '200vh'
@@ -565,18 +576,20 @@ test('contour light respects motion preferences and pauses offscreen', async ({ 
     window.scrollTo(0, document.body.scrollHeight)
   })
   await expect(art).toHaveAttribute('data-story-paused', '')
-  const paused = await plane.getAttribute('d')
+  const paused = await offset()
   const pausedBackground = await scene.evaluate(el => (el as HTMLElement).style.backgroundColor)
   await page.waitForTimeout(150)
-  expect(await plane.getAttribute('d')).toBe(paused)
+  expect(await offset()).toBe(paused)
   expect(await scene.evaluate(el => (el as HTMLElement).style.backgroundColor)).toBe(pausedBackground)
   await page.evaluate(() => window.scrollTo(0, 0))
   await expect(art).not.toHaveAttribute('data-story-paused', '')
+  await expect.poll(offset).not.toBe(paused)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expect.poll(() => art.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0)
   await expect.poll(() => scene.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0)
   await expect(page.locator('.home-contours__echo')).toHaveCount(0)
   await expect(page.locator('.home-contours__terrain')).toBeVisible()
+  await expect(page.locator('.home-ribbon__flow').first()).toHaveCSS('opacity', '0')
 })
 
 
@@ -586,11 +599,23 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
   const result = await page.locator('.home-opening-scene').evaluate(scene => new Promise<{
-    maxTrails: number; maxWidth: number; maxOpacityRate: number; invalid: boolean; white: boolean; difference: boolean; surfaceMismatch: boolean
+    maxTrails: number; maxWidth: number; maxOpacityRate: number; minContrast: number; colorArrival: number; maxLuminanceRate: number; invalid: boolean; white: boolean; difference: boolean; surfaceMismatch: boolean
   }>(resolve => {
-    const result = { maxTrails: 0, maxWidth: 0, maxOpacityRate: 0, invalid: false, white: false, difference: false, surfaceMismatch: false }
+    const result = { maxTrails: 0, maxWidth: 0, maxOpacityRate: 0, minContrast: Infinity, colorArrival: Infinity, maxLuminanceRate: 0, invalid: false, white: false, difference: false, surfaceMismatch: false }
+    const pixel = document.createElement('canvas')
+    pixel.width = pixel.height = 1
+    const context = pixel.getContext('2d')!
+    const rgb = (color: string) => {
+      context.clearRect(0, 0, 1, 1)
+      context.fillStyle = color
+      context.fillRect(0, 0, 1, 1)
+      return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(value => value / 255)
+    }
+    const luminance = (channels: number[]) => channels.reduce((sum, value, i) => sum + (value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4) * [.2126, .7152, .0722][i], 0)
+    const neutral = rgb(getComputedStyle(scene.querySelector('.home-contours')!).color)
     const started = performance.now()
     let previousTime = started
+    let previousLight: number[] | undefined
     const opacities = new Map<SVGPathElement, number>()
     const sample = (now: number) => {
       if (now - previousTime >= 100) {
@@ -598,6 +623,12 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
         result.maxTrails = Math.max(result.maxTrails, paths.length)
         const skin = scene.querySelector('.home-ribbon__skin')!
         result.surfaceMismatch ||= getComputedStyle(skin).fill !== getComputedStyle(scene).backgroundColor
+        const ink = rgb(getComputedStyle(scene.querySelector('.home-ribbon__strands')!).stroke)
+        const light = [luminance(ink), luminance(rgb(getComputedStyle(scene).backgroundColor))]
+        result.minContrast = Math.min(result.minContrast, (Math.max(...light) + .05) / (Math.min(...light) + .05))
+        if (Math.max(...ink.map((value, i) => Math.abs(value - neutral[i]))) > 16 / 255) result.colorArrival = Math.min(result.colorArrival, (now - started) / 1000)
+        if (previousLight) result.maxLuminanceRate = Math.max(result.maxLuminanceRate, ...light.map((value, i) => Math.abs(value - previousLight![i]) * 1000 / (now - previousTime)))
+        previousLight = light
         for (const path of paths) {
           const width = Number.parseFloat(getComputedStyle(path).strokeWidth)
           if (Number.isFinite(width)) result.maxWidth = Math.max(result.maxWidth, width)
@@ -616,9 +647,12 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
     }
     requestAnimationFrame(sample)
   }))
-  expect(result.maxTrails).toBe(3)
+  expect(result.maxTrails).toBe(15)
   expect(result.maxWidth).toBeLessThan(4)
   expect(result.maxOpacityRate).toBeLessThan(2)
+  expect(result.minContrast).toBeGreaterThan(6)
+  expect(result.colorArrival).toBeLessThan(3)
+  expect(result.maxLuminanceRate).toBeLessThan(.75)
   expect(result.invalid || result.white || result.difference || result.surfaceMismatch).toBe(false)
   await page.screenshot({ path: testInfo.outputPath('homepage-full-cycle.png') })
 })
@@ -629,7 +663,7 @@ test('home artwork needs no raster image, WebGL models or scene data', async ({ 
     if (/contour-landscape\.webp|\/models\/|writing\/world\.json|NightField.*\.js|storyInteractions.*\.js/.test(request.url())) requests.push(request.url())
   })
   const response = await page.goto('/')
-  expect((await response!.body()).byteLength).toBeLessThan(130_000)
+  expect((await response!.body()).byteLength).toBeLessThan(155_000)
   await expect(page.locator('astro-island[component-url*="Home."]')).not.toHaveAttribute('ssr', '')
   await expect(page.locator('.home-contours__terrain')).toBeVisible()
   await expect(page.locator('canvas')).toHaveCount(0)

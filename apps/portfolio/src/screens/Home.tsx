@@ -17,8 +17,10 @@ function Home() {
       <svg ref={landscape} className="home-contours" viewBox="0 0 1586 992" fill="none" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid slice">
         <g data-home-plane className="home-contours__terrain">
           <path d={opening.strands} className="home-ribbon__strands" />
+          {opening.flow.map((path, i) => <path key={i} d={path.full} data-home-flow-full={i} className="home-ribbon__flow" />)}
           <path d={opening.surface} className="home-ribbon__skin" />
           <path d={opening.foreground} className="home-ribbon__front" />
+          {opening.flow.map((path, i) => <path key={i} d={path.front} data-home-flow-front={i} className="home-ribbon__flow" />)}
         </g>
       </svg>
       </div>

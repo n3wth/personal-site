@@ -22,28 +22,29 @@ function center(u: number) {
   return { point: add(point, mul(tangent, u - clamped)), tangent: unit(tangent) }
 }
 
-export function ribbonSection(u: number, time = 0) {
+export function ribbonSection(u: number) {
   const { point, tangent } = center(u)
   // The fixed viewing-axis frame prevents the strands from collapsing edge-on.
   const across = unit(cross([0, 0, 1], tangent)), normal = cross(tangent, across)
   const clamped = Math.max(0, Math.min(1, u))
-  const twist = (.25 + .08 * Math.sin(time * .16)) * Math.sin(clamped * Math.PI * 2) * Math.sin(clamped * Math.PI) ** 2
+  const phase = clamped * Math.PI * 2
+  const twist = .25 * Math.sin(phase) * Math.sin(clamped * Math.PI) ** 2
   const direction = add(mul(across, Math.cos(twist)), mul(normal, Math.sin(twist)))
   const halfWidth = 110
   return { center: point, tangent, direction, halfWidth, normal: cross(tangent, direction) }
 }
 
-export function ribbonPoint(u: number, across: number, time = 0): RibbonVector {
-  const section = ribbonSection(u, time)
+export function ribbonPoint(u: number, across: number): RibbonVector {
+  const section = ribbonSection(u)
   return add(section.center, mul(section.direction, across * section.halfWidth))
 }
 
 const knots = [-2, ...Array.from({ length: 49 }, (_, i) => i / 48), 3]
 const xy = (point: RibbonVector) => `${point[0].toFixed(2)} ${point[1].toFixed(2)}`
 
-export function ribbonFrame(time = 0) {
+export function ribbonFrame() {
   const sample = (u: number) => {
-    const section = ribbonSection(u, time)
+    const section = ribbonSection(u)
     return { point: section.center, width: mul(section.direction, section.halfWidth) }
   }
   const sections = knots.map(u => {
@@ -74,5 +75,9 @@ export function ribbonFrame(time = 0) {
     strands: path(0),
     surface: `M ${xy(sections[front][0].point)} ${commands[0].slice(front).join(' ')} L ${xy(sections.at(-1)![27].point)} ${right} Z`,
     foreground: path(front),
+    flow: [3, 7, 11, 15, 19, 23].map(strand => ({
+      full: `M ${xy(sections[0][strand].point)} ${commands[strand].join(' ')}`,
+      front: `M ${xy(sections[front][strand].point)} ${commands[strand].slice(front).join(' ')}`,
+    })),
   }
 }
