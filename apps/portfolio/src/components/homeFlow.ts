@@ -1,15 +1,11 @@
 import { useEffect, type RefObject } from 'react'
-import { ribbonEase as smooth, ribbonEcho, ribbonFrame } from './ribbonSurface'
+import { ribbonEase as smooth, ribbonFrame } from './ribbonSurface'
 
 export function createHomeFlow(svg: SVGSVGElement) {
   const plane = svg.querySelector<SVGGElement>('[data-home-plane]')
-  const patches = [...svg.querySelectorAll<SVGGElement>('[data-ribbon-patch]')]
-    .sort((a, b) => Number(a.dataset.ribbonPatch) - Number(b.dataset.ribbonPatch))
-    .map(group => {
-      const [skin, strands, accent] = [...group.children] as SVGPathElement[]
-      return { group, skin, strands, accent }
-    })
-  const echoes = [...svg.querySelectorAll<SVGPathElement>('.home-contours__echo')]
+  const strands = svg.querySelector<SVGPathElement>('.home-ribbon__strands')
+  const skin = svg.querySelector<SVGPathElement>('.home-ribbon__skin')
+  const foreground = svg.querySelector<SVGPathElement>('.home-ribbon__front')
   const backdrop = svg.closest<HTMLElement>('.home-opening-scene')
   const palette = ['cyan', 'red', 'yellow', 'green']
   let lastFrame = -1
@@ -18,30 +14,13 @@ export function createHomeFlow(svg: SVGSVGElement) {
     const phase = time / 24, index = Math.floor(phase) % palette.length
     const blend = (offset: number) => `color-mix(in oklch shorter hue, var(--color-icon-${palette[(index + offset) % 4]}) ${(1 - smooth(phase % 1)) * 100}%, var(--color-icon-${palette[(index + offset + 1) % 4]}))`
     const color = blend(0), ground = blend(2)
-    const background = `color-mix(in oklab, ${ground} ${energy * (18 + 10 * Math.sin(time * .04) ** 2)}%, var(--color-background-body))`
+    const background = `color-mix(in oklab, ${ground} ${energy * 22}%, var(--color-background-body))`
     if (backdrop) backdrop.style.backgroundColor = background
     if (plane) plane.style.stroke = `color-mix(in oklab, ${color} ${energy * 100}%, var(--color-text-primary))`
-    const answer = blend(1)
-    for (const [order, patch] of frame.patches.sort((a, b) => a.depth - b.depth || a.index - b.index).entries()) {
-      const nodes = patches[patch.index]
-      if (!nodes) continue
-      const { group, skin, strands, accent } = nodes
-      skin.setAttribute('d', patch.surface)
-      strands.setAttribute('d', patch.strands)
-      accent.setAttribute('d', patch.accents)
-      const front = smooth((patch.facing + .2) / .4)
-      skin.style.fill = `color-mix(in oklab, ${color} ${energy * (5 + (1 - front) * 12)}%, ${background})`
-      const light = Math.exp(-(((patch.u - ((time * .045) % 1.8 - .4)) / .15) ** 2))
-      strands.style.opacity = String(.32 + .68 * smooth(patch.exposure / .35))
-      accent.style.stroke = `color-mix(in oklab, ${answer} ${(35 + light * 65) * energy}%, var(--color-text-primary))`
-      if (plane && plane.children[order] !== group) plane.insertBefore(group, plane.children[order] ?? null)
-    }
-    const rehearsal = smooth((.5 - .5 * Math.cos(time * Math.PI * 2 / 64) - .12) / .5)
-    echoes.forEach((echo, i) => {
-      const wave = (.5 - .5 * Math.cos((time - i * 17) * Math.PI * 2 / 52)) * energy * rehearsal
-      if (wave > .001) echo.setAttribute('d', ribbonEcho(Math.max(0, time + (i === 0 ? -9 : 9) * rehearsal)))
-      echo.style.opacity = String(wave * .35)
-    })
+    strands?.setAttribute('d', frame.strands)
+    skin?.setAttribute('d', frame.surface)
+    if (skin) skin.style.fill = background
+    foreground?.setAttribute('d', frame.foreground)
   }
   return {
     update(time: number) {

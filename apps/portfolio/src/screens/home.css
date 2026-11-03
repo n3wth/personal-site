@@ -9,11 +9,8 @@
   background-color: var(--color-background-body);
 }
 .home-artwork { position: absolute; inset: 0; }
-.home-contours { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; color: color-mix(in srgb, var(--color-text-primary) 80%, var(--color-background-body)); shape-rendering: geometricPrecision; }
-.home-contours path { vector-effect: non-scaling-stroke; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
+.home-contours { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--color-text-primary); shape-rendering: geometricPrecision; }
+.home-contours path { vector-effect: non-scaling-stroke; stroke-width: 1.05; stroke-linecap: round; stroke-linejoin: round; }
 .home-contours__terrain { stroke: inherit; }
 .home-ribbon__skin { fill: var(--color-background-body); stroke: none; }
 [data-home-plane] { stroke: currentColor; }
-.home-contours .home-contours__accent { stroke: currentColor; stroke-width: 1.8; }
-.home-contours__echo { stroke: var(--color-icon-cyan); opacity: 0; }
-.home-contours__echo--answer { stroke: var(--color-icon-red); }
