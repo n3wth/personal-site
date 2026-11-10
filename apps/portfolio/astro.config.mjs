@@ -13,6 +13,9 @@ export default defineConfig({
     '/docs/ui/site-compositions': '/docs/ui/layouts',
     '/docs/r3/tools': '/docs/r3/memory-tools',
     '/docs/r3/mcp': '/docs/r3/transport',
+    '/projects/elephant-goldfish': 'https://egm.dev',
+    '/docs/elephant-goldfish/quickstart': 'https://github.com/google/elephant-goldfish-model#install',
+    '/docs/elephant-goldfish/workflows': 'https://github.com/google/elephant-goldfish-model#choose-a-skill',
   },
   vite: {
     envPrefix: ['PUBLIC_', 'VITE_'],

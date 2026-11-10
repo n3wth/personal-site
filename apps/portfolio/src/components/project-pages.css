@@ -51,34 +51,8 @@
 .project-other-list a:is(:hover, :focus-visible) { text-decoration: underline; }
 .project-other-list p { line-height: 1.65; margin-top: .5rem; }
 .project-detail { padding-top: 3rem; }
-.project-visual--elephant-goldfish { justify-content: center; align-items: center; }
-.project-plugin-icon { width: min(100%, 256px); height: auto; }
 .project-attribution { max-width: 65ch; }
-.eg-explanations { display: grid; gap: 2.5rem; }
-.eg-explanation-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
-.eg-explanation { margin: 0; padding-top: 1.5rem; border-top: 1px solid var(--color-border); }
-.eg-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3rem; list-style: none; padding: 0; margin: 1.5rem 0; }
-.eg-steps li { position: relative; min-width: 0; }
-.eg-stage { display: block; width: 160px; max-width: 100%; height: 112px; fill: none; stroke: var(--color-text-primary); stroke-width: 1.5; }
-.eg-history { stroke: var(--color-text-secondary); opacity: .6; }
-.eg-evidence { fill: var(--color-background-body); }
-.eg-review { fill: var(--color-background-body); stroke: var(--color-warning); }
-.eg-finding, .eg-revision { stroke: var(--color-warning); stroke-width: 2.5; }
-.eg-transfer { position: absolute; top: 44px; right: -2rem; width: 64px; fill: none; stroke: var(--color-text-secondary); stroke-width: 1.5; }
-.eg-packet { stroke: var(--color-warning); stroke-width: 3; stroke-dasharray: .14 .86; stroke-dashoffset: 1; opacity: 0; }
-.eg-steps[data-playing='true'] .eg-packet { animation: eg-pass 1.8s ease-in-out 1; }
-.eg-steps[data-playing='true'] li:nth-child(2) .eg-packet { animation-delay: 1.8s; }
-.eg-steps h4 { margin-top: .75rem; font-size: var(--font-size-lg); font-weight: 600; }
-.eg-steps p { margin-top: .5rem; line-height: 1.65; }
-.eg-explanation figcaption { color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: 1.65; }
-@keyframes eg-pass { 0% { opacity: 0; stroke-dashoffset: 1; } 15%, 85% { opacity: 1; } 100% { opacity: 0; stroke-dashoffset: 0; } }
-@media (prefers-reduced-motion: reduce) { .eg-steps[data-playing='true'] .eg-packet { animation: none; } }
 @media (max-width: 767px) {
-  .eg-steps { grid-template-columns: 1fr; gap: 2rem; }
-  .eg-steps li { padding-left: 112px; min-height: 112px; }
-  .eg-stage { position: absolute; left: 0; top: 0; width: 96px; }
-  .eg-transfer { top: auto; bottom: -1.75rem; left: 36px; right: auto; width: 32px; transform: rotate(90deg); }
-  .eg-steps h4 { margin-top: 0; }
 }
 .project-attribution p a { text-decoration: underline; text-underline-offset: 4px; }
 .project-attribution p, .project-install > p { margin-block: 1rem; line-height: 1.7; }

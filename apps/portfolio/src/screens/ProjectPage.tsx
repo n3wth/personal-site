@@ -3,22 +3,8 @@ import { CodeBlock } from '@n3wth/ui'
 import { SiteSection, SiteHeading } from '@n3wth/ui/site'
 import { projects } from '../data/content'
 import { ProjectVisual } from '../components/ProjectVisual'
-import { ElephantGoldfishExplanation } from '../components/ElephantGoldfishExplanation'
 
 const details = {
-  'elephant-goldfish': {
-    title: 'elephant-goldfish',
-    question: 'Check your assumptions before you ship.',
-    description: 'An assistant reviewing its own work already knows why each choice seemed right. elephant-goldfish brings a fresh reviewer into Codex to question a design, investigate a bug, or inspect a change. It reviews the evidence without inheriting the working conversation.',
-    install: 'Review my staged changes with elephant-goldfish.\nReport findings without editing files.',
-    sections: [
-      ['Before you build', 'Challenge an idea, clarify the requirements, and find unanswered questions in a design before committing to an approach.'],
-      ['When a bug resists a fix', 'Give a fresh reviewer the symptoms and reproduction. Compare its diagnosis with yours before making another change.'],
-      ['Before you commit', 'Review the exact change you intend to ship. Get findings tied to evidence, with a clear account of what was checked.'],
-    ],
-    docs: '/docs/elephant-goldfish/quickstart',
-    source: '/downloads/elephant-goldfish-0.1.0.zip',
-  },
   r3: {
     title: 'r3',
     question: 'Useful context beyond a single conversation',
@@ -66,7 +52,7 @@ function ProjectPage({ slug }: { slug: string }) {
           <p className="project-detail-description">{detail.description}</p>
           <div className="project-actions">
             <a href={detail.docs}>Documentation</a>
-            <a href={detail.source} target="_blank" rel="noopener noreferrer">{slug === 'elephant-goldfish' ? 'Download 0.1.0 source' : 'Source'}</a>
+            <a href={detail.source} target="_blank" rel="noopener noreferrer">Source</a>
           </div>
         </div>
         <ProjectVisual slug={slug!} />
@@ -74,23 +60,13 @@ function ProjectPage({ slug }: { slug: string }) {
     </header>
     <SiteSection className="site-content-gutter">
       <div className="project-detail-body">
-        {slug === 'elephant-goldfish' && <div className="project-detail-notes">
-          {detail.sections.map(([heading, body]) => <article key={heading}><SiteHeading variant="item" level={2}>{heading}</SiteHeading><p>{body}</p></article>)}
-        </div>}
-        {slug === 'elephant-goldfish' && <ElephantGoldfishExplanation />}
         <div className="project-install">
-          <SiteHeading level={2}>{slug === 'elephant-goldfish' ? 'Try it on your next change' : 'Install'}</SiteHeading>
-          {slug === 'elephant-goldfish' && <p>After <a className="link-underline" href={detail.docs}>installing the plugin</a>, open your repository in Codex and ask:</p>}
-          <CodeBlock code={detail.install} language={slug === 'elephant-goldfish' ? 'text' : 'bash'} size="sm" isWrapped showCopyButton />
+          <SiteHeading level={2}>Install</SiteHeading>
+          <CodeBlock code={detail.install} language="bash" size="sm" isWrapped showCopyButton />
         </div>
-        {slug === 'elephant-goldfish' && <section className="project-attribution n3wth-site-prose">
-          <SiteHeading level={2}>Sources and attribution</SiteHeading>
-          <p><a href="https://drensin.medium.com/elephants-goldfish-and-the-new-golden-age-of-software-engineering-c33641a48874">Dave Rensin</a> introduced the Elephant-Goldfish model. <a href="https://github.com/vshvedov/elephant-goldfish/tree/b8ebb3d6b00e39fbb6c619faa27f5bb994091d78">Vladyslav Shvedov</a> published the five upstream workflows under the MIT license. Oliver Newth adapted them for this Codex plugin.</p>
-          <p>This is an independent adaptation. The bundle preserves the upstream <a href="/downloads/elephant-goldfish/LICENSE">MIT license and copyright notice</a>. Its research notes document the adaptation.</p>
-        </section>}
-        {slug !== 'elephant-goldfish' && <div className="project-detail-notes">
+        <div className="project-detail-notes">
           {detail.sections.map(([heading, body]) => <article key={heading}><SiteHeading variant="item" level={2}>{heading}</SiteHeading><p>{body}</p></article>)}
-        </div>}
+        </div>
       </div>
     </SiteSection>
   </>

@@ -4,7 +4,7 @@ import { googleAnalyticsScript } from '@n3wth/site-config/analytics'
 export default function docs() {
   return starlight({
     title: 'n3wth docs',
-    description: 'Developer documentation for @n3wth/ui, Elephant-Goldfish, and the r3 memory server.',
+    description: 'Developer documentation for @n3wth/ui and the r3 memory server.',
     favicon: '/favicon.svg',
     disable404Route: true,
     components: {
@@ -49,13 +49,6 @@ export default function docs() {
             label: 'Reference', collapsed: true,
             items: ['docs/r3/transport', 'docs/r3/cache-tools', 'docs/r3/knowledge-graph'],
           },
-        ],
-      },
-      {
-        label: 'Elephant-Goldfish',
-        items: [
-          { label: 'Getting started', slug: 'docs/elephant-goldfish/quickstart' },
-          'docs/elephant-goldfish/workflows',
         ],
       },
       { label: 'Contribute', collapsed: true, items: ['docs/workspace', 'docs/publishing'] },

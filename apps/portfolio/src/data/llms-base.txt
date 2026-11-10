@@ -18,7 +18,7 @@
 
 Independent projects, tools, and experiments:
 
-- [elephant-goldfish](https://n3wth.com/projects/elephant-goldfish): Oliver's Codex adaptation of the Elephant-Goldfish review workflow. Fresh reviewers examine bounded evidence for design checks, bug diagnosis, and code review. The project page credits Dave Rensin's model and Vladyslav Shvedov's upstream workflows.
+- [Elephant-Goldfish Model (EGM)](https://egm.dev): Google's open-source plugin for designing and reviewing software with coding agents. A deep-context agent drafts the specification and fresh zero-context reviewers test it before code is written. Oliver was part of the team that built and released it. Dave Rensin introduced the model. Source: https://github.com/google/elephant-goldfish-model
 - [markup](https://github.com/n3wth/markup): An independent prototype exploring personal AI agents in shared documents and chat, with visible cursors and edits.
 - [hop.flights](https://hop.flights/): Points-vs-cash flight optimizer — finds the cheapest way to fly, miles or money.
 - [lunchmoney.sh](https://lunchmoney.sh/): Unofficial Lunch Money plugin for Claude, Codex, and Cursor. Read-only spending, budgets, and bills.

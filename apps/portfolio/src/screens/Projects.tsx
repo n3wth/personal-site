@@ -5,7 +5,7 @@ import { projects, sections } from '../data/content'
 import { ProjectVisual } from '../components/ProjectVisual'
 import { SectionHeader } from '../components/Frame'
 
-const featuredIds = ['elephant-goldfish', 'r3', 'ui']
+const featuredIds = ['r3', 'ui']
 
 function Projects() {
 
@@ -34,6 +34,7 @@ function Projects() {
         <div className="project-other-list">{projects.filter(project => !featuredIds.includes(project.id)).map(project => <article key={project.id}>
           <SiteHeading level={2} variant="item"><a href={project.url} target={project.url.startsWith('/') ? undefined : '_blank'} rel={project.url.startsWith('/') ? undefined : 'noopener noreferrer'}>{project.name}</a></SiteHeading>
           <p>{project.description}</p>
+          {project.github && project.github !== project.url && <p><a className="link-underline" href={project.github} target="_blank" rel="noopener noreferrer">Source on GitHub</a></p>}
         </article>)}</div>
       </section>
     </div>
