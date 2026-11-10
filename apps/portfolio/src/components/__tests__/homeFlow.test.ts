@@ -66,12 +66,14 @@ describe('continuous ribbon surface', () => {
     host.className = 'home-opening-scene'
     host.innerHTML = '<svg><g data-home-plane><path class="home-ribbon__strands"/><path class="home-ribbon__skin"/><path class="home-ribbon__front"/></g></svg>'
     const svg = host.querySelector('svg')!, flow = createHomeFlow(svg)
+    const ground = () => document.documentElement.style.getPropertyValue('--journey-body')
     flow.update(0)
-    const opening = host.style.backgroundColor
+    const opening = ground()
+    expect(opening).toContain('--harmony-ground-ice')
     flow.update(32)
-    expect(host.style.backgroundColor).not.toBe(opening)
+    expect(ground()).not.toBe(opening)
     flow.reset()
-    expect(host.style.backgroundColor).toBe(opening)
+    expect(ground()).toBe(opening)
     expect(svg.style.getPropertyValue('--home-flow-offset')).toBe('0px')
   })
 
@@ -103,6 +105,17 @@ describe('continuous ribbon surface', () => {
     const first = parseFloat(svg.style.getPropertyValue('--home-flow-offset'))
     flow.update(2)
     expect(parseFloat(svg.style.getPropertyValue('--home-flow-offset'))).toBeLessThan(first)
+  })
+
+  it('resumes the harmony a visitor arrives with and hands it on', () => {
+    const host = document.createElement('div')
+    host.innerHTML = '<svg><g data-home-plane/></svg>'
+    const svg = host.querySelector('svg')!, flow = createHomeFlow(svg, 2.25)
+    flow.update(0)
+    expect(svg.querySelector('g')!.style.getPropertyValue('--home-flow-ink')).toContain('--harmony-accent-gold')
+    expect(flow.journeyPhase()).toBeCloseTo(2)
+    flow.update(2.75 + 8)
+    expect(flow.journeyPhase()).toBeCloseTo(3)
   })
 
   it('keeps flow moving without rewriting colors during a palette hold', () => {

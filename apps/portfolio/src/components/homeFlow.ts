@@ -1,9 +1,11 @@
 import { useEffect, type RefObject } from 'react'
 import { ribbonEase as smooth } from './ribbonSurface'
+import { groundLag, harmonyMix, harmonySeconds, paintHarmony } from './harmony'
+import { readStoryJourney, saveStoryJourney } from './storySpace'
 
-export function createHomeFlow(svg: SVGSVGElement) {
+/** `start` is the harmony phase the visitor arrives with, so the ribbon resumes their journey. */
+export function createHomeFlow(svg: SVGSVGElement, start = 0) {
   const plane = svg.querySelector<SVGGElement>('[data-home-plane]')
-  const skin = svg.querySelector<SVGPathElement>('.home-ribbon__skin')
   const currents = [...svg.querySelectorAll<SVGPathElement>('[data-home-flow-full]')]
   try {
     const lengths = currents.map(path => {
@@ -18,26 +20,22 @@ export function createHomeFlow(svg: SVGSVGElement) {
       svg.setAttribute('data-home-flow-ready', '')
     }
   } catch { /* Keep the complete still ribbon when path metrics are unavailable. */ }
-  const backdrop = svg.closest<HTMLElement>('.home-opening-scene')
-  const palette = ['ice', 'coral', 'gold', 'seafoam']
   let lastFrame = -1
-  let lastEnergy = -1, lastIndex = -1, lastTransition = -1
+  let lastEnergy = -1, lastIndex = -1, lastTransition = -1, phase = start
   const draw = (time: number) => {
     svg.style.setProperty('--home-flow-offset', `${-time * 260}px`)
     const energy = smooth((time - .35) / 2.4)
-    const phase = Math.max(0, time - 2.75) / 8, index = Math.floor(phase) % palette.length
+    phase = start + Math.max(0, time - 2.75) / 8
+    const index = Math.floor(phase) % 4
     const transition = smooth((phase % 1 - .25) / .75)
     if (energy === lastEnergy && index === lastIndex && transition === lastTransition) return
+    // The ground holds its harmony from first paint; only the line gathers colour.
+    if (index !== lastIndex || transition !== lastTransition) paintHarmony(index, transition)
     lastEnergy = energy; lastIndex = index; lastTransition = transition
-    const blend = (role: 'ink' | 'ground' | 'accent') => `color-mix(in ${role === 'ground' ? 'oklab' : 'oklch shorter hue'}, var(--home-${role}-${palette[index]}) ${(1 - transition) * 100}%, var(--home-${role}-${palette[(index + 1) % 4]}))`
-    const background = `color-mix(in oklab, ${blend('ground')} ${energy * 18}%, var(--color-background-body))`
-    if (backdrop) backdrop.style.backgroundColor = background
-    const ink = `color-mix(in oklab, ${blend('ink')} ${energy * 88}%, var(--home-neutral-ink))`
     if (plane) {
-      plane.style.stroke = ink
-      plane.style.setProperty('--home-flow-ink', `color-mix(in oklab, ${blend('accent')} ${energy * 70}%, var(--color-text-primary))`)
+      plane.style.stroke = `color-mix(in oklab, ${harmonyMix('ink', index, transition)} ${energy * 88}%, var(--home-neutral-ink))`
+      plane.style.setProperty('--home-flow-ink', `color-mix(in oklab, ${harmonyMix('accent', index, transition)} ${energy * 70}%, var(--color-text-primary))`)
     }
-    if (skin) skin.style.fill = background
   }
   return {
     update(time: number) {
@@ -48,6 +46,8 @@ export function createHomeFlow(svg: SVGSVGElement) {
       draw(time)
     },
     reset() { lastFrame = -1; draw(0) },
+    /** The section pages ease across the whole interval; the ribbon holds first. */
+    journeyPhase() { return Math.floor(phase) + Math.max(0, (phase % 1 - .25) / .75) },
   }
 }
 
@@ -55,7 +55,11 @@ export function useHomeFlow(ref: RefObject<SVGSVGElement | null>) {
   useEffect(() => {
     const svg = ref.current
     if (!svg) return
-    const flow = createHomeFlow(svg), media = matchMedia('(prefers-reduced-motion: reduce)')
+    const journey = readStoryJourney()
+    const arrived = (((Date.now() - journey.epoch) / 1000 - groundLag) / harmonySeconds % 4 + 4) % 4
+    const flow = createHomeFlow(svg, Math.floor(arrived) + .25 + .75 * (arrived % 1)), media = matchMedia('(prefers-reduced-motion: reduce)')
+    const leave = () => saveStoryJourney({ epoch: Date.now() - (flow.journeyPhase() % 4 * harmonySeconds + groundLag) * 1000, color: journey.color })
+    window.addEventListener('pagehide', leave)
     let visible = typeof IntersectionObserver === 'undefined', frame = 0, elapsed = 0
     let previous: number | undefined
     const tick = (now: number) => {
@@ -82,6 +86,7 @@ export function useHomeFlow(ref: RefObject<SVGSVGElement | null>) {
     sync()
     return () => {
       cancelAnimationFrame(frame)
+      window.removeEventListener('pagehide', leave)
       observer?.disconnect()
       media.removeEventListener('change', sync)
       document.removeEventListener('visibilitychange', sync)

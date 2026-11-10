@@ -1,0 +1,16 @@
+/* Four harmonies shared by every scene. Each pairs a line ink with a
+   complementary accent and a ground of the opposing temperature. */
+:root {
+  --harmony-ink-ice: var(--color-icon-cyan);
+  --harmony-accent-ice: color-mix(in oklch shorter hue, var(--color-icon-yellow) 85%, var(--color-icon-red));
+  --harmony-ground-ice: color-mix(in oklch shorter hue, var(--color-icon-cyan) 70%, var(--color-icon-red));
+  --harmony-ink-coral: color-mix(in oklch shorter hue, var(--color-icon-red) 85%, var(--color-icon-yellow));
+  --harmony-accent-coral: color-mix(in oklch shorter hue, var(--color-icon-cyan) 65%, var(--color-icon-green));
+  --harmony-ground-coral: color-mix(in oklch shorter hue, var(--color-icon-cyan) 45%, var(--color-icon-green));
+  --harmony-ink-gold: color-mix(in oklch shorter hue, var(--color-icon-yellow) 85%, var(--color-icon-red));
+  --harmony-accent-gold: color-mix(in oklch shorter hue, var(--color-icon-red) 50%, var(--color-icon-cyan));
+  --harmony-ground-gold: color-mix(in oklch shorter hue, var(--color-icon-cyan) 85%, var(--color-icon-red));
+  --harmony-ink-seafoam: color-mix(in oklch shorter hue, var(--color-icon-cyan) 60%, var(--color-icon-green));
+  --harmony-accent-seafoam: color-mix(in oklch shorter hue, var(--color-icon-red) 85%, var(--color-icon-yellow));
+  --harmony-ground-seafoam: color-mix(in oklch shorter hue, var(--color-icon-red) 60%, var(--color-icon-cyan));
+}

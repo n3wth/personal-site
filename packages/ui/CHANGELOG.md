@@ -8,6 +8,7 @@
 
 ### Patch Changes
 
+- Let apps tint the page ground behind the site shell and navigation with `--n3wth-site-ground`. It falls back to the body background token.
 - Keep newsletter signup fields out of PostHog autocapture and session replay.
 
 ## 2.1.1

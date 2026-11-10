@@ -242,7 +242,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
         burstDuration = tuning.duration * space.profile.speed * (.85 + Math.random() * .3) * (longChase ? 2 + Math.random() : 1)
         if (accent) burstDuration = tuning.duration * space.profile.speed * 2
         if (accent === 'depth') burstDuration *= 2
-        patternColor = white ? 'white' : storyColor(sceneTime)
+        patternColor = white ? 'white' : storyColor(sceneTime, 0, 'accent')
         const blocks = new Set(Array.from({ length: 9 }, (_, i) => i).filter(i => accent === 'suspend' ? i === 4 : !!accent || motifExpansion || synchronized || energy > .65 || Math.random() < energy * (.55 + space.affinity(i))))
         const focus = kind === 'projects' ? Array.from({ length: 9 }, (_, i) => i).reduce((best, i) => space.affinity(i) > space.affinity(best) ? i : best, 0) : 0
         if (!blocks.size) blocks.add(kind === 'projects' ? focus : Math.floor(Math.random() * 9))
