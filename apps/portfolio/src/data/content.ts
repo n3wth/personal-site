@@ -169,12 +169,10 @@ export const projects: Project[] = [
   {
     id: 'elephant-goldfish',
     name: 'elephant-goldfish',
-    question: 'Design with context. Review with fresh eyes.',
     description: 'EGM is Google’s open-source plugin for designing software with coding agents. One agent drafts the specification with full project context, and fresh reviewers test it before any code is written. I was part of the team that built it.',
-    tech: ['Agent Skills', 'Claude Code', 'Codex', 'Antigravity'],
-    url: '/projects/elephant-goldfish',
+    tech: ['Agent Skills'],
+    url: 'https://egm.dev',
     github: 'https://github.com/google/elephant-goldfish-model',
-    docs: '/docs/elephant-goldfish/quickstart',
   },
   {
     id: 'markup',

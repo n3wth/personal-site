@@ -75,8 +75,8 @@ describe('CommandPalette smoke', () => {
 
     fireEvent.change(input, { target: { value: 'elephant-goldfish' } })
     const plugin = screen.getAllByRole('option')[0]
-    expect(plugin).toHaveAttribute('href', '/projects/elephant-goldfish')
-    expect(plugin).not.toHaveAttribute('target')
+    expect(plugin).toHaveAttribute('href', 'https://egm.dev')
+    expect(plugin).toHaveAttribute('target', '_blank')
 
     fireEvent.change(input, { target: { value: 'markup' } })
     const prototype = screen.getAllByRole('option')[0]
@@ -87,7 +87,7 @@ describe('CommandPalette smoke', () => {
     expect(screen.getAllByRole('option').filter(option => option.getAttribute('href') === '/projects/ui')).toHaveLength(1)
 
     fireEvent.change(input, { target: { value: 'fresh reviewers' } })
-    expect(screen.getAllByRole('option').some(option => option.getAttribute('href') === '/projects/elephant-goldfish')).toBe(true)
+    expect(screen.getAllByRole('option').some(option => option.getAttribute('href') === 'https://egm.dev')).toBe(true)
   })
 })
 
@@ -205,7 +205,7 @@ describe('CommandPalette AI search', () => {
     fireEvent.change(input, { target: { value: 'elepha' } })
     const option = screen.getByRole('option', { name: 'elephant-goldfish' })
     expect(performance.now() - started).toBeLessThan(50)
-    expect(option).toHaveAttribute('href', '/projects/elephant-goldfish')
+    expect(option).toHaveAttribute('href', 'https://egm.dev')
     expect(option.querySelector('.command-palette-mark')?.textContent).toBe('elepha')
     expect(screen.queryByText(/No relevant information found/)).toBeNull()
     await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled())

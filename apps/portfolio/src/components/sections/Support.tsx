@@ -5,12 +5,6 @@ import { SiteSection, SiteHeading } from '@n3wth/ui/site'
 
 const projects = [
   {
-    name: 'Elephant-Goldfish 0.1.0',
-    href: '/projects/elephant-goldfish',
-    purpose: 'The archived independent Codex adaptation. For EGM, use the Google repository.',
-    contact: 'support@n3wth.com',
-  },
-  {
     name: 'n3wth.com',
     href: '/',
     purpose: 'Portfolio, writing, and experiments.',

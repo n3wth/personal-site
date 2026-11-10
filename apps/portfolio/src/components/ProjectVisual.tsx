@@ -8,7 +8,7 @@ export function ProjectVisual({ slug }: { slug: string }) {
   const [enabled, setEnabled] = useState(true)
   const [sample, setSample] = useState('Make it yours.')
   return <figure className={`project-visual project-visual--${slug}`}>
-    {slug === 'elephant-goldfish' ? <img className="project-plugin-icon" src="/images/elephant-goldfish.svg" width="256" height="256" alt="Elephant and goldfish in a balanced charcoal and gold square" /> : slug === 'r3' ? <>
+    {slug === 'r3' ? <>
       <div className="project-memory">
         <p className="project-memory-question">“Why did we pick this database?”</p>
         <svg viewBox="0 0 320 230" role="img" aria-label="Example knowledge graph: the app uses SQLite, which supports offline use.">

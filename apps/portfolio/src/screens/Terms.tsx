@@ -22,36 +22,6 @@ function Terms() {
           </SiteText>
         </SiteDocSection>
 
-        <SiteDocSection title="Elephant-Goldfish 0.1.0 adaptation">
-          <SiteText>
-            The Elephant-Goldfish Model plugin (EGM) is published by Google under its own license
-            and terms. This section covers only the archived 0.1.0 bundle hosted on this site.
-          </SiteText>
-          <SiteText>
-            Elephant-Goldfish 0.1.0 is an independent Codex plugin adaptation by Oliver Newth.
-            It is based on Dave Rensin&apos;s Elephant-Goldfish model and Vladyslav Shvedov&apos;s
-            workflows. It is not an official release from those authors or OpenAI.
-            The bundled MIT license governs use, copying, modification, and distribution of the
-            plugin. Preserve its copyright and license notices. These site terms do not restrict
-            the rights granted by that license.
-          </SiteText>
-          <SiteText>
-            The plugin supplies instructions for brainstorming, requirements, feature design,
-            bug diagnosis, and code review. Independent checks require fresh subagent support.
-            AI output may be incomplete or wrong. Review proposed changes and run appropriate
-            checks before relying on them. Use only repositories and data you are authorized to
-            access. Codex and any selected integrations remain subject to their own terms,
-            permissions, availability, and charges.
-          </SiteText>
-          <SiteText>
-            The plugin is provided as is under the MIT license, without warranty. A review does
-            not guarantee correctness or security. For support, email{' '}
-            <a href="mailto:support@n3wth.com" className="link-underline">support@n3wth.com</a>.
-            See the <a href="/privacy" className="link-underline">Privacy Policy</a>{' '}
-            and <a href="/projects/elephant-goldfish" className="link-underline">project page</a>.
-          </SiteText>
-        </SiteDocSection>
-
         <SiteDocSection title="2. Service Description">
           <SiteText>
             They Won&apos;t Shut Up is an AI voice hotline operated by n3wth.com. The service

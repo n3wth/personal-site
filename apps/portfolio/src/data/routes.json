@@ -6,12 +6,6 @@
     "ogImage": "/og-image.png"
   },
   {
-    "path": "projects/elephant-goldfish",
-    "title": "Elephant-Goldfish Model — Oliver Newth",
-    "description": "EGM is Google's open-source plugin for designing software with coding agents. Draft with full context, then review with fresh eyes.",
-    "ogImage": "/og/work.png"
-  },
-  {
     "path": "projects",
     "title": "Projects — Oliver Newth",
     "description": "Independent projects by Oliver Newth: tools for AI agents, a shared component library, and other experiments.",
@@ -74,7 +68,7 @@
   {
     "path": "terms",
     "title": "Terms of Service — n3wth",
-    "description": "Terms for n3wth.com, the Elephant-Goldfish 0.1.0 adaptation, and the They Won't Shut Up AI voice hotline.",
+    "description": "Terms for n3wth.com and the They Won't Shut Up AI voice hotline.",
     "ogImage": "/og-image.png"
   },
   {
