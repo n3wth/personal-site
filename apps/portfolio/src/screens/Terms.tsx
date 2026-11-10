@@ -22,7 +22,11 @@ function Terms() {
           </SiteText>
         </SiteDocSection>
 
-        <SiteDocSection title="Elephant-Goldfish plugin">
+        <SiteDocSection title="Elephant-Goldfish 0.1.0 adaptation">
+          <SiteText>
+            The Elephant-Goldfish Model plugin (EGM) is published by Google under its own license
+            and terms. This section covers only the archived 0.1.0 bundle hosted on this site.
+          </SiteText>
           <SiteText>
             Elephant-Goldfish 0.1.0 is an independent Codex plugin adaptation by Oliver Newth.
             It is based on Dave Rensin&apos;s Elephant-Goldfish model and Vladyslav Shvedov&apos;s

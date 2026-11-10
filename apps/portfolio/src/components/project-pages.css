@@ -102,3 +102,4 @@
   .project-detail-title { font-size: var(--font-size-4xl); }
   .project-other-list { grid-template-columns: 1fr; }
 }
+.project-install h3 { margin: 1.5rem 0 .5rem; }

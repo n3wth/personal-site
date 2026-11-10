@@ -17,7 +17,7 @@ function Privacy() {
         <SiteDocSection title="Overview">
           <SiteText>
             n3wth.com is Oliver Newth&apos;s personal portfolio website. The following policy
-            describes how the site and Oliver Newth&apos;s Elephant-Goldfish plugin handle information.
+            describes how the site and Oliver Newth&apos;s archived Elephant-Goldfish 0.1.0 adaptation handle information.
           </SiteText>
         </SiteDocSection>
 
@@ -30,7 +30,11 @@ function Privacy() {
           </SiteText>
         </SiteDocSection>
 
-        <SiteDocSection title="Elephant-Goldfish plugin">
+        <SiteDocSection title="Elephant-Goldfish 0.1.0 adaptation">
+          <SiteText>
+            The Elephant-Goldfish Model plugin (EGM) is published by Google and covered by its own
+            privacy documentation. This section covers only the archived 0.1.0 bundle hosted on this site.
+          </SiteText>
           <SiteText>
             Elephant-Goldfish 0.1.0 is a bundle of instructions and icons for Codex. It has no
             publisher-operated backend, telemetry, account system, or credential collection.

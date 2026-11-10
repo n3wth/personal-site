@@ -88,11 +88,15 @@ support@n3wth.com — one inbox covering every n3wth project (n3wth.com, hop.fli
 
 Independent projects, tools, and experiments:
 
-### elephant-goldfish (https://n3wth.com/projects/elephant-goldfish)
-Oliver's Codex adaptation of the Elephant-Goldfish workflow for design checks, bug diagnosis, and code review. Fresh reviewers receive a question and bounded evidence without inheriting the working conversation.
-- Dave Rensin introduced the Elephant-Goldfish model. Vladyslav Shvedov published the upstream workflows under the MIT license. Oliver adapted them for this plugin.
+### Elephant-Goldfish Model (https://n3wth.com/projects/elephant-goldfish)
+EGM is Google's open-source plugin for designing software with coding agents. The Elephant holds project context and drafts the specification. Goldfish reviewers read the draft and its referenced source without the earlier conversation. The person approves the design before implementation.
+- Oliver was part of the team that built and released EGM. His work covered plugin packaging and releases, support for additional coding agents, the documentation, and egm.dev.
+- Dave Rensin introduced the Elephant-Goldfish model. EGM is released under the Apache 2.0 license.
+- Skills: egm-brainstorm, egm-draft, egm-resolve, egm-bootstrap, egm-review, egm-review-loop, egm-drift-report.
 - Documentation: https://n3wth.com/docs/elephant-goldfish/quickstart
-- Source bundle: https://n3wth.com/downloads/elephant-goldfish-0.1.0.zip
+- Source: https://github.com/google/elephant-goldfish-model
+- Website: https://egm.dev
+- Oliver's earlier independent 0.1.0 Codex adaptation is archived at https://n3wth.com/downloads/elephant-goldfish-0.1.0.zip
 
 ### markup (https://github.com/n3wth/markup)
 An independent prototype exploring personal AI agents working alongside people in shared documents and chat. Visible cursors and edits make agent activity easier to follow.

@@ -7,19 +7,19 @@ const explanations = [
     title: 'A fresh view of the same evidence',
     steps: [
       ['Elephant', 'Keeps the project history, decisions, and working conversation.'],
-      ['The handoff', 'Sends the question and evidence. Leaves out its preferred answer.'],
-      ['Goldfish', 'Starts fresh and checks what the evidence supports.'],
+      ['The handoff', 'Sends the draft and the source it references. Leaves out the conversation.'],
+      ['Goldfish', 'Starts fresh and checks what the draft and the code support.'],
     ],
-    caption: 'The history stays with the Elephant. The evidence travels to the reviewer.',
+    caption: 'The history stays with the Elephant. The draft travels to the reviewer.',
   },
   {
     title: 'A revision gets a new review',
     steps: [
       ['Review', 'A finding points to a concrete problem in this version.'],
-      ['Verify and revise', 'The Elephant checks the finding and makes an authorized repair.'],
+      ['Resolve and revise', 'You choose which findings to address. The Elephant revises the design.'],
       ['Review again', 'A fresh Goldfish examines the new version without the earlier verdict.'],
     ],
-    caption: 'The default limit is two revision rounds. Unresolved findings remain visible when the loop stops.',
+    caption: 'The loop stops when the reviews converge. Unresolved findings remain visible.',
   },
 ] as const
 

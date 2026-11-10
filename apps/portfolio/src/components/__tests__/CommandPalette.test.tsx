@@ -86,7 +86,7 @@ describe('CommandPalette smoke', () => {
     fireEvent.change(input, { target: { value: '@n3wth/ui' } })
     expect(screen.getAllByRole('option').filter(option => option.getAttribute('href') === '/projects/ui')).toHaveLength(1)
 
-    fireEvent.change(input, { target: { value: 'code review' } })
+    fireEvent.change(input, { target: { value: 'fresh reviewers' } })
     expect(screen.getAllByRole('option').some(option => option.getAttribute('href') === '/projects/elephant-goldfish')).toBe(true)
   })
 })

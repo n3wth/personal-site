@@ -45,7 +45,7 @@ export const experiences: Experience[] = [
     role: 'AI Product Lead',
     period: '2025 to present',
     summary:
-      'Product development for AI platforms that integrate DeepMind models into production software.',
+      'Product development for AI platforms that integrate DeepMind models into production software. Part of the team behind EGM, Google’s open-source plugin for designing and reviewing software with agents.',
   },
   {
     id: 'covariant',
@@ -169,10 +169,11 @@ export const projects: Project[] = [
   {
     id: 'elephant-goldfish',
     name: 'elephant-goldfish',
-    question: 'A fresh review before the next change',
-    description: 'A Codex plugin for design checks, bug diagnosis, and code review. Fresh reviewers examine bounded evidence without inheriting the working conversation.',
-    tech: ['Codex', 'Agent Skills'],
+    question: 'Design with context. Review with fresh eyes.',
+    description: 'EGM is Google’s open-source plugin for designing software with coding agents. One agent drafts the specification with full project context, and fresh reviewers test it before any code is written. I was part of the team that built it.',
+    tech: ['Agent Skills', 'Claude Code', 'Codex', 'Antigravity'],
     url: '/projects/elephant-goldfish',
+    github: 'https://github.com/google/elephant-goldfish-model',
     docs: '/docs/elephant-goldfish/quickstart',
   },
   {
