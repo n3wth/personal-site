@@ -21,6 +21,7 @@ Oliver Newth's personal site, n3wth.com. Follow the root [AGENTS.md](../../AGENT
 ## Motion and diagrams
 
 - Import GSAP through `src/lib/gsap.ts`; scroll-driven pieces use `src/lib/scroll.ts`. Do not register plugins again. Read the relevant root `.agents/skills/gsap-*` skill before animation changes.
+- Scene colour comes from `src/components/harmony.ts` and `harmony.css`: four harmonies, each with an ink, accent, and ground. The home ribbon and section scenes share one journey phase, and the layout paints `--journey-body` before hydration. Use `var(--bg)` for the page ground; `--color-background-body` is the untinted base.
 - Respect reduced motion. Keep PostHog deferred and Creative background images lazy.
 - NightField garnish models share the scene Suspense boundary. Deferring them requires a nested boundary.
 - Use the shared curve in `src/components/thinking/kit/edgePath.ts` for node/edge diagrams.

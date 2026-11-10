@@ -65,6 +65,23 @@ if (path.startsWith('thinking/')) schemas.push(buildArticleSchema({ url, title: 
             || document.documentElement.hasAttribute('data-route-arrive')) event.viewTransition.skipTransition()
         })
       }
+      // Paint the journey harmony before first paint so the ground carries across pages.
+      try {
+        var journey = null
+        try { journey = JSON.parse(sessionStorage.getItem('n3wth-story-journey') || 'null') } catch (error) { /* storage can be blocked */ }
+        var entry = performance.getEntriesByType('navigation')[0]
+        if (!journey || !isFinite(journey.epoch) || !isFinite(journey.color) || (entry && entry.type === 'reload')) journey = { epoch: Date.now() - Math.random() * 600000, color: Math.floor(Math.random() * 4) }
+        window.__storyJourney = journey
+        try { sessionStorage.setItem('n3wth-story-journey', JSON.stringify(journey)) } catch (error) { /* storage can be blocked */ }
+        var names = ['ice', 'coral', 'gold', 'seafoam']
+        var position = ((((Date.now() - journey.epoch) / 1000 - 12) / 38) % 4 + 4) % 4, first = Math.floor(position), rest = position - first
+        var share = (1 - rest * rest * (3 - 2 * rest)) * 100 + '%'
+        var harmony = function (role, space) { return 'color-mix(in ' + space + ', var(--harmony-' + role + '-' + names[first] + ') ' + share + ', var(--harmony-' + role + '-' + names[(first + 1) % 4] + '))' }
+        var rootStyle = document.documentElement.style
+        rootStyle.setProperty('--journey-body', 'color-mix(in oklab, ' + harmony('ground', 'oklab') + ' 18%, var(--color-background-body))')
+        rootStyle.setProperty('--journey-ink', harmony('ink', 'oklch shorter hue'))
+        rootStyle.setProperty('--journey-accent', harmony('accent', 'oklch shorter hue'))
+      } catch (error) { /* the untinted ground remains */ }
       try {
         var routeLineArrive = sessionStorage.getItem('route-line-arrive') === '1'
         var routeLineReduce = matchMedia('(prefers-reduced-motion: reduce)').matches

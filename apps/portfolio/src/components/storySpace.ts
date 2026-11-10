@@ -1,14 +1,12 @@
+import { groundLag, harmonyColor, harmonySeconds, paintHarmonyPhase, type HarmonyRole } from './harmony'
+
 const storageKey = 'n3wth-story-journey'
 const paletteSpace = typeof CSS !== 'undefined' && CSS.supports?.('color', 'color-mix(in oklab, red, blue)') ? 'oklab' : 'srgb'
 export type StoryAccent = 'return' | 'depth' | 'suspend' | null
 export const storyEnergy = (time: number) => .12 + .88 * (.5 + .28 * Math.cos(time * .09) + .22 * Math.cos(time * .047 + 1)) ** 2
 export const storyChaos = (time: number) => Math.max(0, Math.sin(time * .067 + 1)) ** 2
-export function storyColor(time: number, offset = 0) {
-  const palette = ['cyan', 'green', 'yellow', 'red']
-  const phase = ((time / 38 + offset) % 4 + 4) % 4
-  const index = Math.floor(phase), fraction = phase - index
-  const blend = fraction * fraction * (3 - 2 * fraction)
-  return `color-mix(in ${paletteSpace}, var(--story-color-${palette[index]}) ${(1 - blend) * 100}%, var(--story-color-${palette[(index + 1) % 4]}))`
+export function storyColor(time: number, offset = 0, role: HarmonyRole = 'ink') {
+  return harmonyColor(role, time / harmonySeconds + offset)
 }
 export function pulseEnvelope(t: number, smoothing: number) {
   const smooth = (n: number) => { const x = Math.max(0, Math.min(1, n)); return x * x * (3 - 2 * x) }
@@ -27,6 +25,9 @@ const profiles: Record<string, { speed: number; gap: number; chorus: number }> =
 let documentJourney: { epoch: number; color: number } | undefined
 export function readStoryJourney() {
   if (documentJourney) return documentJourney
+  // The layout paints the ground before hydration from the same journey.
+  const painted = (globalThis as { __storyJourney?: { epoch: number; color: number } }).__storyJourney
+  if (painted && Number.isFinite(painted.epoch) && Number.isFinite(painted.color)) return documentJourney = painted
   const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
   try {
     const value = JSON.parse(sessionStorage.getItem(storageKey) || 'null')
@@ -40,6 +41,7 @@ export function readStoryJourney() {
 }
 
 export function saveStoryJourney(journey: { epoch: number; color: number }) {
+  documentJourney = journey
   try { sessionStorage.setItem(storageKey, JSON.stringify(journey)) } catch { /* Private browsing remains usable. */ }
 }
 
@@ -67,6 +69,7 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
   const trace = Array<number>(9).fill(0)
   const phase = Math.random() * Math.PI * 2
   let lastAttentionTime: number | undefined
+  let groundPainted = -Infinity
   const strength = (light: Light, time: number) => {
     const age = (time - light.start) / light.duration
     return age > 0 && age < 1 ? (light.coordinated ? pulseEnvelope(age, smoothing) : Math.sin(age * Math.PI) ** 2) : 0
@@ -78,6 +81,7 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
     svg.style.color = ''
     if (backdrop) backdrop.style.backgroundColor = ''
     crescendo = null
+    groundPainted = -Infinity
     outlines.forEach(({ path, stroke, fill, fillOpacity }) => { path.style.stroke = stroke; path.style.fill = fill; path.style.fillOpacity = fillOpacity })
     lastAttentionTime = undefined
     faces.forEach(face => { face.style.fill = ''; face.style.fillOpacity = ''; face.style.stroke = 'none' })
@@ -126,7 +130,7 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
           const distance = Number(halo.dataset.storyHalo)
           const age = haloStart === undefined ? -1 : (time - haloStart - distance * 1.4) / 10
           halo.style.opacity = String(pulseEnvelope(age, .8) * (.55 - distance * .08))
-          halo.style.stroke = storyColor(time, distance * .12)
+          halo.style.stroke = storyColor(time, distance * .12, 'accent')
           const head = Math.max(0, Math.min(1, age))
           const tail = Math.min(.34, head)
           halo.style.strokeDasharray = `${Math.max(.0001, tail)} 2`
@@ -143,13 +147,15 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
         attention[layer] = Math.min(1, Math.exp(-((layer - first) ** 2) / 2) * .7 + Math.exp(-((layer - second) ** 2) / 2) * .5)
         trace[layer] += (attention[layer] - trace[layer]) * (1 - Math.exp(-delta / 12))
       })
-      const ambientColor = storyColor(time - 12)
+      const ambientColor = storyColor(time - groundLag)
       const bloom = crescendo ? pulseEnvelope((time - crescendo.start) / crescendo.duration, .8) : 0
-      const wake = trace.reduce((total, value) => total + value, 0) / trace.length
-      const ambient = (1.5 + wake * 5 + meeting * 1.5) * amount * atmosphere
-      const ground = ambient > 0 ? `color-mix(in srgb, ${ambientColor} ${ambient}%, var(--color-background-body))` : 'var(--color-background-body)'
-      if (backdrop) backdrop.style.backgroundColor = bloom > 0 ? `color-mix(in srgb, ${crescendo!.color} ${bloom * 65}%, ${ground})` : ambient > 0 ? ground : ''
-      svg.style.color = bloom > 0 ? `color-mix(in srgb, var(--color-background-body) ${bloom * 100}%, color-mix(in srgb, var(--color-text-primary) 40%, var(--color-background-body)))` : ''
+      // The page ground drifts too slowly to see a step; once a second spares the cascade.
+      if (Math.abs(time - groundPainted) >= 1) {
+        groundPainted = time
+        paintHarmonyPhase((time - groundLag) / harmonySeconds)
+      }
+      if (backdrop) backdrop.style.backgroundColor = bloom > 0 ? `color-mix(in srgb, ${crescendo!.color} ${bloom * 65}%, var(--bg))` : ''
+      svg.style.color = bloom > 0 ? `color-mix(in srgb, var(--bg) ${bloom * 100}%, color-mix(in srgb, var(--color-text-primary) 40%, var(--bg)))` : ''
       if (!initialized) {
         lights.forEach(light => { light.next = time + Math.random() * 5 })
         initialized = true
@@ -175,14 +181,14 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
       })
       outlines.forEach(({ path, layer }) => {
         const weight = (attention[layer] * .12 + trace[layer] * .08) * (1 - energy * .5)
-        const quiet = `color-mix(in srgb, ${ambientColor} ${24 + weight * 100}%, currentColor)`
+        const quiet = `color-mix(in oklab, ${ambientColor} ${32 + atmosphere * 18 + weight * 100}%, currentColor)`
         // Neutral edges become ink over lit faces instead of muddy grey on color.
         const contrast = kind === 'projects' ? illumination[layer] * Math.min(1, amount * 1.8) : 0
         const near = kind === 'art' ? 1 - layer / 8 : kind === 'contact' ? Number(path.closest<SVGGElement>('[data-story-side]')?.dataset.storySide ?? 0) : layer / 8
         const depthInk = kind === 'projects' ? quiet : `color-mix(in srgb, var(--color-text-primary) ${dimension * near * 24}%, ${quiet})`
         const reflected = path.closest('[data-story-reflection]')
         const recession = kind === 'art' ? layer / 8 * 45 : 0
-        const neutral = reflected ? `color-mix(in srgb, var(--color-background-body) ${Math.max(recession, dimension * 45)}%, ${depthInk})` : `color-mix(in srgb, var(--color-background-body) ${Math.max(recession, contrast * 88)}%, ${depthInk})`
+        const neutral = reflected ? `color-mix(in srgb, var(--bg) ${Math.max(recession, dimension * 45)}%, ${depthInk})` : `color-mix(in srgb, var(--bg) ${Math.max(recession, contrast * 88)}%, ${depthInk})`
         const direction = Math.sin(time * .019 + phase)
         const wave = (.5 + .5 * Math.sin(time * .7 - layer * .65 * direction - (reflected ? .6 : 0))) ** 3
         const spectral = tunnel * wave * (reflected ? .4 : .85)
@@ -205,7 +211,7 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
           if (light.accent === 'depth') depth = Math.max(depth, weight)
         }
         const sideDepth = depth * (1 - shade) * 1.3
-        face.style.fill = sideDepth > .001 ? `color-mix(in srgb, var(--color-background-body) ${sideDepth * 100}%, ${color})` : color
+        face.style.fill = sideDepth > .001 ? `color-mix(in srgb, var(--bg) ${sideDepth * 100}%, ${color})` : color
         face.style.fillOpacity = String(Math.min(1, total) * amount * (shade + (1.5 - 2 * shade) * depth))
       })
       const scale = borders.length ? Math.abs(svg.getScreenCTM()?.a || 1) : 1

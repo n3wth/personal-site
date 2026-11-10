@@ -6,6 +6,7 @@
 @import '@n3wth/ui/tailwind-theme.css';
 @import 'tailwindcss/utilities.css' layer(utilities);
 @import './components/routeTransition.css';
+@import './components/harmony.css';
 
 /* ============================================================
    n3wth.com — Wireframe / Blueprint design system
@@ -22,7 +23,9 @@
    --ink-faint / --ink-ghost stay for decorative marks/separators only.
    --accent-rail has no Astryx token counterpart, so it's defined here. */
 :root {
-  --bg: var(--color-background-body);
+  /* The journey harmony tints the ground; the token is the untinted base. */
+  --bg: var(--journey-body, var(--color-background-body));
+  --n3wth-site-ground: var(--bg);
   --bg-soft: var(--color-background-surface);
   --bg-raise: var(--color-background-card);
   --ink: var(--color-text-primary);
@@ -92,7 +95,7 @@ body {
 }
 
 ::selection {
-  background: rgba(255, 255, 255, 0.18);
+  background: color-mix(in oklab, var(--journey-ink, #fff) 32%, transparent);
   color: var(--ink);
 }
 
@@ -290,6 +293,7 @@ body {
 }
 .link-underline:is(:hover, :focus-visible) {
   text-decoration-line: underline;
+  text-decoration-color: var(--journey-accent, currentColor);
 }
 
 /* ---------- Surface card (soft, borderless) ---------- */

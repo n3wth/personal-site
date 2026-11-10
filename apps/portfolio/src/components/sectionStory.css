@@ -1,10 +1,11 @@
 .portfolio-story-hero {
-  --story-cool: var(--color-icon-cyan);
-  --story-warm: var(--color-icon-yellow);
-  --story-color-cyan: var(--story-cool);
-  --story-color-green: color-mix(in srgb, var(--story-cool) 70%, var(--story-warm));
-  --story-color-yellow: var(--story-warm);
-  --story-color-red: color-mix(in srgb, var(--story-warm) 70%, var(--story-cool));
+  /* The still artwork and its pulses draw from the shared harmony inks. */
+  --story-cool: var(--harmony-ink-ice);
+  --story-warm: var(--harmony-ink-gold);
+  --story-color-cyan: var(--harmony-ink-ice);
+  --story-color-green: var(--harmony-ink-seafoam);
+  --story-color-yellow: var(--harmony-ink-gold);
+  --story-color-red: var(--harmony-ink-coral);
 }
 
 .section-story {
@@ -13,18 +14,14 @@
   overflow: hidden;
   pointer-events: none;
   /* Opaque muted ink preserves the weight where neutral strokes overlap. */
-  color: color-mix(in srgb, var(--color-text-primary) 40%, var(--color-background-body));
+  color: color-mix(in srgb, var(--color-text-primary) 40%, var(--bg));
 }
 
-/* Neighboring hues carry each material; the opposing temperature carries light. */
-.portfolio-story-hero:has(.section-story--thinking) { --story-cool: var(--color-icon-green); }
-.portfolio-story-hero:has(.section-story--art) { --story-warm: var(--color-icon-red); }
-.portfolio-story-hero:has(.section-story--library) { --story-cool: var(--color-icon-yellow); --story-warm: var(--color-icon-red); }
-.portfolio-story-hero:has(.section-story--contact) { --story-warm: var(--color-icon-red); }
-.portfolio-story-hero:has(.section-story--projects) {
-  --story-color-green: var(--color-icon-green);
-  --story-color-red: var(--color-icon-red);
-}
+/* Each still scene rests on one harmony; in motion they share the journey. */
+.portfolio-story-hero:has(.section-story--thinking) { --story-cool: var(--harmony-ink-seafoam); }
+.portfolio-story-hero:has(.section-story--art) { --story-warm: var(--harmony-ink-coral); }
+.portfolio-story-hero:has(.section-story--library) { --story-cool: var(--harmony-ink-gold); --story-warm: var(--harmony-ink-coral); }
+.portfolio-story-hero:has(.section-story--contact) { --story-warm: var(--harmony-ink-coral); }
 
 .section-story [data-story-light] > path:not(.section-story__pulse):not(.section-story__contact-spectrum):not([data-art-loop]) {
   stroke: color-mix(in srgb, var(--story-cool) 38%, currentColor);

@@ -1,27 +1,15 @@
 .home-opening-scene {
-  --home-neutral-ink: color-mix(in oklab, var(--color-text-primary) 78%, var(--color-background-body));
-  --home-ink-ice: var(--color-icon-cyan);
-  --home-accent-ice: color-mix(in oklch shorter hue, var(--color-icon-yellow) 85%, var(--color-icon-red));
-  --home-ground-ice: color-mix(in oklch shorter hue, var(--color-icon-cyan) 70%, var(--color-icon-red));
-  --home-ink-coral: color-mix(in oklch shorter hue, var(--color-icon-red) 85%, var(--color-icon-yellow));
-  --home-accent-coral: color-mix(in oklch shorter hue, var(--color-icon-cyan) 65%, var(--color-icon-green));
-  --home-ground-coral: color-mix(in oklch shorter hue, var(--color-icon-cyan) 45%, var(--color-icon-green));
-  --home-ink-gold: color-mix(in oklch shorter hue, var(--color-icon-yellow) 85%, var(--color-icon-red));
-  --home-accent-gold: color-mix(in oklch shorter hue, var(--color-icon-red) 50%, var(--color-icon-cyan));
-  --home-ground-gold: color-mix(in oklch shorter hue, var(--color-icon-cyan) 85%, var(--color-icon-red));
-  --home-ink-seafoam: color-mix(in oklch shorter hue, var(--color-icon-cyan) 60%, var(--color-icon-green));
-  --home-accent-seafoam: color-mix(in oklch shorter hue, var(--color-icon-red) 85%, var(--color-icon-yellow));
-  --home-ground-seafoam: color-mix(in oklch shorter hue, var(--color-icon-red) 60%, var(--color-icon-cyan));
+  --home-neutral-ink: color-mix(in oklab, var(--color-text-primary) 78%, var(--bg));
   overflow: hidden;
   position: relative;
   min-height: 100svh;
-  background-color: var(--color-background-body);
+  background-color: var(--bg);
 }
 .home-artwork { position: absolute; inset: 0; }
 .home-contours { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--home-neutral-ink); shape-rendering: geometricPrecision; }
 .home-contours path { vector-effect: non-scaling-stroke; stroke-width: 1.05; stroke-linecap: round; stroke-linejoin: round; }
 .home-contours__terrain { stroke: inherit; }
-.home-ribbon__skin { fill: var(--color-background-body); stroke: none; }
+.home-ribbon__skin { fill: var(--bg); stroke: none; }
 [data-home-plane] { stroke: currentColor; }
 .home-contours .home-ribbon__flow { vector-effect: none; stroke-width: 1.25; stroke: var(--home-flow-ink, var(--color-text-primary)); stroke-dasharray: 260 900; stroke-dashoffset: calc(var(--home-flow-offset, 0px) + var(--home-flow-prefix, 0px)); opacity: 0; }
 [data-home-flow-ready]:not([data-story-paused]) .home-ribbon__flow { opacity: .75; }
