@@ -1,4 +1,14 @@
-/* The field lines draw in over 420ms. Other navigations cross-fade for the same time. */
+/* Leaving a section wipes its lines while the artwork recedes. Every document swap is an eased
+   cross-fade with the navigation held steady, and an arriving section draws its lines in once
+   its scene is running. */
+
+:root {
+  --route-leave: 340ms;
+  --route-draw: 680ms;
+  --route-ease-leave: cubic-bezier(0.65, 0, 0.35, 1);
+  --route-ease-out: cubic-bezier(0.4, 0, 1, 1);
+  --route-ease-in: cubic-bezier(0.16, 1, 0.3, 1);
+}
 
 .route-line-accent {
   fill: none;
@@ -8,26 +18,49 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root),
+  /* The outgoing page clears quickly; the incoming one settles in behind it. */
+  ::view-transition-old(root) {
+    animation: route-fade-out 200ms var(--route-ease-out) both;
+  }
   ::view-transition-new(root) {
-    animation-duration: 420ms;
-    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    animation: route-fade-in 440ms var(--route-ease-in) 60ms both;
+  }
+
+  /* The navigation is the same object on every page, so it stays put through the swap. */
+  .n3wth-site-navigation { view-transition-name: site-navigation; }
+  ::view-transition-group(site-navigation) { animation-duration: 0s; }
+  ::view-transition-old(site-navigation),
+  ::view-transition-new(site-navigation) {
+    animation-duration: 300ms;
+    animation-timing-function: var(--route-ease-leave);
   }
 
   .portfolio-story-hero ~ *,
   footer {
-    transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity var(--route-leave) var(--route-ease-leave);
+  }
+  .section-story svg {
+    transition: opacity var(--route-leave) var(--route-ease-out);
   }
 
   html[data-route-leave] .portfolio-story-hero ~ *,
-  html[data-route-leave] footer {
+  html[data-route-leave] footer,
+  html[data-route-leave] .section-story svg {
     opacity: 0;
   }
 
+  /* Held out of sight until the scene engine is running, so static fills never flash. */
+  html[data-route-arrive] .section-story svg { transition: none; }
+  html[data-route-arrive=''] .section-story svg { opacity: 0; }
   html[data-route-arrive] .section-story path:not(.section-story__pulse):not(.section-story__contact-spectrum) {
     stroke-dasharray: 1 2;
     stroke-dashoffset: 1;
-    animation: route-line-in 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  html[data-route-arrive='draw'] .section-story svg {
+    animation: route-fade-in 360ms cubic-bezier(0.33, 1, 0.68, 1) both;
+  }
+  html[data-route-arrive='draw'] .section-story path:not(.section-story__pulse):not(.section-story__contact-spectrum) {
+    animation: route-line-in var(--route-draw) var(--route-ease-in) forwards;
   }
 }
 
@@ -39,6 +72,12 @@
   }
 }
 
+@keyframes route-fade-out {
+  to { opacity: 0; }
+}
+@keyframes route-fade-in {
+  from { opacity: 0; }
+}
 @keyframes route-line-in {
   to { stroke-dashoffset: 0; }
 }
