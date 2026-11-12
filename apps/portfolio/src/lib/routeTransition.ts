@@ -3,7 +3,9 @@ import { storyKindFromPath } from './routeLines'
 /** Line wipe before the next document loads. Matches --route-leave in routeTransition.css. */
 export const ROUTE_LINE_MS = 340
 /** Draw-in on the next document. Matches --route-draw in routeTransition.css. */
-export const ROUTE_DRAW_MS = 680
+export const ROUTE_DRAW_MS = 900
+/** Lines start in document order across this window, so the drawing builds instead of appearing at once. */
+export const ROUTE_STAGGER_MS = 260
 /** Leaving accelerates away and settles; the arriving draw-in decelerates (CSS). */
 const EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'
 const ARRIVE_KEY = 'route-line-arrive'
@@ -118,8 +120,13 @@ async function arrive() {
   await sceneReady(svg)
   requestAnimationFrame(() => requestAnimationFrame(() => {
     if (root.dataset.routeArrive !== '') return
+    const lines = [...svg.querySelectorAll<SVGPathElement>('path:not(.section-story__pulse):not(.section-story__contact-spectrum)')]
+    lines.forEach((path, index) => { path.style.animationDelay = `${Math.round(index / Math.max(1, lines.length - 1) * ROUTE_STAGGER_MS)}ms` })
     root.dataset.routeArrive = 'draw'
-    window.setTimeout(() => root.removeAttribute('data-route-arrive'), ROUTE_DRAW_MS + 80)
+    window.setTimeout(() => {
+      root.removeAttribute('data-route-arrive')
+      lines.forEach(path => { path.style.animationDelay = '' })
+    }, ROUTE_DRAW_MS + ROUTE_STAGGER_MS + 80)
   }))
 }
 
