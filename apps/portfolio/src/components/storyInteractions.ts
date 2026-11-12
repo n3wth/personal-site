@@ -21,7 +21,7 @@ export function segmentContact(a: Point, b: Point, c: Point, d: Point, radius = 
 
 type Line = { path: SVGPathElement; points: DOMPoint[]; length: number }
 type Trail = { previous?: Point; color?: string; position: number; direction: number; width: number; visited: Set<Line>; depth: number }
-type Transfer = Trail & { path: SVGPathElement; echoes: SVGPathElement[]; gain: number; phase: number; lengthScale: number; line: Line; start: number; end: number; born: number; duration: number; passage: number; coordinated: boolean; psychedelic: boolean }
+type Transfer = Trail & { path: SVGPathElement; echoes: SVGPathElement[]; fades: SVGLinearGradientElement[]; gain: number; phase: number; lengthScale: number; line: Line; start: number; end: number; born: number; duration: number; passage: number; coordinated: boolean; psychedelic: boolean }
 
 /** Exact crossing with normalized positions on both segments. */
 export function crossing(a: Point, b: Point, c: Point, d: Point) {
@@ -95,8 +95,43 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
     const pulseLimit = () => lines.length * 4
 
     function clearTransfers() {
-      transfers.forEach(pulse => { pulse.path.remove(); pulse.echoes.forEach(path => path.remove()) })
+      transfers.forEach(pulse => { pulse.path.remove(); pulse.echoes.forEach(path => path.remove()); pulse.fades.forEach(fade => fade.remove()) })
       transfers = []
+    }
+
+    // Travelling light fades along its line: a gradient laid from tail to head, re-aimed each frame.
+    // A stroke cannot vary along its own path, and a hard-ended dash reads as a broken line.
+    const fadeDefs = svg.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'defs')
+    svg.appendChild(fadeDefs)
+    const fadeId = Math.random().toString(36).slice(2, 8)
+    let fadeCount = 0
+    function softStroke(path: SVGPathElement, strokeColor: string) {
+      const fade = svg!.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'linearGradient')
+      fade.id = `story-fade-${fadeId}-${fadeCount++}`
+      fade.setAttribute('gradientUnits', 'userSpaceOnUse')
+      for (const [offset, opacity] of [[0, 0], [.5, 1], [.82, 1], [1, 0]]) {
+        const stop = svg!.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'stop')
+        stop.setAttribute('offset', String(offset))
+        stop.setAttribute('stop-opacity', String(opacity))
+        stop.style.stopColor = strokeColor
+        fade.appendChild(stop)
+      }
+      fadeDefs.appendChild(fade)
+      path.setAttribute('stroke', `url(#${fade.id})`)
+      return fade
+    }
+    function pointAt(line: Line, fraction: number) {
+      const at = Math.max(0, Math.min(1, fraction)) * (line.points.length - 1)
+      const a = line.points[Math.floor(at)], b = line.points[Math.min(line.points.length - 1, Math.floor(at) + 1)], t = at - Math.floor(at)
+      return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }
+    }
+    /** Lays the fade from the trailing end to the leading end of a light. */
+    function aimFade(fade: SVGLinearGradientElement, line: Line, trailing: number, leading: number) {
+      const from = pointAt(line, trailing), to = pointAt(line, leading)
+      // A zero-length gradient paints nothing; a new light is a point, so give it a direction.
+      if (Math.hypot(to.x - from.x, to.y - from.y) < .01) to.x += .01
+      fade.setAttribute('x1', String(from.x)); fade.setAttribute('y1', String(from.y))
+      fade.setAttribute('x2', String(to.x)); fade.setAttribute('y2', String(to.y))
     }
 
     function emit(line: Line, position: number, parent: Trail) {
@@ -125,7 +160,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
         const chaos = synchronized ? 0 : storyChaos(sceneTime)
         const themedColor = `color-mix(in srgb, ${patternColor} ${(1 - chaos) * 100}%, ${independent})`
         const pulseColor = parent.color || matchedColor || (synchronized ? patternColor : themedColor)
-        path.setAttribute('stroke', pulseColor)
+        const fades = [softStroke(path, pulseColor)]
         path.style.opacity = '0'
         // Render above the artwork so quiet/reflection groups do not hide a real contact.
         svg!.appendChild(path)
@@ -133,7 +168,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
           const echo = path.cloneNode(false) as SVGPathElement
           echo.setAttribute('class', 'section-story__transfer section-story__echo')
           echo.removeAttribute('data-generation')
-          echo.setAttribute('stroke', psychedelic && !white ? `var(--story-color-${colors[(index + color) % colors.length]})` : path.getAttribute('stroke')!)
+          fades.push(softStroke(echo, psychedelic && !white ? `var(--story-color-${colors[(index + color) % colors.length]})` : pulseColor))
           if (psychedelic && !white) {
             echo.dataset.spectrumFrom = `var(--story-color-${colors[(index + color) % colors.length]})`
             echo.dataset.spectrumTo = `var(--story-color-${colors[(index + color + 1) % colors.length]})`
@@ -145,7 +180,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
         transfers.push({
           gain: line.path.closest('[data-story-reflection]') || line.path.dataset.artRoute === 'reflection' ? .55 : 1,
           passage, color: pulseColor, coordinated: ordered || synchronized, psychedelic,
-          path, echoes, phase: synchronized ? 0 : Math.random() * Math.PI * 2,
+          path, echoes, fades, phase: synchronized ? 0 : Math.random() * Math.PI * 2,
           lengthScale: synchronized || ordered ? (longChase ? 2.4 : 1) : longChase ? 1.8 + Math.random() * 1.2 : .45 + Math.random() * .9,
           line, start: position, end, position, direction: end > position ? 1 : -1, width: 0,
           born: time + (synchronized ? 0 : ordered ? (order.get(line) ?? 0) * burstDuration * .65 : Math.random() * burstDuration * .3),
@@ -303,6 +338,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
         if (age >= 1 + afterimages * (pulse.psychedelic ? .9 : .45)) {
           pulse.path.remove()
           pulse.echoes.forEach(path => path.remove())
+          pulse.fades.forEach(fade => fade.remove())
           return false
         }
         const progress = Math.min(1, age)
@@ -326,6 +362,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
         }
         pulse.path.style.strokeDasharray = `${Math.max(.0001, width)} 2`
         pulse.path.style.strokeDashoffset = String(-tail)
+        aimFade(pulse.fades[0], pulse.line, pulse.position - pulse.direction * width, pulse.position)
         const envelope = (t: number) => pulseEnvelope(t, smoothing)
         const brightness = pulse.gain * (1 - noise * .25 * (.5 + .5 * Math.sin(time * .003 + pulse.phase)))
         pulse.path.style.opacity = String(envelope(progress) * brightness)
@@ -340,9 +377,11 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
           echo.style.strokeWidth = pulse.path.style.strokeWidth
           echo.style.strokeDasharray = `${Math.max(.0001, length)} 2`
           echo.style.strokeDashoffset = String(-(pulse.end > pulse.start ? position - length : position))
+          aimFade(pulse.fades[index + 1], pulse.line, position - pulse.direction * length, position)
           const reveal = pulse.psychedelic ? smooth((progress - .5) / .35) : 1
           if (spectralColor && echo.dataset.spectrumFrom) {
-            echo.style.stroke = `color-mix(in oklab, ${echo.dataset.spectrumFrom} ${(1 - smooth(t)) * 100}%, ${echo.dataset.spectrumTo})`
+            const spectrum = `color-mix(in oklab, ${echo.dataset.spectrumFrom} ${(1 - smooth(t)) * 100}%, ${echo.dataset.spectrumTo})`
+            for (const stop of pulse.fades[index + 1].children) (stop as SVGStopElement).style.stopColor = spectrum
           }
           echo.style.opacity = String(envelope(t) * brightness * afterimages * (pulse.psychedelic ? .8 : .38) / (index + 1) * reveal)
         })
@@ -425,6 +464,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
       saveJourney()
       space.dispose()
       artRoutes.forEach(path => path.remove())
+      fadeDefs.remove()
       resetBreath()
       window.removeEventListener('pagehide', saveJourney)
       sources.forEach(path => { path.style.opacity = ''; path.style.strokeDashoffset = '' })
