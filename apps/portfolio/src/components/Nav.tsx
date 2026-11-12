@@ -25,6 +25,7 @@ export function Nav({ onOpenSearch, searchOpen = false, pathname = '/' }: NavPro
       compactBar
       menuLabel="Open menu"
       data-nosnippet
+      className="route-steady"
       brand={<a href="/" aria-label="Oliver Newth — home" onClick={sameRouteClick('/')}>Oliver Newth</a>}
       links={topNavigation.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`)

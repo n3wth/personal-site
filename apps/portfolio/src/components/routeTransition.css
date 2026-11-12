@@ -27,7 +27,7 @@
   }
 
   /* The navigation is the same object on every page, so it stays put through the swap. */
-  .n3wth-site-navigation { view-transition-name: site-navigation; }
+  .route-steady { view-transition-name: site-navigation; }
   ::view-transition-group(site-navigation) { animation-duration: 0s; }
   ::view-transition-old(site-navigation),
   ::view-transition-new(site-navigation) {
