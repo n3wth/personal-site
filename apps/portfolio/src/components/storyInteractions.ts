@@ -413,7 +413,10 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
     media.addEventListener('change', sync)
     document.addEventListener('visibilitychange', sync)
     sync()
+    // Route arrival waits for this before drawing the lines in.
+    svg.setAttribute('data-story-ready', '')
     return () => {
+      svg.removeAttribute('data-story-ready')
       cancelAnimationFrame(frame)
       observer?.disconnect()
       media.removeEventListener('change', sync)

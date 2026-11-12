@@ -55,14 +55,12 @@ if (path.startsWith('thinking/')) schemas.push(buildArticleSchema({ url, title: 
     <script>import '../lib/initializeAnalytics'</script>
     <style is:inline>@view-transition { navigation: auto; }</style>
     <script is:inline>
-      // Skip the native snapshot when the line wipe owns navigation or motion is reduced.
+      // Reduced motion swaps documents without the native cross-fade.
       for (var type of ['pageswap', 'pagereveal']) {
         window.addEventListener(type, function (event) {
           if (!event.viewTransition) return
           event.viewTransition.ready.catch(function () {})
-          if (matchMedia('(prefers-reduced-motion: reduce)').matches
-            || document.documentElement.hasAttribute('data-route-leave')
-            || document.documentElement.hasAttribute('data-route-arrive')) event.viewTransition.skipTransition()
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches) event.viewTransition.skipTransition()
         })
       }
       // Paint the journey harmony before first paint so the ground carries across pages.
@@ -83,7 +81,11 @@ if (path.startsWith('thinking/')) schemas.push(buildArticleSchema({ url, title: 
         rootStyle.setProperty('--journey-accent', harmony('accent', 'oklch shorter hue'))
       } catch (error) { /* the untinted ground remains */ }
       try {
-        var routeLineArrive = sessionStorage.getItem('route-line-arrive') === '1'
+        // Arriving from another page of this site draws the section lines in.
+        var routeLineArrive = Date.now() - Number(sessionStorage.getItem('route-line-arrive')) < 10000
+        var routeActivation = window.navigation && window.navigation.activation
+        if (routeActivation && routeActivation.from && routeActivation.navigationType !== 'reload'
+          && new URL(routeActivation.from.url).pathname !== location.pathname) routeLineArrive = true
         var routeLineReduce = matchMedia('(prefers-reduced-motion: reduce)').matches
         if (routeLineArrive && !routeLineReduce) document.documentElement.dataset.routeArrive = ''
       } catch (error) { /* storage can be blocked */ }

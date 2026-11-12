@@ -513,12 +513,14 @@ test('section navigation survives animation failures and browser Back', async ({
   for (const failure of ['throw', 'cancel', 'none']) {
     await page.goto('/work')
     await expect(page.locator('html')).toHaveAttribute('data-route-transitions', 'on')
+    await expect(page.locator('.section-story svg')).toHaveAttribute('data-story-ready', '')
     if (failure === 'throw') {
       await page.evaluate(() => {
         SVGElement.prototype.animate = () => { throw new Error('Animation unavailable') }
       })
     }
-    await page.getByRole('navigation', { name: 'Footer', exact: true }).getByRole('link', { name: 'Projects', exact: true }).click()
+    // Dispatch without scrolling: the line wipe only runs while the artwork is in view.
+    await page.getByRole('navigation', { name: 'Footer', exact: true }).getByRole('link', { name: 'Projects', exact: true }).dispatchEvent('click')
     if (failure === 'cancel') {
       await expect(page.locator('html')).toHaveAttribute('data-route-leave', '')
       await page.evaluate(() => document.getAnimations().filter(animation => animation.id === 'route-line-wipe').forEach(animation => animation.cancel()))
@@ -532,6 +534,20 @@ test('section navigation survives animation failures and browser Back', async ({
     await expect(page.locator('.route-line-accent')).toHaveCount(0)
   }
   expect(errors).toEqual([])
+})
+
+test('section arrivals draw in and release, and scrolled exits skip the wipe', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/work')
+  await expect(page.locator('html')).toHaveAttribute('data-route-transitions', 'on')
+  // A real click scrolls the footer into view, so the artwork is out of sight.
+  await page.getByRole('navigation', { name: 'Footer', exact: true }).getByRole('link', { name: 'Projects', exact: true }).click()
+  await expect(page.locator('html')).not.toHaveAttribute('data-route-leave')
+  await expect(page).toHaveURL(/\/projects$/)
+  await expect(page.locator('.section-story svg')).toHaveAttribute('data-story-ready', '')
+  await expect(page.locator('html')).not.toHaveAttribute('data-route-arrive')
+  await expect(page.locator('.section-story svg')).toHaveCSS('opacity', '1')
+  expect(await page.evaluate(() => window.scrollY)).toBe(0)
 })
 
 test('route hints do not prefetch other origins', async ({ page }) => {
