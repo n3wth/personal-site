@@ -13,6 +13,7 @@
     "build": "astro sync && tsc -b && astro build",
     "content:refresh": "node scripts/refresh-content.mjs",
     "og:cards": "node scripts/generate-og-images.mjs",
+    "og:heroes": "node scripts/generate-hero-covers.mjs",
     "og:plates": "node scripts/extract-og-plates.mjs",
     "lint": "eslint .",
     "check": "node scripts/build-notes.mjs && node --test scripts/notes.check.mjs scripts/notes/dates.check.mjs && npm run lint && npm test -- --run && npm run build && node --test scripts/prerender.check.mjs",
