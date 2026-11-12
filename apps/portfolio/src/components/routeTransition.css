@@ -1,22 +1,12 @@
-/* Leaving a section wipes its lines while the artwork recedes. Every document swap is an eased
-   cross-fade with the navigation held steady, and an arriving section draws its lines in once
-   its scene is running. */
+/* One transition for every page change, built only from opacity and scale so the compositor
+   runs it without repainting. The page cross-fades, the navigation holds still, and the
+   artwork recedes inward as it leaves and settles outward as it arrives. */
 
 :root {
-  --route-leave: 340ms;
-  --route-draw: 900ms;
-  --route-ease-leave: cubic-bezier(0.65, 0, 0.35, 1);
   --route-ease-out: cubic-bezier(0.4, 0, 1, 1);
   --route-ease-in: cubic-bezier(0.16, 1, 0.3, 1);
-  /* The artwork gathers speed gently before it settles, so the draw-in never snaps on. */
-  --route-ease-draw: cubic-bezier(0.5, 0, 0.15, 1);
-}
-
-.route-line-accent {
-  fill: none;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  pointer-events: none;
+  /* Gathers speed gently before it settles, so nothing snaps on or lands hard. */
+  --route-ease-settle: cubic-bezier(0.5, 0, 0.15, 1);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -34,35 +24,28 @@
   ::view-transition-old(site-navigation),
   ::view-transition-new(site-navigation) {
     animation-duration: 300ms;
-    animation-timing-function: var(--route-ease-leave);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
   }
 
-  .portfolio-story-hero ~ *,
-  footer {
-    transition: opacity var(--route-leave) var(--route-ease-leave);
+  /* Every page's artwork is one shared layer: its lines draw in from the page edge and fade. */
+  .portfolio-story-hero > .section-story,
+  .home-artwork { view-transition-name: route-artwork; }
+  ::view-transition-group(route-artwork) { animation-duration: 0s; }
+  ::view-transition-image-pair(route-artwork) { isolation: auto; }
+  ::view-transition-old(route-artwork) {
+    animation: route-recede 280ms var(--route-ease-out) both;
+    mix-blend-mode: normal;
   }
-  .section-story svg {
-    transition: opacity var(--route-leave) var(--route-ease-out);
+  ::view-transition-new(route-artwork) {
+    animation: route-fade-in 360ms var(--route-ease-in) 80ms both;
+    mix-blend-mode: normal;
   }
 
-  html[data-route-leave] .portfolio-story-hero ~ *,
-  html[data-route-leave] footer,
-  html[data-route-leave] .section-story svg {
-    opacity: 0;
-  }
-
-  /* Held out of sight until the scene engine is running, so static fills never flash. */
-  html[data-route-arrive] .section-story svg { transition: none; }
+  /* An arriving section is held out of sight until its scene is running, so static fills
+     never flash, then settles outward to its resting size. */
   html[data-route-arrive=''] .section-story svg { opacity: 0; }
-  html[data-route-arrive] .section-story path:not(.section-story__pulse):not(.section-story__contact-spectrum) {
-    stroke-dasharray: 1 2;
-    stroke-dashoffset: 1;
-  }
-  html[data-route-arrive='draw'] .section-story svg {
-    animation: route-fade-in 700ms cubic-bezier(0.4, 0, 0.2, 1) both;
-  }
-  html[data-route-arrive='draw'] .section-story path:not(.section-story__pulse):not(.section-story__contact-spectrum) {
-    animation: route-line-in var(--route-draw) var(--route-ease-draw) both;
+  html[data-route-arrive='settle'] .section-story svg {
+    animation: route-settle 760ms var(--route-ease-settle) both;
   }
 }
 
@@ -80,6 +63,9 @@
 @keyframes route-fade-in {
   from { opacity: 0; }
 }
-@keyframes route-line-in {
-  to { stroke-dashoffset: 0; }
+@keyframes route-recede {
+  to { opacity: 0; scale: .94; }
+}
+@keyframes route-settle {
+  from { opacity: 0; scale: .95; }
 }

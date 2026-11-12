@@ -506,48 +506,34 @@ test('work uses the shared theme and a usable resume action', async ({ page }, t
   await expect(page.getByRole('link', { name: 'Open resume', exact: true })).toHaveAttribute('href', 'https://r2.n3wth.com/resume/oliver-newth-resume.pdf')
 })
 
-test('section navigation survives animation failures and browser Back', async ({ page }, testInfo) => {
+test('section navigation is never intercepted and survives browser Back', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
   await page.emulateMedia({ reducedMotion: 'no-preference' })
-  for (const failure of ['throw', 'cancel', 'none']) {
-    await page.goto('/work')
-    await expect(page.locator('html')).toHaveAttribute('data-route-transitions', 'on')
-    await expect(page.locator('.section-story svg')).toHaveAttribute('data-story-ready', '')
-    if (failure === 'throw') {
-      await page.evaluate(() => {
-        SVGElement.prototype.animate = () => { throw new Error('Animation unavailable') }
-      })
-    }
-    // Dispatch without scrolling: the line wipe only runs while the artwork is in view.
-    await page.getByRole('navigation', { name: 'Footer', exact: true }).getByRole('link', { name: 'Projects', exact: true }).dispatchEvent('click')
-    if (failure === 'cancel') {
-      await expect(page.locator('html')).toHaveAttribute('data-route-leave', '')
-      await page.evaluate(() => document.getAnimations().filter(animation => animation.id === 'route-line-wipe').forEach(animation => animation.cancel()))
-    }
-    if (failure === 'none') await page.screenshot({ path: testInfo.outputPath('section-line-wipe.png') })
-    await expect(page).toHaveURL(/\/projects$/)
-    await page.goBack()
-    await expect(page.locator('main h1')).toHaveText('Work')
-    await expect(page.locator('html')).not.toHaveAttribute('data-route-leave')
-    await expect(page.locator('.n3wth-site-footer')).toHaveCSS('opacity', '1')
-    await expect(page.locator('.route-line-accent')).toHaveCount(0)
-  }
-  expect(errors).toEqual([])
-})
-
-test('section arrivals draw in and release, and scrolled exits skip the wipe', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/work')
   await expect(page.locator('html')).toHaveAttribute('data-route-transitions', 'on')
-  // A real click scrolls the footer into view, so the artwork is out of sight.
-  await page.getByRole('navigation', { name: 'Footer', exact: true }).getByRole('link', { name: 'Projects', exact: true }).click()
-  await expect(page.locator('html')).not.toHaveAttribute('data-route-leave')
+  // Clicking before the scene hydrates must still navigate cleanly.
+  await page.getByRole('navigation', { name: 'Footer', exact: true }).getByRole('link', { name: 'Projects', exact: true }).dispatchEvent('click')
   await expect(page).toHaveURL(/\/projects$/)
   await expect(page.locator('.section-story svg')).toHaveAttribute('data-story-ready', '')
   await expect(page.locator('html')).not.toHaveAttribute('data-route-arrive')
   await expect(page.locator('.section-story svg')).toHaveCSS('opacity', '1')
+  await expect(page.locator('.section-story svg')).toHaveCSS('scale', 'none')
   expect(await page.evaluate(() => window.scrollY)).toBe(0)
+  await page.goBack()
+  await expect(page.locator('main h1')).toHaveText('Work')
+  await expect(page.locator('html')).not.toHaveAttribute('data-route-arrive')
+  await expect(page.locator('.section-story svg')).toHaveCSS('opacity', '1')
+  await expect(page.locator('.n3wth-site-footer')).toHaveCSS('opacity', '1')
+  expect(errors).toEqual([])
+})
+
+test('every page shares one artwork layer for the transition', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  for (const path of ['/', '/work', '/thinking']) {
+    await page.goto(path)
+    expect(await page.evaluate(() => [...document.querySelectorAll('*')].filter(element => getComputedStyle(element).viewTransitionName === 'route-artwork').length)).toBe(1)
+  }
 })
 
 test('route hints do not prefetch other origins', async ({ page }) => {
