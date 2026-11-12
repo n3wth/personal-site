@@ -3,49 +3,49 @@
     "path": "",
     "title": "Oliver Newth — AI Product Lead at Google",
     "description": "AI product lead at Google. Previously at Covariant, Meta, and Microsoft. Independent AI projects and large-scale light art.",
-    "ogImage": "/og-image.png"
+    "ogImage": "/og/hero-home.png"
   },
   {
     "path": "projects",
     "title": "Projects — Oliver Newth",
     "description": "Independent projects by Oliver Newth: tools for AI agents, a shared component library, and other experiments.",
-    "ogImage": "/og/work.png"
+    "ogImage": "/og/hero-projects.png"
   },
   {
     "path": "work",
     "title": "Work — Oliver Newth",
     "description": "Oliver Newth’s product experience at Google, Covariant, Meta, and Microsoft.",
-    "ogImage": "/og/work.png"
+    "ogImage": "/og/hero-work.png"
   },
   {
     "path": "projects/r3",
     "title": "r3 — Oliver Newth",
     "description": "A local memory service for AI assistants with semantic search, vector embeddings, and a knowledge graph.",
-    "ogImage": "/og/work.png"
+    "ogImage": "/og/hero-projects.png"
   },
   {
     "path": "projects/ui",
     "title": "@n3wth/ui — Oliver Newth",
     "description": "A shared React component library with theme tokens, typography, native controls, and site compositions.",
-    "ogImage": "/og/library.png"
+    "ogImage": "/og/hero-projects.png"
   },
   {
     "path": "art",
     "title": "After dark — Oliver Newth",
     "description": "Large-scale light installations for Burning Man and San Francisco memorials. THEM, Pink Triangle, and Circle of Light.",
-    "ogImage": "/og/art.png"
+    "ogImage": "/og/hero-art.png"
   },
   {
     "path": "library",
     "title": "Library — Oliver Newth",
     "description": "Installable pieces from across the n3wth properties: the essay kit behind the Thinking pieces, the @n3wth/ui component library, and the digital garden.",
-    "ogImage": "/og/library.png"
+    "ogImage": "/og/hero-library.png"
   },
   {
     "path": "contact",
     "title": "Contact — Oliver Newth",
     "description": "Product, AI safety, or LED art. Coffee if you're in San Francisco.",
-    "ogImage": "/og/contact.png"
+    "ogImage": "/og/hero-contact.png"
   },
   {
     "path": "elsa",
@@ -102,7 +102,7 @@
     "path": "thinking",
     "title": "Thinking — Oliver Newth",
     "description": "Essays and notes on AI, design, and everyday life.",
-    "ogImage": "/og/thinking.png"
+    "ogImage": "/og/hero-thinking.png"
   },
   {
     "path": "404",
