@@ -4,10 +4,12 @@
 
 :root {
   --route-leave: 340ms;
-  --route-draw: 680ms;
+  --route-draw: 900ms;
   --route-ease-leave: cubic-bezier(0.65, 0, 0.35, 1);
   --route-ease-out: cubic-bezier(0.4, 0, 1, 1);
   --route-ease-in: cubic-bezier(0.16, 1, 0.3, 1);
+  /* The artwork gathers speed gently before it settles, so the draw-in never snaps on. */
+  --route-ease-draw: cubic-bezier(0.5, 0, 0.15, 1);
 }
 
 .route-line-accent {
@@ -57,10 +59,10 @@
     stroke-dashoffset: 1;
   }
   html[data-route-arrive='draw'] .section-story svg {
-    animation: route-fade-in 360ms cubic-bezier(0.33, 1, 0.68, 1) both;
+    animation: route-fade-in 700ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
   html[data-route-arrive='draw'] .section-story path:not(.section-story__pulse):not(.section-story__contact-spectrum) {
-    animation: route-line-in var(--route-draw) var(--route-ease-in) forwards;
+    animation: route-line-in var(--route-draw) var(--route-ease-draw) both;
   }
 }
 
