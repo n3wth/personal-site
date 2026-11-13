@@ -29,7 +29,7 @@ export function Beat({
   children?: ReactNode
 }) {
   return (
-    <div className="py-10" data-reveal>
+    <div className="py-10">
       <div className={margin ? 'md:grid md:grid-cols-[minmax(0,7fr)_minmax(0,3fr)] md:gap-12' : 'mx-auto max-w-[62ch]'}>
         <div>
           {stage && (

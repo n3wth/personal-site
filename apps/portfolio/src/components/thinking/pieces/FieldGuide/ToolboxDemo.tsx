@@ -133,7 +133,7 @@ export function ToolboxDemo({ reduced }: { reduced: boolean }) {
   const [wrapRef, near, visible] = useNear<HTMLDivElement>()
 
   return (
-    <div data-reveal>
+    <div>
       <div
         role="group"
         aria-label="Pick a texture tile for the teapot"

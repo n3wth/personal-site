@@ -11,6 +11,6 @@
 .home-contours__terrain { stroke: inherit; }
 .home-ribbon__skin { fill: var(--bg); stroke: none; }
 [data-home-plane] { stroke: currentColor; }
-.home-contours .home-ribbon__flow { vector-effect: none; stroke-width: 1.25; stroke: var(--home-flow-ink, var(--color-text-primary)); stroke-dasharray: 260 900; stroke-dashoffset: calc(var(--home-flow-offset, 0px) + var(--home-flow-prefix, 0px)); opacity: 0; }
+.home-contours .home-ribbon__flow { vector-effect: none; stroke-width: 1.25; stroke: var(--home-flow-ink, var(--color-text-primary)); stroke-dasharray: 260 900; stroke-dashoffset: calc(var(--home-flow-offset, 0px) + var(--home-flow-prefix, 0px)); opacity: 0; transition: opacity 0.6s var(--ease); }
 [data-home-flow-ready]:not([data-story-paused]) .home-ribbon__flow { opacity: .75; }
 @media (prefers-reduced-motion: reduce) { .home-contours .home-ribbon__flow { opacity: 0; } }

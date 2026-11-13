@@ -21,7 +21,7 @@ export function ToggleCompare({ beforeLabel, afterLabel, before, after, caption 
   const groupId = useId()
 
   return (
-    <div data-reveal>
+    <div>
       <div
         role="group"
         aria-label={`${beforeLabel} or ${afterLabel}`}

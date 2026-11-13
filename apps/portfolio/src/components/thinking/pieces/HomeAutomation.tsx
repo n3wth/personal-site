@@ -33,7 +33,7 @@ const CHAIN_EDGES: FlowEdge[] = [
 export default function HomeAutomation() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         A house full of automation looks like magic from the doorway. Lights adjust, a valve
         shuts, a notification lands before you've noticed anything wrong. From inside, it's
         arbitration plumbing: sensors that report, a hub that decides, actuators that act — and
@@ -127,7 +127,7 @@ export default function HomeAutomation() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         The next layer isn't more sensors. It's software that can take a stated intent — going to
         bed — and turn it into the right sequence across actuators that already exist, in the
         right order, checking the right conditions first. The plumbing is mostly built. What's

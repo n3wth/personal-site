@@ -26,7 +26,7 @@ function CharSpaceSpecimen() {
   const aligned = tc === 0
 
   return (
-    <div className="w-full max-w-lg" data-reveal>
+    <div className="w-full max-w-lg">
       <p className="font-mono text-xs" style={{ color: 'var(--ink-faint)' }}>
         illustrative row — not a real document, math is the real bug
       </p>
@@ -151,7 +151,7 @@ const STAGES = [
 export default function PdfCharspaceGotcha() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         A document generator built on reportlab started drawing right-aligned numbers past the
         end of their column, by exactly the amount you&rsquo;d expect from a bug that isn&rsquo;t
         in the math at all.
@@ -236,7 +236,7 @@ export default function PdfCharspaceGotcha() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         The math was never wrong. An operator from two lines up was still switched on.
       </Blockquote>
     </div>

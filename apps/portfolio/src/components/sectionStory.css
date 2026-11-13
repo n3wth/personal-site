@@ -76,6 +76,7 @@
 .section-story .section-story__transfer { opacity: 0; stroke-width: 1.5; }
 
 @media (prefers-reduced-motion: no-preference) {
+  .section-story [data-story-face] { fill-opacity: 0; }
   .section-story__plane { animation: story-plane calc(23s + var(--story-phase) * 3.17s) ease-in-out infinite alternate; animation-delay: calc(var(--story-phase) * -4.3s); }
   .section-story__page { transform-origin: 0 235px; animation: story-page calc(29s + var(--story-phase) * 2.71s) ease-in-out infinite alternate; animation-delay: calc(var(--story-phase) * -3.8s); }
   .section-story__canopy { transform-origin: 890px 740px; animation: story-canopy 31s ease-in-out infinite alternate; }

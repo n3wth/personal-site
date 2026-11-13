@@ -46,7 +46,7 @@ const MAZE_EDGES: FlowEdge[] = [
 export default function TollFreeMaze() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         A toll-free number needs Twilio's sign-off before it can send a single text. The
         application is one form — business details, opt-in method, use case. It reads like
         paperwork. It behaves like a maze: you can't see a wall until you've already walked into
@@ -119,7 +119,7 @@ export default function TollFreeMaze() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         A maze doesn't publish its map. You learn each wall by walking into it, and you don't get
         to fix the last one until the next collision tells you it's still there.
       </Blockquote>

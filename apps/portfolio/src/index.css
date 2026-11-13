@@ -88,12 +88,6 @@ body {
   line-height: 1.65;
 }
 
-#root {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-}
-
 ::selection {
   background: color-mix(in oklab, var(--journey-ink, #fff) 32%, transparent);
   color: var(--ink);
@@ -105,68 +99,6 @@ body {
   left: 50%;
   width: 100vw;
   transform: translateX(-50%);
-}
-
-/* ---------- Art bands (After dark gallery) ----------
-   Near-viewport image frames with captions living on the image over a
-   bottom scrim, and a very slow Ken Burns drift. */
-.art-band {
-  position: relative;
-  overflow: hidden;
-}
-/* The photographs' blacks are warmer and deeper than the page's #08090b,
-   which left a visible seam where each band ended. The bottom of every
-   band now dissolves into the page background. */
-.art-band::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: clamp(56px, 12vh, 140px);
-  pointer-events: none;
-  background: linear-gradient(to bottom, transparent, var(--bg));
-}
-.art-band-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  animation: art-drift 26s ease-in-out infinite alternate;
-  will-change: transform;
-}
-@keyframes art-drift {
-  from { transform: scale(1); }
-  to { transform: scale(1.02); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .art-band-img { animation: none; }
-}
-
-/* Caption aligned to the frame's gutters even though the band is 100vw. */
-.art-band-caption {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  display: block;
-  max-width: var(--frame-max);
-  margin: 0 auto;
-  padding: 0 var(--gutter) 2.5rem;
-}
-@media (min-width: 768px) {
-  .art-band-caption { padding-bottom: 3.25rem; }
-}
-
-/* Sky variant: the opener's caption lives in the open sky at the top of
-   the frame, set in dark ink against the pale sky — no scrim needed. */
-.art-band-caption--sky {
-  bottom: auto;
-  top: 0;
-  padding-top: calc(6.5rem + env(safe-area-inset-top));
-}
-@media (min-width: 768px) {
-  .art-band-caption--sky { padding-top: calc(8rem + env(safe-area-inset-top)); }
 }
 
 /* ---------- Content column ---------- */
@@ -195,20 +127,6 @@ body {
 }
 
 /* ---------- Typography ---------- */
-/* Label recipe: sans, weight 500, technical tracking. */
-.eyebrow {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  color: var(--ink-dim);
-  font-variant-numeric: tabular-nums;
-}
-@media (min-width: 768px) {
-  .eyebrow { font-size: 12px; }
-}
-
 .index {
   font-family: var(--font-sans);
   font-size: 11px;
@@ -251,23 +169,6 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Display type scale (matches agents site) */
-.t-display {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(3rem, 8.6vw, 7rem);
-  letter-spacing: -0.045em;
-  line-height: 0.92;
-  color: var(--ink);
-}
-.t-h2 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(1.85rem, 3.8vw, 3.1rem);
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: var(--ink);
-}
 .page-title {
   font-size: 2.25rem;
   letter-spacing: -0.03em;
@@ -338,19 +239,6 @@ body {
   border-color: var(--accent-rail);
   color: var(--ink);
 }
-.btn-solid {
-  color: var(--bg);
-  background: var(--ink);
-  border-color: var(--ink);
-}
-.btn-solid:hover {
-  color: var(--bg);
-  background: var(--ink);
-  border-color: var(--ink);
-}
-.btn .btn-arrow { color: var(--ink-dim); transition: color 0.3s var(--ease); }
-.btn:hover .btn-arrow { color: var(--ink); }
-.btn-solid .btn-arrow { color: var(--bg); }
 
 
 /* ---------- Skip link ---------- */
@@ -413,12 +301,9 @@ body {
 
 /* ---------- Vertical rhythm variants ---------- */
 .pad-air { padding-top: 6.3rem; padding-bottom: 6.3rem; }
-.pad-tight { padding-top: 3.85rem; padding-bottom: 3.85rem; }
 @media (min-width: 768px) {
   .pad-air { padding-top: 9.8rem; padding-bottom: 9.8rem; }
-  .pad-tight { padding-top: 5.95rem; padding-bottom: 5.95rem; }
 }
-
 
 /* Small section label (footer columns) — matches garden.n3wth.com */
 .label {
@@ -426,16 +311,6 @@ body {
   font-size: 11px;
   letter-spacing: 0.08em;
   color: var(--ink-dim);
-}
-
-
-/* ---------- LED status pixel (static white square) ---------- */
-.led {
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  background: var(--accent);
-  vertical-align: middle;
 }
 
 /* ---------- Touch targets ---------- */
@@ -491,108 +366,6 @@ body {
 .home-opening-scene {
   flex: 1;
   min-height: 20rem;
-}
-
-.night-field-stage:not(.is-settled) .world-portal-link {
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-}
-.world-portal-link {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 10px;
-  color: var(--ink);
-  background: var(--color-background-body);
-  border-radius: var(--radius-inner);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-sm);
-  font-weight: 400;
-  white-space: nowrap;
-  text-decoration: none;
-  opacity: 0;
-  transition: opacity 0.2s var(--ease), color 0.2s var(--ease);
-}
-.world-portal-link[data-hovered='true'],
-.world-portal-link:hover,
-.world-portal-link:focus-visible { opacity: 1; }
-@media (prefers-reduced-motion: reduce) {
-  .world-portal-link {
-    transition: none;
-  }
-}
-.world-portal-description {
-  display: none;
-  position: absolute;
-  top: calc(100% - 8px);
-  left: 50%;
-  width: max-content;
-  max-width: 160px;
-  transform: translateX(-50%);
-  padding: var(--spacing-1) var(--spacing-2);
-  background: var(--color-background-body);
-  border-radius: var(--radius-inner);
-  font-size: var(--font-size-sm);
-  line-height: 1.4;
-  text-align: center;
-  white-space: normal;
-  color: var(--ink-dim);
-  pointer-events: none;
-}
-.world-portal-link:focus-visible {
-  color: var(--ink);
-}
-@media (hover: hover) and (pointer: fine) {
-  .world-portal-link:focus-visible .world-portal-description {
-    display: block;
-  }
-  .world-portal-link:hover {
-    color: var(--ink);
-  }
-}
-.night-field-loader {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background: #08090b;
-  opacity: 1;
-  pointer-events: none;
-  transition: opacity 0.7s var(--ease), visibility 0s linear 0.7s;
-  visibility: visible;
-  z-index: 30;
-}
-.night-field-loader[data-ready='true'] {
-  opacity: 0;
-  visibility: hidden;
-}
-.night-field-loader-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.night-field-loader-tint {
-  position: absolute;
-  inset: 0;
-  background: rgba(8, 9, 11, 0.56);
-}
-@media (prefers-reduced-motion: reduce) {
-  .night-field-loader { transition: none; }
-}
-
-/* The dilemma reveal (bars + the call) surfaces after choosing */
-@media (prefers-reduced-motion: no-preference) {
-  .challenge-reveal {
-    animation: reveal-rise 0.45s var(--ease) both;
-  }
-}
-@keyframes reveal-rise {
-  from { opacity: 0; transform: translateY(10px); }
 }
 
 /* ---------- Press tactility ----------

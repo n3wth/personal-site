@@ -6,14 +6,13 @@ function Consent() {
   return (
     <section aria-label="SMS messaging consent">
       <PageHeader
-        data-reveal
         align="center"
         className="site-content-gutter mx-auto max-w-3xl"
         title="SMS Messaging Consent"
         description={<>Last updated: February 2026</>}
       />
 
-      <SiteSection data-reveal className="site-content-gutter mx-auto max-w-3xl">
+      <SiteSection className="site-content-gutter mx-auto max-w-3xl">
         <SiteDocSection title="About They Won't Shut Up">
           <SiteText>
             <a

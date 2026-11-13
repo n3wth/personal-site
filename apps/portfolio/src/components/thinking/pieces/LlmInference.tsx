@@ -155,7 +155,7 @@ export default function LlmInference() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         Prefill is a sum you pay once. Decode is a toll you pay per token — and the toll booth is
         memory, not math.
       </Blockquote>

@@ -5,8 +5,6 @@
 :root {
   --route-ease-out: cubic-bezier(0.4, 0, 1, 1);
   --route-ease-in: cubic-bezier(0.16, 1, 0.3, 1);
-  /* Gathers speed gently before it settles, so nothing snaps on or lands hard. */
-  --route-ease-settle: cubic-bezier(0.5, 0, 0.15, 1);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -18,16 +16,14 @@
     animation: route-fade-in 440ms var(--route-ease-in) 60ms both;
   }
 
-  /* The navigation is the same object on every page, so it stays put through the swap. */
+  /* The navigation is the same object on every page, so it stays put without an opacity dip. */
   .route-steady { view-transition-name: site-navigation; }
   ::view-transition-group(site-navigation) { animation-duration: 0s; }
   ::view-transition-old(site-navigation),
-  ::view-transition-new(site-navigation) {
-    animation-duration: 300ms;
-    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
-  }
+  ::view-transition-new(site-navigation) { animation: none; }
+  ::view-transition-old(site-navigation) { opacity: 0; }
 
-  /* Every page's artwork is one shared layer: its lines draw in from the page edge and fade. */
+  /* Every page's artwork is one shared layer: its lines recede inward on exit and fade in on arrival. */
   .portfolio-story-hero > .section-story,
   .home-artwork { view-transition-name: route-artwork; }
   ::view-transition-group(route-artwork) { animation-duration: 0s; }
@@ -39,13 +35,6 @@
   ::view-transition-new(route-artwork) {
     animation: route-fade-in 360ms var(--route-ease-in) 80ms both;
     mix-blend-mode: normal;
-  }
-
-  /* An arriving section is held out of sight until its scene is running, so static fills
-     never flash, then settles outward to its resting size. */
-  html[data-route-arrive=''] .section-story svg { opacity: 0; }
-  html[data-route-arrive='settle'] .section-story svg {
-    animation: route-settle 760ms var(--route-ease-settle) both;
   }
 }
 
@@ -65,7 +54,4 @@
 }
 @keyframes route-recede {
   to { opacity: 0; scale: .94; }
-}
-@keyframes route-settle {
-  from { opacity: 0; scale: .95; }
 }

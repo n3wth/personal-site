@@ -19,7 +19,7 @@ export interface MarginNoteProps {
 
 export function MarginNote({ href, title, description }: MarginNoteProps) {
   return (
-    <aside className="kit-margin-note mt-8 md:mt-0" data-reveal>
+    <aside className="kit-margin-note mt-8 md:mt-0">
       <svg
         viewBox="0 0 48 32"
         className="kit-line-draw mb-2 h-6 w-12"

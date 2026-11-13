@@ -64,7 +64,7 @@ function DeskBoard() {
   const active = DESKS.find((d) => d.id === selectedId) ?? DESKS[0]
 
   return (
-    <div data-reveal>
+    <div>
       <div role="group" aria-label="Pick a desk" className="relative">
         <div className="flex flex-wrap items-stretch gap-3 sm:gap-4">
           {DESKS.map((d) => {
@@ -193,7 +193,7 @@ export default function AgentDesks() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         A desk isn't real because it's drawn on the chart. It's real because it has a schedule, a
         boundary, and a timestamp that updates without you.
       </Blockquote>

@@ -73,7 +73,7 @@ function DiffBlock({ lines, sign }: { lines: DiffLine[]; sign: '-' | '+' }) {
 export default function CompoundEngineering() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         Five real pull requests from this site's own history, in the order they landed: a build, a
         review, a three-line fix, an extraction, and a rule that got reused three PRs later without
         anyone repeating it.
@@ -166,7 +166,7 @@ export default function CompoundEngineering() {
         </div>
       </Beat>
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         A rule that has to be re-explained every time isn't a rule, it's a request. Compound
         engineering is just what you call it once the second request never has to be made.
       </Blockquote>

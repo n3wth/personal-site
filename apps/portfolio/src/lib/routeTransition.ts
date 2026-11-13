@@ -1,11 +1,5 @@
 import { storyKindFromPath } from './routeLines'
 
-/** The arriving artwork settles for this long. Matches route-settle in routeTransition.css. */
-export const ROUTE_SETTLE_MS = 760
-const ARRIVE_KEY = 'route-line-arrive'
-/** The scene can take this long to hydrate before the artwork is released regardless. */
-const READY_TIMEOUT_MS = 1200
-
 function linkFrom(event: Event) {
   const target = event.target
   if (!(target instanceof Element)) return null
@@ -30,7 +24,7 @@ function plainClick(event: MouseEvent, link: HTMLAnchorElement) {
   return true
 }
 
-/** A section link from another page: the only navigation that gets a hint or an arrival. */
+/** A section link from another page: prefetches the destination document. */
 function sectionLink(link: HTMLAnchorElement) {
   const url = new URL(link.href, location.href)
   if (url.origin !== location.origin) return false
@@ -46,41 +40,8 @@ function hint(href: string) {
   document.head.appendChild(prefetch)
 }
 
-/** Resolves once the scene engine owns the artwork, so the arrival never competes with hydration. */
-function sceneReady(svg: SVGSVGElement) {
-  return new Promise<void>(resolve => {
-    if (svg.hasAttribute('data-story-ready')) return resolve()
-    const done = () => { observer.disconnect(); window.clearTimeout(timer); resolve() }
-    const observer = new MutationObserver(() => { if (svg.hasAttribute('data-story-ready')) done() })
-    const timer = window.setTimeout(done, READY_TIMEOUT_MS)
-    observer.observe(svg, { attributes: true, attributeFilter: ['data-story-ready'] })
-  })
-}
-
-/** The head script holds the arriving artwork hidden; release it to settle into place. */
-async function arrive() {
-  const root = document.documentElement
-  try { sessionStorage.removeItem(ARRIVE_KEY) } catch { /* storage can be blocked */ }
-  if (root.dataset.routeArrive === undefined) return
-  const svg = document.querySelector<SVGSVGElement>('.section-story svg')
-  if (!svg || !motionOk()) return root.removeAttribute('data-route-arrive')
-  await sceneReady(svg)
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    if (root.dataset.routeArrive !== '') return
-    root.dataset.routeArrive = 'settle'
-    // The animation ends on the resting state, so releasing it changes nothing on screen.
-    window.setTimeout(() => root.removeAttribute('data-route-arrive'), ROUTE_SETTLE_MS + 80)
-  }))
-}
-
 export function mountRouteTransitions() {
   document.documentElement.dataset.routeTransitions = 'on'
-  void arrive()
-
-  // A page restored from the back/forward cache is already running; never hold it.
-  window.addEventListener('pageshow', event => {
-    if (event.persisted) document.documentElement.removeAttribute('data-route-arrive')
-  })
 
   document.addEventListener('pointerenter', event => {
     if (!motionOk()) return
@@ -88,13 +49,9 @@ export function mountRouteTransitions() {
     if (link && sectionLink(link)) hint(link.href)
   }, true)
 
-  // Navigation itself is never intercepted: the browser's view transition carries every exit.
-  // The mark only tells the next section to hold its artwork where the Navigation API is missing.
   document.addEventListener('click', event => {
     if (!motionOk()) return
     const link = linkFrom(event)
-    if (!link || !plainClick(event, link) || !sectionLink(link)) return
-    hint(link.href)
-    try { sessionStorage.setItem(ARRIVE_KEY, String(Date.now())) } catch { /* storage can be blocked */ }
+    if (link && plainClick(event, link) && sectionLink(link)) hint(link.href)
   })
 }

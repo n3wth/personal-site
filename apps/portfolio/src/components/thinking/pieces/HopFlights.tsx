@@ -143,7 +143,7 @@ export default function HopFlights() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         A verdict that's computed instead of guessed is only a better product if the arithmetic
         actually checks out — otherwise it's just a guess that sounds more certain than it is.
       </Blockquote>

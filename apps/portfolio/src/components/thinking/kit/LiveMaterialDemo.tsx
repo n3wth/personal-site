@@ -69,7 +69,7 @@ export default function LiveMaterialDemo() {
   const [broken, setBroken] = useState(true)
 
   return (
-    <div data-reveal>
+    <div>
       <div
         role="group"
         aria-label="Broken or fixed material"

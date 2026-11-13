@@ -25,7 +25,7 @@ function LatencySlider() {
   const sync = ms <= CHAT_BUDGET
 
   return (
-    <div className="w-full max-w-xl" data-reveal>
+    <div className="w-full max-w-xl">
       <div className="relative h-11">
         <div
           className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2"
@@ -116,7 +116,7 @@ function LatencySlider() {
 export default function TrustProduction() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         The trust question for AI systems gets asked at the wrong time. We ask it during design
         reviews, model evaluations, red-team sessions. By the time the system is live, the
         question feels settled. It isn't.
@@ -187,7 +187,7 @@ export default function TrustProduction() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         The slider doesn't fix anything. It just makes the tradeoff visible, which is where any
         honest conversation about AI trust has to start.
       </Blockquote>

@@ -6,14 +6,13 @@ function Terms() {
   return (
     <section aria-label="Terms of Service">
       <PageHeader
-        data-reveal
         align="center"
         className="site-content-gutter mx-auto max-w-3xl"
         title="Terms of Service"
         description={<>Last updated: September 2026</>}
       />
 
-      <SiteSection data-reveal className="site-content-gutter mx-auto max-w-3xl">
+      <SiteSection className="site-content-gutter mx-auto max-w-3xl">
         <SiteDocSection title="1. Acceptance">
           <SiteText>
             By using n3wth.com or calling the They Won&apos;t Shut Up hotline at{' '}
