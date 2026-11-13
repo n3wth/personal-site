@@ -70,7 +70,7 @@ function KitRow({ primitive }: { primitive: KitPrimitive }) {
       className="scroll-mt-24 border-t pt-8 pb-2 md:pt-11"
       style={{ borderColor: 'var(--rail)' }}
     >
-      <div data-reveal>
+      <div>
         <div className="md:grid md:grid-cols-[minmax(0,7fr)_minmax(0,3fr)] md:gap-12">
           <div>
             <h3

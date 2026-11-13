@@ -4,7 +4,7 @@ import { ToggleCompare } from '../thinking/kit/ToggleCompare'
  * ToggleCompare, running, with the site's own layout argument as its
  * payload: the same three rows drawn as bordered cells and then as
  * hairline rails. Neither side nests anything that carries its own
- * data-reveal — a hidden-until-observed element inside a keyed swap
+ * — a hidden-until-observed element inside a keyed swap
  * flashes empty for a frame every time you press a button.
  */
 

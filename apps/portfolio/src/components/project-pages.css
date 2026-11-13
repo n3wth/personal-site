@@ -52,8 +52,6 @@
 .project-other-list p { line-height: 1.65; margin-top: .5rem; }
 .project-detail { padding-top: 3rem; }
 .project-attribution { max-width: 65ch; }
-@media (max-width: 767px) {
-}
 .project-attribution p a { text-decoration: underline; text-underline-offset: 4px; }
 .project-attribution p, .project-install > p { margin-block: 1rem; line-height: 1.7; }
 .project-detail-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 4rem; align-items: center; }

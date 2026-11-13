@@ -15,7 +15,6 @@ export function EcosystemStrip() {
       <div className="border-t pt-8 md:pt-11" style={{ borderColor: 'var(--rail)' }}>
         <h2
           id="ecosystem-title"
-          data-reveal
           className="display text-[clamp(1.35rem,2.3vw,1.95rem)]"
           style={{ letterSpacing: '-0.03em', lineHeight: 1.05 }}
         >
@@ -27,7 +26,6 @@ export function EcosystemStrip() {
             return (
               <li
                 key={property.id}
-                data-reveal
                 className="border-t pt-5"
                 style={{ borderColor: 'var(--rail-strong)' }}
               >

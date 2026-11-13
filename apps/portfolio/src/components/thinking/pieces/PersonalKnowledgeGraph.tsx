@@ -59,7 +59,7 @@ function GraphExplorer() {
   const toggle = (id: string) => setSelected((cur) => (cur === id ? null : id))
 
   return (
-    <div data-reveal>
+    <div>
       <svg
         viewBox="0 0 640 280"
         className="h-64 w-full max-w-2xl"
@@ -148,7 +148,7 @@ function GraphExplorer() {
 export default function PersonalKnowledgeGraph() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         For most of recorded history, personal knowledge management meant a notebook or a folder
         tree. Tiago Forte's PARA method and Niklas Luhmann's Zettelkasten pushed back on hierarchy,
         arguing that notes should link to each other the way ideas actually relate: in webs, not
@@ -223,7 +223,7 @@ export default function PersonalKnowledgeGraph() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         The graph is not a nicer notebook. It is a system with a second party.
       </Blockquote>
     </div>

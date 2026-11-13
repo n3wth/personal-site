@@ -6,14 +6,13 @@ function Privacy() {
   return (
     <section aria-label="Privacy Policy">
       <PageHeader
-        data-reveal
         align="center"
         className="site-content-gutter mx-auto max-w-3xl"
         title="Privacy Policy"
         description={<>Last updated: September 2026</>}
       />
 
-      <SiteSection data-reveal className="site-content-gutter mx-auto max-w-3xl">
+      <SiteSection className="site-content-gutter mx-auto max-w-3xl">
         <SiteDocSection title="Overview">
           <SiteText>
             n3wth.com is Oliver Newth&apos;s personal portfolio website. The following policy

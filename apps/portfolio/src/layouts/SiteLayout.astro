@@ -80,15 +80,6 @@ if (path.startsWith('thinking/')) schemas.push(buildArticleSchema({ url, title: 
         rootStyle.setProperty('--journey-ink', harmony('ink', 'oklch shorter hue'))
         rootStyle.setProperty('--journey-accent', harmony('accent', 'oklch shorter hue'))
       } catch (error) { /* the untinted ground remains */ }
-      try {
-        // Arriving from another page of this site holds the section artwork until its scene runs.
-        var routeLineArrive = Date.now() - Number(sessionStorage.getItem('route-line-arrive')) < 10000
-        var routeActivation = window.navigation && window.navigation.activation
-        if (routeActivation && routeActivation.from && routeActivation.navigationType !== 'reload'
-          && new URL(routeActivation.from.url).pathname !== location.pathname) routeLineArrive = true
-        var routeLineReduce = matchMedia('(prefers-reduced-motion: reduce)').matches
-        if (routeLineArrive && !routeLineReduce) document.documentElement.dataset.routeArrive = ''
-      } catch (error) { /* storage can be blocked */ }
     </script>
   </head>
   <body>

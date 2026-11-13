@@ -146,7 +146,7 @@ function LiveEditorSpecimen() {
 export default function LiveArtifacts() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         &ldquo;Live artifact&rdquo; names three different things. The term gets used for a rendered
         sandbox inside a chat interface, for a full development environment running in a browser tab,
         and for production-grade component code that deploys to a real host. These share a surface
@@ -222,7 +222,7 @@ export default function LiveArtifacts() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         I picked the control-versus-containment balance the same way anyone does — by deciding how much
         I trust the model, and how much I&apos;d rather not find out.
       </Blockquote>

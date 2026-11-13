@@ -77,7 +77,7 @@ function KrootsGraph() {
   const activeCluster = active ? CLUSTERS.find((c) => c.id === active) : null
 
   return (
-    <div data-reveal>
+    <div>
       <div
         role="group"
         aria-label="Highlight a cluster of the map"
@@ -299,7 +299,7 @@ export default function KrootsMap() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         A one-person company still needs an org chart. It just has to double as a map of notes,
         because there&rsquo;s no one else to hand the departments to.
       </Blockquote>

@@ -95,7 +95,7 @@ function ContextLostSpecimen({ broken }: { broken: boolean }) {
 export default function NightField() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         Five real bugs, in the order the pipeline hit them — generation, export, runtime, rigging —
         and then the process that actually caught all four, which isn't a bug at all.
       </p>
@@ -214,7 +214,7 @@ export default function NightField() {
         </div>
       </Beat>
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         The front door of <a href="/">n3wth</a> isn't a metaphor for that
         argument. It is that argument, running live.
       </Blockquote>

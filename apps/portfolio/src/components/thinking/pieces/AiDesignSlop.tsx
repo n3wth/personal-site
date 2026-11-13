@@ -58,7 +58,7 @@ function TokenSpecimen({ locked }: { locked: boolean }) {
 export default function AiDesignSlop() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         Every AI-generated UI I see lately looks roughly the same: a particular sans-serif,
         purple-to-blue gradient cards, a centered icon grid, a low-contrast dark mode. One AI lab
         has a name for this: distributional convergence. Without explicit steering, a generative
@@ -150,7 +150,7 @@ export default function AiDesignSlop() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         The leverage is in constraints and process: grounding, token discipline, explicit
         restraint, skepticism toward automated evaluation. Everything else is hoping.
       </Blockquote>

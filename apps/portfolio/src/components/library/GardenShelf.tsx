@@ -24,7 +24,7 @@ export function GardenShelf() {
         </>
       }
     >
-      <div data-reveal className="mt-11">
+      <div className="mt-11">
         <p className="index">Groves, largest first</p>
         <ul className="mt-5 columns-2 gap-x-10 sm:columns-3">
           {TOPICS.map((topic) => (
@@ -42,7 +42,7 @@ export function GardenShelf() {
         </ul>
       </div>
 
-      <div data-reveal className="mt-11 md:grid md:grid-cols-[minmax(0,7fr)_minmax(0,3fr)] md:gap-12">
+      <div className="mt-11 md:grid md:grid-cols-[minmax(0,7fr)_minmax(0,3fr)] md:gap-12">
         <p className="max-w-[62ch] text-base leading-relaxed" style={{ color: 'var(--ink)' }}>
           Site search includes garden notes, essays, and the resources on this page.
         </p>

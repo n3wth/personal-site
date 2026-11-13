@@ -85,7 +85,7 @@ function GoalConstellation() {
   const active = CATEGORIES.find((c) => c.id === selected)
 
   return (
-    <div data-reveal>
+    <div>
       <div className="relative h-64 w-full max-w-3xl sm:h-72">
         <AssembleField
           seed={11}
@@ -166,7 +166,7 @@ function GoalConstellation() {
 export default function WorkingNotes2026() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         Every year I rewrite one document: a single page listing what has to be true across career,
         money, and home life by December, plus the infrastructure underneath all three. The
         organizing idea is that a milestone in one column should leave behind something reusable in
@@ -214,7 +214,7 @@ export default function WorkingNotes2026() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         A goal with no scheduled check isn't a priority. It's a wish with better formatting.
       </Blockquote>
     </div>

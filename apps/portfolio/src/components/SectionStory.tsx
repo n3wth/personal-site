@@ -8,14 +8,15 @@ const PulseTuner = import.meta.env.DEV ? lazy(() => import('./PulseTuner')) : nu
 
 export type SectionStoryKind = 'work' | 'art' | 'thinking' | 'projects' | 'library' | 'contact'
 
+const STORY_COLORS = ['cyan', 'green', 'yellow', 'red'] as const
+
 function StoryPulse({ d, seed }: { d: string; seed: number }) {
   const id = useId()
-  const colors = ['cyan', 'green', 'yellow', 'red']
   return <>
     <defs>
       <linearGradient id={id} x1="0" y1="1" x2="1" y2="0">
-        <stop offset="0" stopColor={`var(--story-color-${colors[seed % 4]})`} />
-        <stop offset="1" stopColor={`var(--story-color-${colors[(seed + 1) % 4]})`} />
+        <stop offset="0" stopColor={`var(--story-color-${STORY_COLORS[seed % 4]})`} />
+        <stop offset="1" stopColor={`var(--story-color-${STORY_COLORS[(seed + 1) % 4]})`} />
       </linearGradient>
     </defs>
     <path className="section-story__pulse" d={d} pathLength="1" stroke={`url(#${id})`} style={{
@@ -138,12 +139,11 @@ function LibraryStory() {
 
 function ContactStory() {
   const spectrum = useId()
-  const colors = ['cyan', 'green', 'yellow', 'red']
   return <>
     <defs>
-      {colors.map((color, i) => <linearGradient key={color} id={`${spectrum}-${i}`} gradientUnits="userSpaceOnUse" x1="924" y1="350" x2="660" y2="100">
+      {STORY_COLORS.map((color, i) => <linearGradient key={color} id={`${spectrum}-${i}`} gradientUnits="userSpaceOnUse" x1="924" y1="350" x2="660" y2="100">
         <stop offset="0" stopColor={`var(--story-color-${color})`} />
-        <stop offset="1" stopColor={`var(--story-color-${colors[(i + 1) % colors.length]})`} />
+        <stop offset="1" stopColor={`var(--story-color-${STORY_COLORS[(i + 1) % STORY_COLORS.length]})`} />
       </linearGradient>)}
     </defs>
     {[0, 180].map((rotation, side) => <g key={rotation} data-story-side={side} transform={`rotate(${rotation} 924 350)`}>
@@ -153,7 +153,7 @@ function ContactStory() {
             : `M 924 350 C ${730 + i * 12} ${410 - i * 10}, ${540 + i * 15} ${210 + i * 6}, ${660 + i * 12} ${100 + i * 15} C ${780 + i * 8} ${-10 + i * 21}, ${1010 - i * 7} ${120 + i * 10}, 924 350`
           return <g key={i} data-story-light={Math.round(i / 10 * 8)}>
             <path d={d} />
-              <path className="section-story__contact-spectrum" d={d} pathLength="1" stroke={`url(#${spectrum}-${(i * 3 + side) % colors.length})`} style={{
+              <path className="section-story__contact-spectrum" d={d} pathLength="1" stroke={`url(#${spectrum}-${(i * 3 + side) % STORY_COLORS.length})`} style={{
                 '--pulse-length': .06 + (i % 5) * .018,
               } as CSSProperties} />
           </g>

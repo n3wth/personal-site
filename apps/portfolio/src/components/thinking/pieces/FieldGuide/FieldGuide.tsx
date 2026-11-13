@@ -63,11 +63,10 @@ function Marker({
             className="index inline-flex h-10 w-10 items-center justify-center rounded-full"
             style={{ border: '1px solid var(--rail-strong)', color: 'var(--ink-dim)' }}
             aria-hidden
-            data-reveal
           >
             {numeral}
           </span>
-          {/* No data-reveal here: the title animates by SplitText line
+          {/* No here: the title animates by SplitText line
               mask on enter, and textWrap must not be `balance` while
               split (it fights the line measurement). */}
           <h2
@@ -77,7 +76,7 @@ function Marker({
           >
             {title}
           </h2>
-          <p className="mt-3 max-w-[52ch] text-base md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+          <p className="mt-3 max-w-[52ch] text-base md:text-lg" style={{ color: 'var(--ink-dim)' }}>
             {dek}
           </p>
         </div>
@@ -228,7 +227,7 @@ export default function FieldGuide() {
       <ChapterRail chapters={CHAPTERS} reduced={reduced} />
 
       {/* ---------- prologue ---------- */}
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         A guide in three chapters: find the story, build the world, hand the playhead to the
         reader. The worked example is this site. Every model, texture, and trick below is live on
         the homepage right now, and the page you're reading performs each technique as it explains
@@ -258,7 +257,7 @@ export default function FieldGuide() {
         </figcaption>
       </figure>
 
-      <div className="mt-14 max-w-[62ch]" data-reveal>
+      <div className="mt-14 max-w-[62ch]">
         <p className="text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink)' }}>
           An inventory says what you've done: roles, dates, a grid of screenshots, a contact form.
           Useful, forgettable. A place says what it's like to be you for five minutes. The front
@@ -336,7 +335,7 @@ export default function FieldGuide() {
           </div>
         </Beat>
 
-        <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+        <Blockquote className="mt-4 max-w-[48ch]">
           The visitor is the hero. You're the signpost with the lantern on it.
         </Blockquote>
 
@@ -504,14 +503,14 @@ export default function FieldGuide() {
         <Flythrough reduced={reduced} />
       </div>
 
-      <div className="mt-16 max-w-[62ch]" data-reveal>
+      <div className="mt-16 max-w-[62ch]">
         <h3 className="display text-[clamp(1.4rem,2.6vw,1.9rem)]" style={{ letterSpacing: '-0.02em' }}>
           Six ways this page could have broken
         </h3>
       </div>
       <ol className="mt-6 flex max-w-[62ch] flex-col gap-6">
         {MISTAKES.map((m, i) => (
-          <li key={i} className="flex gap-4" data-reveal>
+          <li key={i} className="flex gap-4">
             <span className="index shrink-0 pt-1">{String(i + 1).padStart(2, '0')}</span>
             <p className="text-base leading-relaxed" style={{ color: 'var(--ink)' }}>
               {m}
@@ -521,7 +520,7 @@ export default function FieldGuide() {
       </ol>
 
       {/* ---------- epilogue + colophon ---------- */}
-      <div className="mt-20 max-w-[62ch]" data-reveal>
+      <div className="mt-20 max-w-[62ch]">
         <p className="text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink)' }}>
           That's the guide. Find the event your resume is hiding, give it ground to stand on, then
           decide whose clock each scene runs on. You don't need a desert. You need the thing you'd
@@ -537,7 +536,7 @@ export default function FieldGuide() {
         </div>
       </div>
 
-      <aside id="colophon" className="mt-20 border-t pt-8" style={{ borderColor: 'var(--rail)' }} data-reveal>
+      <aside id="colophon" className="mt-20 border-t pt-8" style={{ borderColor: 'var(--rail)' }}>
         <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--ink-faint)' }}>
           Used on this page
         </p>

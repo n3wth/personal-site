@@ -39,7 +39,6 @@ export default function AssistantSmsPage({ line }: { line: AssistantSmsLine }) {
   return (
     <section aria-label={name}>
       <header
-        data-reveal
         className="n3wth-site-page-header n3wth-site-page-header--center site-content-gutter mx-auto max-w-3xl"
       >
         <svg
@@ -67,7 +66,7 @@ export default function AssistantSmsPage({ line }: { line: AssistantSmsLine }) {
         </div>
       </header>
 
-      <SiteSection data-reveal className="site-content-gutter mx-auto max-w-3xl">
+      <SiteSection className="site-content-gutter mx-auto max-w-3xl">
         <SiteDocSection>
           <SiteText variant="lede">
             {name} is the AI assistant service name for messaging operated by Oliver

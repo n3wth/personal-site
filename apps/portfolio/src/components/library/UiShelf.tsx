@@ -58,7 +58,7 @@ export function UiShelf() {
         </>
       }
     >
-      <div data-reveal className="mt-10">
+      <div className="mt-10">
         <CodeBlock code={uiMeta.install} className="max-w-[34ch]" />
         {/* 62ch, not 52: the import line is 55 characters and the block is
             border-box, so a tighter cap clips it behind a scrollbar on the
@@ -66,7 +66,7 @@ export function UiShelf() {
         <CodeBlock code={uiQuickStart} className="mt-3 max-w-[62ch]" />
       </div>
 
-      <div data-reveal className="mt-12">
+      <div className="mt-12">
         <p className="index">Components and hooks</p>
         <div className="mt-5">
           {uiTiers.map((tier) => (
@@ -81,7 +81,7 @@ export function UiShelf() {
         </div>
       </div>
 
-      <div data-reveal className="mt-10 md:grid md:grid-cols-[minmax(0,7fr)_minmax(0,3fr)] md:gap-12">
+      <div className="mt-10 md:grid md:grid-cols-[minmax(0,7fr)_minmax(0,3fr)] md:gap-12">
         <p className="max-w-[62ch] text-sm leading-relaxed" style={{ color: 'var(--ink-dim)' }}>
           This list follows the package exports. The documentation covers a smaller selection.
         </p>

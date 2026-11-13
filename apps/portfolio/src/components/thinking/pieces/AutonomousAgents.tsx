@@ -40,7 +40,7 @@ function BoundaryExplorer() {
   const active = ACTIONS.find((a) => a.id === activeId) ?? ACTIONS[0]
 
   return (
-    <div className="w-full max-w-3xl" data-reveal>
+    <div className="w-full max-w-3xl">
       <div className="flex flex-wrap gap-2">
         {ACTIONS.map((a) => {
           const isActive = a.id === activeId
@@ -156,7 +156,7 @@ export default function AutonomousAgents() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         "Autonomous" describes the loop. It says nothing about the leash — and the leash is the
         only part anyone should have to sign off on.
       </Blockquote>

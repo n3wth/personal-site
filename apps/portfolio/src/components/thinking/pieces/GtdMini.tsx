@@ -75,7 +75,7 @@ function TimelineScrubber() {
   }
 
   return (
-    <div data-reveal>
+    <div>
       <p className="font-mono text-xs" style={{ color: 'var(--ink-faint)' }}>
         illustrative day — cron every 15 min, 9:00 to 17:00
       </p>

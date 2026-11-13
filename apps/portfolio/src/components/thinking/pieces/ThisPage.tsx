@@ -64,7 +64,7 @@ const TRACKER_ROWS: TrackerRow[] = [
 
 function TrackerExcerpt() {
   return (
-    <div data-reveal>
+    <div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[520px] border-collapse font-mono text-xs">
           <thead>
@@ -117,7 +117,7 @@ function TrackerExcerpt() {
 export default function ThisPage() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         Every piece in this registry, including this one, went through the same process: pulled from
         something real, drafted in voice, built by an agent in its own isolated corner of the repo,
         checked, merged into one shared file. The table below is a real excerpt of the document that
@@ -207,7 +207,7 @@ export default function ThisPage() {
         }
       />
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         The tracker says what was planned. The registry says what shipped. Believe the registry.
       </Blockquote>
     </div>

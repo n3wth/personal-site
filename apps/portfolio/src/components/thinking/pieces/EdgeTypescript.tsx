@@ -79,7 +79,7 @@ function ColdStartSpecimen({ mode }: { mode: 'container' | 'isolate' }) {
 export default function EdgeTypescript() {
   return (
     <div>
-      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }} data-reveal>
+      <p className="max-w-[62ch] text-base leading-relaxed md:text-lg" style={{ color: 'var(--ink-dim)' }}>
         A request to a Cloudflare Worker doesn't reach a server. It reaches a V8 isolate — the same
         sandboxing technology that keeps browser tabs apart from each other — spun up in under a
         millisecond, wherever on Cloudflare's network the request happened to land.
@@ -167,7 +167,7 @@ export default function EdgeTypescript() {
         </div>
       </Beat>
 
-      <Blockquote className="mt-4 max-w-[48ch]" data-reveal>
+      <Blockquote className="mt-4 max-w-[48ch]">
         A V8 isolate isn't a fast server. It's a unit of compute cheap enough to hand one to every
         agent that needs one.
       </Blockquote>
