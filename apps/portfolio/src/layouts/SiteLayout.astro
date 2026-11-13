@@ -81,7 +81,7 @@ if (path.startsWith('thinking/')) schemas.push(buildArticleSchema({ url, title: 
         rootStyle.setProperty('--journey-accent', harmony('accent', 'oklch shorter hue'))
       } catch (error) { /* the untinted ground remains */ }
       try {
-        // Arriving from another page of this site draws the section lines in.
+        // Arriving from another page of this site holds the section artwork until its scene runs.
         var routeLineArrive = Date.now() - Number(sessionStorage.getItem('route-line-arrive')) < 10000
         var routeActivation = window.navigation && window.navigation.activation
         if (routeActivation && routeActivation.from && routeActivation.navigationType !== 'reload'
@@ -94,13 +94,7 @@ if (path.startsWith('thinking/')) schemas.push(buildArticleSchema({ url, title: 
   <body>
     <a href="#main" class="skip-link">Skip to content</a>
     <SiteHeader pathname={`/${path}`} client:load />
-    <div class="n3wth-site-main"><div class="frame"><main id="main" tabindex="-1"><slot /><script is:inline>
-      if (document.documentElement.dataset.routeArrive === '') {
-        document.querySelectorAll('.section-story path').forEach(function (path) {
-          if (!path.getAttribute('pathLength')) path.setAttribute('pathLength', '1')
-        })
-      }
-    </script></main></div></div>
+    <div class="n3wth-site-main"><div class="frame"><main id="main" tabindex="-1"><slot /></main></div></div>
     {path !== '' && <Footer client:load />}
     <script>
       import { mountRouteTransitions } from '../lib/routeTransition'

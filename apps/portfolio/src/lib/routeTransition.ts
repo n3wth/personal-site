@@ -1,17 +1,10 @@
 import { storyKindFromPath } from './routeLines'
 
-/** Line wipe before the next document loads. Matches --route-leave in routeTransition.css. */
-export const ROUTE_LINE_MS = 340
-/** Draw-in on the next document. Matches --route-draw in routeTransition.css. */
-export const ROUTE_DRAW_MS = 900
-/** Lines start in document order across this window, so the drawing builds instead of appearing at once. */
-export const ROUTE_STAGGER_MS = 260
-/** Leaving accelerates away and settles; the arriving draw-in decelerates (CSS). */
-const EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'
+/** The arriving artwork settles for this long. Matches route-settle in routeTransition.css. */
+export const ROUTE_SETTLE_MS = 760
 const ARRIVE_KEY = 'route-line-arrive'
-/** The scene can take this long to hydrate before the draw-in starts regardless. */
+/** The scene can take this long to hydrate before the artwork is released regardless. */
 const READY_TIMEOUT_MS = 1200
-const ACCENTS = ['cyan', 'green', 'yellow', 'red'] as const
 
 function linkFrom(event: Event) {
   const target = event.target
@@ -37,58 +30,12 @@ function plainClick(event: MouseEvent, link: HTMLAnchorElement) {
   return true
 }
 
-function storyLines() {
-  return [...document.querySelectorAll<SVGPathElement>('.section-story path')].filter(path => {
-    if (path.closest('defs')) return false
-    if (path.matches('[data-story-face], [data-story-wall], [data-story-halo], [data-story-halo-loop], [data-story-border]')) return false
-    if (path.classList.contains('section-story__pulse') || path.classList.contains('section-story__contact-spectrum')) return false
-    if (path.classList.contains('route-line-accent')) return false
-    return path.style.opacity !== '0'
-  })
-}
-
-function prepareLine(path: SVGPathElement) {
-  if (!path.getAttribute('pathLength')) path.setAttribute('pathLength', '1')
-}
-
-function wipeLines() {
-  const lines = storyLines()
-  const ranked = lines.map(path => {
-    let length = 0
-    try { length = path.getTotalLength() } catch { /* A detached path has no length. */ }
-    return { path, length }
-  }).filter(line => line.length > 40).sort((a, b) => b.length - a.length)
-  const accents = ranked.filter((_, index) => index % Math.max(1, Math.floor(ranked.length / ACCENTS.length)) === 0).slice(0, ACCENTS.length)
-  accents.forEach(({ path }, index) => {
-    const accent = path.cloneNode(false) as SVGPathElement
-    accent.setAttribute('class', 'route-line-accent')
-    accent.removeAttribute('id')
-    accent.removeAttribute('style')
-    accent.setAttribute('fill', 'none')
-    accent.setAttribute('stroke', `var(--color-icon-${ACCENTS[index]})`)
-    prepareLine(accent)
-    accent.style.strokeDasharray = '1 2'
-    accent.style.strokeDashoffset = '1'
-    path.parentElement?.appendChild(accent)
-    accent.animate(
-      [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }],
-      { duration: ROUTE_LINE_MS, easing: EASE, fill: 'forwards' },
-    )
-  })
-  const wipes = lines.map(path => {
-    prepareLine(path)
-    const animation = path.animate(
-      [{ strokeDasharray: '1 2', strokeDashoffset: 0 }, { strokeDasharray: '1 2', strokeDashoffset: 1 }],
-      { duration: ROUTE_LINE_MS, easing: EASE, fill: 'forwards' },
-    )
-    animation.id = 'route-line-wipe'
-    return animation.finished
-  })
-  return Promise.all(wipes)
-}
-
-function markArrive() {
-  try { sessionStorage.setItem(ARRIVE_KEY, String(Date.now())) } catch { /* storage can be blocked */ }
+/** A section link from another page: the only navigation that gets a hint or an arrival. */
+function sectionLink(link: HTMLAnchorElement) {
+  const url = new URL(link.href, location.href)
+  if (url.origin !== location.origin) return false
+  const destination = storyKindFromPath(pathnameOf(url.pathname))
+  return Boolean(destination) && destination !== storyKindFromPath(pathnameOf(location.pathname))
 }
 
 function hint(href: string) {
@@ -99,7 +46,7 @@ function hint(href: string) {
   document.head.appendChild(prefetch)
 }
 
-/** Resolves once the scene engine owns the artwork, so the draw-in never competes with hydration. */
+/** Resolves once the scene engine owns the artwork, so the arrival never competes with hydration. */
 function sceneReady(svg: SVGSVGElement) {
   return new Promise<void>(resolve => {
     if (svg.hasAttribute('data-story-ready')) return resolve()
@@ -110,7 +57,7 @@ function sceneReady(svg: SVGSVGElement) {
   })
 }
 
-/** The head script holds the arriving artwork hidden; release it into the draw-in. */
+/** The head script holds the arriving artwork hidden; release it to settle into place. */
 async function arrive() {
   const root = document.documentElement
   try { sessionStorage.removeItem(ARRIVE_KEY) } catch { /* storage can be blocked */ }
@@ -120,74 +67,34 @@ async function arrive() {
   await sceneReady(svg)
   requestAnimationFrame(() => requestAnimationFrame(() => {
     if (root.dataset.routeArrive !== '') return
-    const lines = [...svg.querySelectorAll<SVGPathElement>('path:not(.section-story__pulse):not(.section-story__contact-spectrum)')]
-    lines.forEach((path, index) => { path.style.animationDelay = `${Math.round(index / Math.max(1, lines.length - 1) * ROUTE_STAGGER_MS)}ms` })
-    root.dataset.routeArrive = 'draw'
-    window.setTimeout(() => {
-      root.removeAttribute('data-route-arrive')
-      lines.forEach(path => { path.style.animationDelay = '' })
-    }, ROUTE_DRAW_MS + ROUTE_STAGGER_MS + 80)
+    root.dataset.routeArrive = 'settle'
+    // The animation ends on the resting state, so releasing it changes nothing on screen.
+    window.setTimeout(() => root.removeAttribute('data-route-arrive'), ROUTE_SETTLE_MS + 80)
   }))
-}
-
-/** The wipe edits the artwork, so it waits for hydration, and only runs where it can be seen. */
-function canWipe() {
-  const hero = document.querySelector('.portfolio-story-hero')
-  if (!hero || !hero.querySelector('.section-story svg[data-story-ready]')) return false
-  return hero.getBoundingClientRect().bottom > window.innerHeight * .35
-}
-
-let flight = 0
-
-async function wipeThenVisit(href: string) {
-  const id = ++flight
-  hint(href)
-  if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'smooth' })
-  document.documentElement.dataset.routeLeave = ''
-  try { await wipeLines() } catch { /* Decorative failures must not block navigation. */ }
-  if (id !== flight) return
-  markArrive()
-  location.assign(href)
 }
 
 export function mountRouteTransitions() {
   document.documentElement.dataset.routeTransitions = 'on'
   void arrive()
 
+  // A page restored from the back/forward cache is already running; never hold it.
   window.addEventListener('pageshow', event => {
-    if (!event.persisted) return
-    flight++
-    document.documentElement.removeAttribute('data-route-leave')
-    document.documentElement.removeAttribute('data-route-arrive')
-    document.getAnimations().filter(animation => animation.id === 'route-line-wipe').forEach(animation => animation.cancel())
-    document.querySelectorAll('.route-line-accent').forEach(element => element.remove())
+    if (event.persisted) document.documentElement.removeAttribute('data-route-arrive')
   })
 
   document.addEventListener('pointerenter', event => {
     if (!motionOk()) return
     const link = linkFrom(event)
-    if (!link) return
-    const url = new URL(link.href, location.href)
-    if (url.origin !== location.origin) return
-    const destination = storyKindFromPath(pathnameOf(url.pathname))
-    if (!destination || destination === storyKindFromPath(pathnameOf(location.pathname))) return
-    hint(link.href)
+    if (link && sectionLink(link)) hint(link.href)
   }, true)
 
+  // Navigation itself is never intercepted: the browser's view transition carries every exit.
+  // The mark only tells the next section to hold its artwork where the Navigation API is missing.
   document.addEventListener('click', event => {
     if (!motionOk()) return
     const link = linkFrom(event)
-    if (!link || !plainClick(event, link)) return
-    const url = new URL(link.href, location.href)
-    if (url.origin !== location.origin) return
-    const from = storyKindFromPath(pathnameOf(location.pathname))
-    const to = storyKindFromPath(pathnameOf(url.pathname))
-    if (!to || from === to) return
-    // Every arrival at a section draws its lines in. From elsewhere, or with the artwork
-    // scrolled away or not yet running, the document cross-fade carries the exit.
-    markArrive()
-    if (!from || !canWipe()) return
-    event.preventDefault()
-    void wipeThenVisit(url.href)
+    if (!link || !plainClick(event, link) || !sectionLink(link)) return
+    hint(link.href)
+    try { sessionStorage.setItem(ARRIVE_KEY, String(Date.now())) } catch { /* storage can be blocked */ }
   })
 }
