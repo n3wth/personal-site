@@ -1,5 +1,30 @@
 import { test, expect } from '@playwright/test'
 
+test('repeated r3 paths reach the documentation without JavaScript', async ({ browser, baseURL }, testInfo) => {
+  const context = await browser.newContext({ baseURL, javaScriptEnabled: false, viewport: testInfo.project.use.viewport })
+  const page = await context.newPage()
+  try {
+    for (const [slug, title] of [
+      ['configuration', 'Configuration'],
+      ['knowledge-graph', 'Knowledge Graph Tools'],
+      ['cache-tools', 'Cache and Sync Tools'],
+      ['memory-tools', 'Memory Tools Reference'],
+      ['troubleshooting', 'Troubleshooting'],
+    ]) {
+      for (const suffix of ['', '/']) {
+        await page.goto(`/docs/r3/r3/${slug}${suffix}`)
+        await expect(page).toHaveURL(new RegExp(`/docs/r3/${slug}/?$`))
+        await expect(page.locator('main h1')).toHaveText(title)
+        await expect(page.locator('main')).toBeVisible()
+        await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://n3wth.com/docs/r3/${slug}/`)
+      }
+    }
+    await page.screenshot({ path: testInfo.outputPath('r3-documentation.png') })
+  } finally {
+    await context.close()
+  }
+})
+
 test('prefix search lists elephant-goldfish without an empty answer', async ({ page }, testInfo) => {
   await page.route('**/api/search', route => route.fulfill({
     json: { answer: 'No relevant information found. Try another search.' },

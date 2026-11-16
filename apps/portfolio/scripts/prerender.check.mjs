@@ -5,6 +5,35 @@ import { JSDOM } from 'jsdom'
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 
+for (const [slug, title] of [
+  ['configuration', 'Configuration'],
+  ['knowledge-graph', 'Knowledge Graph Tools'],
+  ['cache-tools', 'Cache and Sync Tools'],
+  ['memory-tools', 'Memory Tools Reference'],
+  ['troubleshooting', 'Troubleshooting'],
+]) {
+  test(`repeated r3 path redirects to the published ${slug} page`, () => {
+    const destination = `/docs/r3/${slug}`
+    const alias = `/docs/r3/r3/${slug}`
+    const redirects = read('../dist/_redirects').trim().split('\n').map(line => line.trim().split(/\s+/))
+    for (const source of [alias, `${alias}/`]) {
+      assert.ok(redirects.some(([from, to, status]) => from === source && to === destination && status === '308'), `Missing permanent redirect for ${source}`)
+    }
+    const redirect = new JSDOM(read(`../dist${alias}/index.html`))
+    const page = new JSDOM(read(`../dist${destination}/index.html`))
+    try {
+      assert.equal(redirect.window.document.querySelector('meta[http-equiv="refresh"]')?.content, `0;url=${destination}`)
+      assert.equal(page.window.document.querySelector('main h1')?.textContent, title)
+      for (const link of page.window.document.querySelectorAll('a[href]')) {
+        assert.ok(!link.getAttribute('href').startsWith('/docs/r3/r3/'), `Repeated r3 path in ${destination}`)
+      }
+    } finally {
+      redirect.window.close()
+      page.window.close()
+    }
+  })
+}
+
 test('final article HTML preserves authored chapters and links without JavaScript', () => {
   const dom = new JSDOM(read('../dist/thinking/field-guide/index.html'))
   try {
