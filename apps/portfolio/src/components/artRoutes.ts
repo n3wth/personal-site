@@ -56,7 +56,7 @@ export function measurePath(d: string) {
       if (lengths[mid] < distance) low = mid
       else high = mid
     }
-    const a = points[low], b = points[high], t = (distance - lengths[low]) / (lengths[high] - lengths[low] || 1)
+    const a = points[low], b = points[high], t = (distance - lengths[low]) / (lengths[high] - lengths[low])
     return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }
   }
   return { length, pointAt }
