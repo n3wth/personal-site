@@ -1,5 +1,53 @@
 import { test, expect } from '@playwright/test'
 
+test('search loads on demand and keeps keyboard focus across reopening', async ({ page }) => {
+  const chunks: string[] = []
+  page.on('request', request => {
+    if (/\/CommandPalette\.[^/]+\.js/.test(request.url())) chunks.push(request.url())
+  })
+  await page.goto('/')
+  const search = page.getByRole('button', { name: 'Search', exact: true })
+  await expect(search).toBeEnabled()
+  expect(chunks).toEqual([])
+  await search.focus()
+  await page.keyboard.press('Control+k')
+  const input = page.getByRole('combobox')
+  await expect(input).toBeFocused()
+  expect(chunks).toHaveLength(1)
+  await input.fill('5 Whys')
+  await expect(page.getByRole('option', { name: '5 Whys', exact: true })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(input).toHaveCount(0)
+  await expect(search).toBeFocused()
+  await page.keyboard.press('/')
+  await expect(input).toBeFocused()
+  await expect(input).toHaveValue('')
+  expect(chunks).toHaveLength(1)
+  await page.keyboard.press('Escape')
+  await expect(search).toBeFocused()
+})
+
+test('search can close while its first chunk is loading', async ({ page }) => {
+  let release!: () => void
+  const pending = new Promise<void>(resolve => { release = resolve })
+  await page.route('**/CommandPalette.*.js', async route => {
+    await pending
+    await route.continue()
+  })
+  await page.goto('/')
+  const search = page.getByRole('button', { name: 'Search', exact: true })
+  await search.click()
+  await expect(page.getByRole('status')).toHaveText('Loading search…')
+  await page.keyboard.press('Escape')
+  await expect(search).toHaveAttribute('aria-expanded', 'false')
+  await expect(page.getByRole('status')).toHaveCount(0)
+  release()
+  await search.click()
+  await expect(page.getByRole('combobox')).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(search).toBeFocused()
+})
+
 test('prefix search lists elephant-goldfish without an empty answer', async ({ page }, testInfo) => {
   await page.route('**/api/search', route => route.fulfill({
     json: { answer: 'No relevant information found. Try another search.' },
