@@ -30,6 +30,11 @@
   "ai": { "binding": "AI" },
   "ratelimits": [
     {
+      "name": "SEARCH_ANSWER",
+      "namespace_id": "2026092103",
+      "simple": { "limit": 20, "period": 60 }
+    },
+    {
       "name": "SHIP_REVIEW",
       "namespace_id": "2026092102",
       "simple": { "limit": 5, "period": 60 }

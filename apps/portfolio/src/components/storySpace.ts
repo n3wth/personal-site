@@ -118,7 +118,7 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
       active.sort((a, b) => strength(b, time) - strength(a, time))
       return active[0]?.color ?? null
     },
-    update(time: number) {
+    update(time: number, scale = 1) {
       const energy = storyEnergy(time)
       if (halos.length) {
         nextHalo ??= time + 10 + Math.random() * 8
@@ -214,7 +214,6 @@ export function createStorySpace(svg: SVGSVGElement, kind: string, amount: numbe
         face.style.fill = sideDepth > .001 ? `color-mix(in srgb, var(--bg) ${sideDepth * 100}%, ${color})` : color
         face.style.fillOpacity = String(Math.min(1, total) * amount * (shade + (1.5 - 2 * shade) * depth))
       })
-      const scale = borders.length ? Math.abs(svg.getScreenCTM()?.a || 1) : 1
       borders.forEach(border => {
         const side = Number(border.dataset.borderSide)
         const distance = Math.abs(side)

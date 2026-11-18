@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { handlePortfolioApi } from './runtime'
 
 const request = (path: string, init?: RequestInit) => new Request(`https://preview.n3wth.com${path}`, init)
@@ -8,6 +8,21 @@ describe('portfolio Worker API runtime', () => {
     const response = await handlePortfolioApi(request(path), {})
     expect(response?.status).toBe(410)
     expect(await response?.json()).toEqual({ error: 'This endpoint has been retired' })
+  })
+
+  it('answers from public sources and ignores unissued citations', async () => {
+    const run = vi.fn().mockResolvedValue({ response: { answer: 'r3 is a memory service for AI apps.', sourceIds: [1, 99, 1] } })
+    const response = await handlePortfolioApi(request('/api/search', { method: 'POST', body: JSON.stringify({ query: 'What is r3?', stream: true }) }), { AI: { run } })
+    expect(await response?.json()).toMatchObject({ answer: 'r3 is a memory service for AI apps. Sources: [r3](https://n3wth.com/projects/r3).' })
+    const { sources } = JSON.parse(run.mock.calls[0][1].messages[1].content)
+    expect(sources[0].text).toContain('memory service')
+  })
+
+  it('skips inference when a mistyped query has no matching source', async () => {
+    const run = vi.fn()
+    const response = await handlePortfolioApi(request('/api/search', { method: 'POST', body: JSON.stringify({ query: 'jhow' }) }), { AI: { run } })
+    expect(await response?.json()).toMatchObject({ answer: expect.stringContaining('No relevant information found') })
+    expect(run).not.toHaveBeenCalled()
   })
 
   it('preserves non-streaming search JSON, citations, and CORS', async () => {

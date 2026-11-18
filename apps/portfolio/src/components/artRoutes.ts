@@ -3,7 +3,7 @@ export function createArtRoutes(svg: SVGSVGElement) {
   const wave = svg.querySelector<SVGPathElement>('[data-art-current]')
   if (!wave) return []
   const length = wave.getTotalLength()
-  const samples = Array.from({ length: 4097 }, (_, i) => wave.getPointAtLength(length * i / 4096))
+  const samples = Array.from({ length: 1025 }, (_, i) => wave.getPointAtLength(length * i / 1024))
   const heightAt = (x: number) => {
     let low = 0, high = samples.length - 1
     while (high - low > 1) {
@@ -17,16 +17,20 @@ export function createArtRoutes(svg: SVGSVGElement) {
   const routes: SVGPathElement[] = []
   svg.querySelectorAll<SVGPathElement>('[data-art-loop], [data-story-halo-loop]').forEach(loop => {
     const total = loop.getTotalLength()
-    const count = Math.ceil(total / 2)
+    const count = Math.ceil(total / 8)
     const distance = (at: number) => {
       const p = loop.getPointAtLength(at)
       return p.y - heightAt(p.x)
     }
     const hits: number[] = []
+    let previous = distance(0)
     for (let i = 1; i <= count; i++) {
       let a = (i - 1) / count * total, b = i / count * total
-      if (distance(a) * distance(b) >= 0) continue
-      const sign = distance(a) > 0
+      const next = distance(b)
+      const crosses = previous * next <= 0 && previous !== 0
+      const sign = previous > 0
+      previous = next
+      if (!crosses) continue
       for (let step = 0; step < 16; step++) {
         const mid = (a + b) / 2
         if ((distance(mid) > 0) === sign) a = mid

@@ -86,7 +86,16 @@ export function Creative() {
       <figure id={opener.id} className="art-opening m-0">
         <div className="art-opening-scene">
           <div className="art-opening-image">
-            <img src={opener.image} alt={opener.imageAlt} loading="eager" fetchPriority="high" decoding="async" />
+            <img
+              src={opener.image}
+              srcSet={`${opener.image.replace('.webp', '-800.webp')} 800w, ${opener.image.replace('.webp', '-1200.webp')} 1200w, ${opener.image} 2000w`}
+              sizes="(max-width: 767px) max(100vw, 91svh), max(100vw, 114svh)"
+              width={2000}
+              height={1500}
+              alt={opener.imageAlt}
+              loading="lazy"
+              decoding="async"
+            />
           </div>
         </div>
         <figcaption className={railClass}>

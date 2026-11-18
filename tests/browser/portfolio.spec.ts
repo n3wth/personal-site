@@ -598,6 +598,19 @@ test('route hints do not prefetch other origins', async ({ page }) => {
   await expect(page.locator('link[rel="prefetch"][href="https://example.com/projects"]')).toHaveCount(0)
 })
 
+test('keyboard navigation prefetches a section once with reduced motion', async ({ page }) => {
+  await page.goto('/work')
+  await expect(page.locator('html')).toHaveAttribute('data-route-transitions', 'on')
+  const projects = page.getByRole('navigation', { name: 'Footer', exact: true }).getByRole('link', { name: 'Projects', exact: true })
+  await projects.focus()
+  const hint = page.locator('link[rel="prefetch"][href="/projects"]')
+  await expect(hint).toHaveCount(1)
+  await projects.hover()
+  await expect(hint).toHaveCount(1)
+  await projects.press('Enter')
+  await expect(page).toHaveURL(/\/projects$/)
+})
+
 test('contour light respects motion preferences and pauses offscreen', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
@@ -821,6 +834,19 @@ test('home remains composed before its light layer hydrates', async ({ page }) =
   await expect(page).toHaveURL(/\/work$/)
 })
 
+
+test('Art preserves its light routes and selects a smaller opening photo on phones', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/art')
+  await expect(page.locator('svg[data-story-ready] [data-art-route]')).toHaveCount(24)
+  const photo = page.locator('.art-opening-image img')
+  await expect(photo).toHaveAttribute('loading', 'lazy')
+  await photo.scrollIntoViewIfNeeded()
+  await expect.poll(() => photo.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0)
+  if (page.viewportSize()!.width < 768) {
+    expect(await photo.evaluate((image: HTMLImageElement) => image.currentSrc)).toMatch(/them-(800|1200)\.webp$/)
+  }
+})
 
 test('compact header is flush and its menu remains usable over photographs', async ({ page }, testInfo) => {
   test.skip(page.viewportSize()!.width >= 1024, 'Compact navigation only')
