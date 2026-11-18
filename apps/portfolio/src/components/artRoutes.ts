@@ -40,7 +40,8 @@ export function createArtRoutes(svg: SVGSVGElement) {
     }
     if (hits.length !== 2) return
     ;[[hits[1], hits[0] + total], [hits[0], hits[1]]].forEach(([start, end], index) => {
-      const steps = Math.ceil((end - start) / 2)
+      // The fitted arches are smooth at this spacing, with fewer SVG reads at startup.
+      const steps = Math.ceil((end - start) / 5)
       const points = Array.from({ length: steps + 1 }, (_, i) => loop.getPointAtLength((start + (end - start) * i / steps) % total))
       const route = document.createElementNS('http://www.w3.org/2000/svg', 'path')
       route.dataset.artRoute = index ? 'reflection' : 'arch'

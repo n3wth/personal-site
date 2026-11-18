@@ -835,6 +835,23 @@ test('home remains composed before its light layer hydrates', async ({ page }) =
 })
 
 
+test('Art shows its opening sweep before the scene JavaScript loads', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.route('**/Art.*.js', route => route.abort())
+  await page.goto('/art', { waitUntil: 'domcontentloaded' })
+  const scene = page.locator('.section-story--art svg')
+  const mask = scene.locator('.section-story__art-opening-mask')
+  await expect(scene).not.toHaveAttribute('data-story-ready', '')
+  const moved = await mask.evaluate(el => new Promise<boolean>(resolve => {
+    const start = getComputedStyle(el).transform
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve(getComputedStyle(el).transform !== start)))
+  }))
+  expect(moved).toBe(true)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect(mask).toHaveCSS('animation-name', 'none')
+  await expect(scene.locator('.section-story__art-opening')).toHaveCSS('opacity', '0')
+})
+
 test('Art preserves its light routes and selects a smaller opening photo on phones', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/art')
