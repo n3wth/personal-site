@@ -1,0 +1,112 @@
+.ship-review {
+  padding-block: clamp(3.5rem, 7vh, 5rem) 5rem;
+}
+
+.ship-review-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  margin-block-start: 2.5rem;
+}
+
+.ship-review h2 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin-block: 0 1rem;
+}
+
+.ship-review-form,
+.ship-share {
+  display: grid;
+  gap: .65rem;
+}
+
+.ship-review label,
+.ship-review dt,
+.ship-examples summary {
+  font-weight: var(--font-weight-medium);
+}
+
+.ship-review textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--rail);
+  border-radius: .5rem;
+  padding: .75rem;
+  background: var(--bg-soft);
+  color: var(--ink);
+}
+
+.ship-review textarea::placeholder {
+  color: var(--ink-dim);
+}
+
+.ship-review :is(textarea, summary, a, button):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.ship-review textarea + label {
+  margin-block-start: .45rem;
+}
+
+.ship-note, .ship-examples a {
+  font-size: var(--font-size-sm);
+  color: var(--ink-dim);
+}
+
+.ship-note:empty {
+  margin: 0;
+}
+
+.ship-examples details,
+.ship-result {
+  border-block-start: 1px solid var(--rail);
+  padding-block: 1rem;
+}
+
+.ship-review button,
+.ship-examples summary {
+  min-height: 44px;
+}
+
+.ship-examples summary {
+  cursor: pointer;
+  align-content: center;
+}
+
+.ship-examples a {
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+.ship-examples details > p {
+  margin-block-start: .8rem;
+}
+
+.ship-review-text {
+  display: grid;
+  gap: .85rem;
+  margin-block: 1rem;
+}
+
+.ship-review-text dd {
+  margin: .25rem 0 0;
+  color: var(--color-text-gray);
+  overflow-wrap: anywhere;
+}
+
+.ship-result,
+.ship-share {
+  margin-block-start: 1.5rem;
+}
+
+.ship-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+}
+
+@media (max-width: 760px) {
+  .ship-review-grid { grid-template-columns: minmax(0, 1fr); }
+}

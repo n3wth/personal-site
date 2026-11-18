@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, ReactElement } from 'react'
 import { Search, X, RotateCcw } from 'lucide-react'
 import { highlightRanges, searchItems } from '../lib/search'
+import { shipReviewPath } from '../lib/shipReview'
 import { answerLinkHref } from '../lib/answerLinks'
 import { track } from '../lib/analytics'
 import type { HighlightRange, ResultGroup, SearchItem } from '../lib/search'
@@ -46,6 +47,13 @@ const PAGES: SearchItem[] = [
   ...navigation.map(({ name, href, description }) => ({
     id: `page-${href.slice(1)}`, title: name, subtitle: description, href, group: 'Pages' as const,
   })),
+  {
+    id: 'page-before-you-ship',
+    title: 'Before You Ship',
+    subtitle: 'Review an AI feature and generate an acceptance test',
+    href: shipReviewPath,
+    group: 'Pages',
+  },
   {
     id: 'page-support',
     title: 'Support',

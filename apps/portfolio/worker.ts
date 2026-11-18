@@ -1,7 +1,8 @@
 import { handlePortfolioApi } from './api/runtime'
+import type { ShipReviewEnv } from './api/ship-review'
 import type { SubscribeEnv } from './api/subscribe'
 
-interface Env extends SubscribeEnv {
+interface Env extends SubscribeEnv, ShipReviewEnv {
   ASSETS: { fetch(request: Request): Promise<Response> }
   RESEND_API_KEY?: string
   RESEND_SEGMENT_ID?: string

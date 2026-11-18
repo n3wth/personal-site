@@ -1,3 +1,5 @@
+import { handleShipReview, type ShipReviewEnv } from './ship-review'
+import { shipReviewApi } from '../src/lib/shipReview'
 import { handleSubscribe, type SubscribeEnv, type SubscribeOptions } from './subscribe'
 import { handleUnsubscribeRequest } from './unsubscribe'
 
@@ -190,9 +192,10 @@ async function search(request: Request, fetchImpl: FetchImplementation): Promise
   }
 }
 
-export async function handlePortfolioApi(request: Request, env: SubscribeEnv = {}, fetchImpl: FetchImplementation = fetch, subscribeOptions: SubscribeOptions = {}): Promise<Response | undefined> {
+export async function handlePortfolioApi(request: Request, env: SubscribeEnv & ShipReviewEnv = {}, fetchImpl: FetchImplementation = fetch, subscribeOptions: SubscribeOptions = {}): Promise<Response | undefined> {
   const path = new URL(request.url).pathname.replace(/\/$/, '')
   if (path === '/api/agent' || path === '/api/github-stats') return json({ error: 'This endpoint has been retired' }, 410)
+  if (path === shipReviewApi) return handleShipReview(request, env)
   if (path === '/api/search') return search(request, fetchImpl)
   if (path === '/api/subscribe') return handleSubscribe(request, env, fetchImpl, subscribeOptions)
   if (path === '/api/unsubscribe') return handleUnsubscribeRequest(request, env, fetchImpl)

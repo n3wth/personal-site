@@ -870,3 +870,44 @@ test('primary navigation opens Work', async ({ page }) => {
   await expect(page).toHaveURL(/\/work$/)
   await expect(page.locator('h1').first()).toBeVisible()
 })
+
+test('Before You Ship reviews a feature and shares only the edited test', async ({ page }, testInfo) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { value: {
+      writeText: async (text: string) => { document.body.dataset.copiedText = text },
+    } })
+  })
+  await page.route('**/api/before-you-ship', async route => {
+    expect(route.request().postDataJSON()).toEqual({
+      feature: 'A workplace assistant answers company policy questions.',
+      consequence: 'Someone uses the wrong leave policy.',
+    })
+    await route.fulfill({ json: {
+      failure: 'The assistant cites the wrong country.',
+      test: 'Ask about leave without sharing a country. Pass if it asks where you work.',
+    } })
+  })
+  await page.goto('/before-you-ship')
+  await expect(page.getByRole('heading', { name: 'Before You Ship', exact: true })).toBeVisible()
+  await expect(page.getByText('Policy search', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Generate a test' })).toBeEnabled()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: testInfo.outputPath('before-you-ship.png'), fullPage: true })
+  await page.getByLabel('What are you building?').fill('A workplace assistant answers company policy questions.')
+  await page.getByLabel('What happens if it gets something wrong?').fill('Someone uses the wrong leave policy.')
+  await page.getByRole('button', { name: 'Generate a test' }).click()
+  const review = page.getByRole('region', { name: 'Your review' })
+  await expect(review).toBeFocused()
+  await expect(review.getByText('The assistant cites the wrong country.')).toBeVisible()
+  await review.getByRole('button', { name: 'Copy test', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toContain('Pass if it asks where you work.')
+  await review.getByRole('button', { name: 'Prepare to share' }).click()
+  await page.getByLabel('Edit the test before sharing').fill('A synthetic policy test for my team.')
+  await review.getByRole('button', { name: 'Copy share text' }).click()
+  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toBe(
+    'A synthetic policy test for my team.\n\nBefore You Ship · https://n3wth.com/before-you-ship',
+  )
+  const download = page.waitForEvent('download')
+  await review.getByRole('button', { name: 'Download card' }).click()
+  expect((await download).suggestedFilename()).toBe('before-you-ship.png')
+})
