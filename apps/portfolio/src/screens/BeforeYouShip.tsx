@@ -106,9 +106,8 @@ function BeforeYouShip() {
   return (
     <SiteContainer className="ship-review" data-ph-no-capture>
       <PageHeader
-        className="ship-intro"
         spacing="compact"
-        title="Before You Ship"
+        title={<span className="ship-title">Before You Ship</span>}
         description="Find one way your AI feature could fail and get a test to run before launch."
       />
       <PolicyChallenge ready={ready} />

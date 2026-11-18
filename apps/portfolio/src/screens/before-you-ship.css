@@ -2,15 +2,11 @@
   padding-block: clamp(1.25rem, 4vh, 2.75rem) 5rem;
 }
 
-.ship-intro .n3wth-site-heading {
+.ship-title {
+  display: block;
   font-size: clamp(2.6rem, 7.5vw, 6rem);
   line-height: .98;
   letter-spacing: -.04em;
-}
-
-.ship-intro .n3wth-site-description {
-  margin-block-start: .9rem;
-  max-width: 54ch;
 }
 
 .ship-review-grid {
