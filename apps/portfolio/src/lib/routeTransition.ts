@@ -1,57 +1,33 @@
 import { storyKindFromPath } from './routeLines'
 
-function linkFrom(event: Event) {
-  const target = event.target
-  if (!(target instanceof Element)) return null
-  const link = target.closest('a')
-  return link instanceof HTMLAnchorElement ? link : null
-}
-
 function pathnameOf(pathname: string) {
-  if (pathname.length > 1 && pathname.endsWith('/')) return pathname.slice(0, -1)
-  return pathname || '/'
-}
-
-function motionOk() {
-  return !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
-
-function plainClick(event: MouseEvent, link: HTMLAnchorElement) {
-  if (event.defaultPrevented || event.button !== 0) return false
-  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false
-  if (link.target && link.target !== '_self') return false
-  if (link.hasAttribute('download')) return false
-  return true
-}
-
-/** A section link from another page: prefetches the destination document. */
-function sectionLink(link: HTMLAnchorElement) {
-  const url = new URL(link.href, location.href)
-  if (url.origin !== location.origin) return false
-  const destination = storyKindFromPath(pathnameOf(url.pathname))
-  return Boolean(destination) && destination !== storyKindFromPath(pathnameOf(location.pathname))
-}
-
-function hint(href: string) {
-  if (document.querySelector(`link[rel="prefetch"][href="${CSS.escape(href)}"]`)) return
-  const prefetch = document.createElement('link')
-  prefetch.rel = 'prefetch'
-  prefetch.href = href
-  document.head.appendChild(prefetch)
+  return pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
 }
 
 export function mountRouteTransitions() {
   document.documentElement.dataset.routeTransitions = 'on'
+  const hinted = new Set<string>()
 
-  document.addEventListener('pointerenter', event => {
-    if (!motionOk()) return
-    const link = linkFrom(event)
-    if (link && sectionLink(link)) hint(link.href)
-  }, true)
+  function hint(event: Event) {
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection
+    if (connection?.saveData || /2g$/.test(connection?.effectiveType ?? '')) return
+    if (!(event.target instanceof Element)) return
+    const link = event.target.closest('a')
+    if (!(link instanceof HTMLAnchorElement) || link.hasAttribute('download') || (link.target && link.target !== '_self')) return
+    if (event.type === 'focusin' && !link.matches(':focus-visible')) return
+    if (event instanceof PointerEvent && (event.pointerType === 'touch' || (event.relatedTarget instanceof Node && link.contains(event.relatedTarget)))) return
+    const url = new URL(link.href)
+    if (url.origin !== location.origin || url.search) return
+    const path = pathnameOf(url.pathname)
+    if (path === pathnameOf(location.pathname) || (path !== '/' && !storyKindFromPath(path)) || hinted.has(path)) return
 
-  document.addEventListener('click', event => {
-    if (!motionOk()) return
-    const link = linkFrom(event)
-    if (link && plainClick(event, link) && sectionLink(link)) hint(link.href)
-  })
+    hinted.add(path)
+    const prefetch = document.createElement('link')
+    prefetch.rel = 'prefetch'
+    prefetch.href = path
+    document.head.appendChild(prefetch)
+  }
+
+  document.addEventListener('pointerover', hint, { passive: true })
+  document.addEventListener('focusin', hint)
 }

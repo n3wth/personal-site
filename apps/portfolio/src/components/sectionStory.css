@@ -74,6 +74,7 @@
 }
 .section-story .section-story__pulse, .section-story .section-story__contact-spectrum { opacity: 0; stroke-width: 1.5; stroke-dasharray: var(--pulse-length) 1; }
 .section-story .section-story__transfer { opacity: 0; stroke-width: 1.5; }
+.section-story .section-story__art-opening { opacity: 0; stroke: var(--story-warm); stroke-width: 1.5; }
 
 @media (prefers-reduced-motion: no-preference) {
   .section-story [data-story-face] { fill-opacity: 0; }
@@ -81,6 +82,9 @@
   .section-story__page { transform-origin: 0 235px; animation: story-page calc(29s + var(--story-phase) * 2.71s) ease-in-out infinite alternate; animation-delay: calc(var(--story-phase) * -3.8s); }
   .section-story__canopy { transform-origin: 890px 740px; animation: story-canopy 31s ease-in-out infinite alternate; }
   .section-story__branch { animation: story-branch var(--branch-duration) ease-in-out infinite alternate; animation-delay: var(--branch-delay); }
+  /* A soft sweep can start with the server-rendered arch while route geometry loads. */
+  .section-story__art-opening { animation: art-opening-light 1.65s linear; }
+  .section-story__art-opening-mask { animation: art-opening-sweep 1.65s linear; }
   .section-story svg[data-story-paused] * { animation-play-state: paused; }
 }
 
@@ -88,3 +92,16 @@
 @keyframes story-page { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
 @keyframes story-canopy { from { transform: rotate(-.5deg); } to { transform: rotate(.6deg); } }
 @keyframes story-branch { from { transform: rotate(calc(var(--branch-angle) * -1)); } to { transform: rotate(var(--branch-angle)); } }
+
+
+@keyframes art-opening-sweep {
+  from { transform: translateX(115px); }
+  to { transform: translateX(625px); }
+}
+
+@keyframes art-opening-light {
+  0% { opacity: .32; }
+  28% { opacity: .85; }
+  75% { opacity: .85; }
+  100% { opacity: 0; }
+}

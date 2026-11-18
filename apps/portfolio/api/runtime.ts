@@ -1,3 +1,4 @@
+import { answerFromSite, type SiteAnswerEnv } from './site-answers'
 import { handleShipReview, type ShipReviewEnv } from './ship-review'
 import { shipReviewApi } from '../src/lib/shipReview'
 import { handleSubscribe, type SubscribeEnv, type SubscribeOptions } from './subscribe'
@@ -172,7 +173,7 @@ function streamSearch(upstream: Response, responseHeaders: Headers): Response {
   return new Response(stream, { status: 200, headers: responseHeaders })
 }
 
-async function search(request: Request, fetchImpl: FetchImplementation): Promise<Response> {
+async function search(request: Request, fetchImpl: FetchImplementation, env: SiteAnswerEnv): Promise<Response> {
   const cors = corsHeaders()
   if (request.method === 'OPTIONS') return new Response(null, { status: 200, headers: cors })
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405, true)
@@ -180,6 +181,7 @@ async function search(request: Request, fetchImpl: FetchImplementation): Promise
   if (!body.query || typeof body.query !== 'string' || body.query.length > 300) return json({ error: 'Invalid query' }, 400, true)
   // Resolve portfolio shorthand before retrieval, not just during generation.
   const query = body.query.trim().replace(/^(?:(?:my|your)\s+)?(work experience|career|professional background|resume|cv)[?.!]?$/i, 'Oliver Newth $1')
+  if (env.AI) return json(await answerFromSite(query, env, request), 200, true)
   try {
     const upstream = await fetchImpl(AI_SEARCH_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: query }], max_tokens: 180, temperature: 0.3, stream: Boolean(body.stream) }), signal: request.signal })
     if (!upstream.ok) return json({ answer: "Couldn't reach the search index — try browsing instead.", fallback: true }, 200, true)
@@ -192,11 +194,11 @@ async function search(request: Request, fetchImpl: FetchImplementation): Promise
   }
 }
 
-export async function handlePortfolioApi(request: Request, env: SubscribeEnv & ShipReviewEnv = {}, fetchImpl: FetchImplementation = fetch, subscribeOptions: SubscribeOptions = {}): Promise<Response | undefined> {
+export async function handlePortfolioApi(request: Request, env: SubscribeEnv & ShipReviewEnv & SiteAnswerEnv = {}, fetchImpl: FetchImplementation = fetch, subscribeOptions: SubscribeOptions = {}): Promise<Response | undefined> {
   const path = new URL(request.url).pathname.replace(/\/$/, '')
   if (path === '/api/agent' || path === '/api/github-stats') return json({ error: 'This endpoint has been retired' }, 410)
   if (path === shipReviewApi) return handleShipReview(request, env)
-  if (path === '/api/search') return search(request, fetchImpl)
+  if (path === '/api/search') return search(request, fetchImpl, env)
   if (path === '/api/subscribe') return handleSubscribe(request, env, fetchImpl, subscribeOptions)
   if (path === '/api/unsubscribe') return handleUnsubscribeRequest(request, env, fetchImpl)
   return undefined

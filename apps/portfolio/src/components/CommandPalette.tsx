@@ -31,7 +31,7 @@ const AI_MIN_CHARS = 2
  */
 
 /** How many results are drawn at once. The true match count is still shown. */
-const MAX_RESULTS = 40
+const MAX_RESULTS = 20
 
 /* Mirrors the route table in src/main.tsx minus the utility routes
    (/error, /login, /logout, 404), which nobody searches for.
@@ -164,12 +164,8 @@ const STATIC_ITEMS: SearchItem[] = [
 /** The answer service says this, exactly, when retrieval has nothing to add. */
 const NO_ANSWER = 'No relevant information found.'
 
-/**
- * A local hit is already on screen. Hide the abstain sentence, including the
- * tokens streamed before it finishes, so the two never contradict.
- */
-function answerContradicts(text: string, hasMatches: boolean): boolean {
-  if (!hasMatches) return false
+/** Keep an abstention out of the answer pane, including partial streamed text. */
+function answerAbstains(text: string): boolean {
   const value = text.trim()
   if (value.length === 0) return false
   return NO_ANSWER.startsWith(value) || value.startsWith(NO_ANSWER)
@@ -569,6 +565,12 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   }
 
   if (!open) return null
+  const showAnswer = trimmed.length >= AI_MIN_CHARS && (
+    askState === 'loading' || askState === 'error' ||
+    (askState === 'answered' && answerText.length > 0 && !answerAbstains(answerText))
+  )
+  const split = showAnswer && flat.length > 0
+  const searchingWithoutMatches = flat.length === 0 && showAnswer && askState !== 'error'
 
   return (
     <div className="fixed inset-0 z-[80]">
@@ -605,7 +607,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           onKeyDown={onPanelKeyDown}
           className="flex w-full flex-col overflow-hidden"
           style={{
-            maxWidth: '640px',
+            maxWidth: trimmed.length >= AI_MIN_CHARS ? '920px' : '640px',
             maxHeight: '100%',
             background: 'var(--bg-raise)',
             border: '1px solid var(--rail)',
@@ -654,21 +656,22 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
           <p role="status" aria-live="polite" className="sr-only">
             {flat.length === 0
-              ? (askState === 'loading' || askState === 'answered' ? '' : 'No results')
+              ? (searchingWithoutMatches ? '' : 'No results')
               : `${matches.length} result${matches.length === 1 ? '' : 's'}`}
           </p>
 
-          {/* Local results paint with the keystroke. The answer below never gates them. */}
+          <div className={`command-palette-body${split ? ' command-palette-body--split' : ''}`}>
+          {/* Local results paint with the keystroke. */}
           <div
             ref={listRef}
             id={LIST_ID}
             role="listbox"
             aria-label="Search results"
-            className={`min-h-0 flex-1 overflow-y-auto overscroll-contain${flat.length === 0 && (askState === 'loading' || askState === 'answered') ? '' : ' py-2'}`}
+            className={`command-palette-results min-h-0 overflow-y-auto overscroll-contain${searchingWithoutMatches ? '' : ' py-2'}`}
           >
-            {flat.length === 0 ? (askState === 'loading' || askState === 'answered' ? null : (
+            {flat.length === 0 ? (searchingWithoutMatches ? null : (
               <p className="px-4 py-6 font-sans text-sm leading-relaxed" style={{ color: 'var(--ink-dim)' }}>
-                {`Nothing matches “${trimmed}”. Try one word instead of a phrase.`}
+                {`Nothing matches “${trimmed}”. Try a name, topic, or shorter phrase.`}
               </p>
             )) : (
               rendered.map((group) => {
@@ -728,14 +731,14 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             )}
           </div>
 
-          {trimmed.length >= AI_MIN_CHARS && (askState === 'loading' || askState === 'error' || (askState === 'answered' && answerText.length > 0 && !answerContradicts(answerText, flat.length > 0))) && (
+          {showAnswer && (
             <div
-              className="max-h-[40vh] shrink-0 overflow-y-auto overscroll-contain px-4 py-3"
+              className="command-palette-answer overflow-y-auto overscroll-contain px-4 py-3"
               role="region"
               aria-label="Search answer"
               tabIndex={askState === 'answered' ? 0 : undefined}
-              style={flat.length > 0 ? { borderTop: '1px solid var(--rail)' } : undefined}
             >
+              {askState !== 'error' && <p className="command-palette-answer-label">From the site</p>}
               {askState === 'loading' && (
                 <div className="command-palette-loading" role="status" aria-label="Searching">
                   <span /><span /><span />
@@ -756,7 +759,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                   </button>
                 </p>
               )}
-              {askState === 'answered' && !answerContradicts(answerText, flat.length > 0) && (
+              {askState === 'answered' && (
                 <div>
                 <p
                   className="font-sans text-sm leading-relaxed"
@@ -801,7 +804,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
               )}
             </div>
           )}
-
+          </div>
         </div>
       </div>
     </div>
