@@ -1,6 +1,8 @@
 .portfolio-section-title { display: block; font-size: clamp(3.5rem, 7vw, 6rem); line-height: 1; letter-spacing: -.04em; font-weight: 500; }
 
 .portfolio-story-hero {
+  --bg: color-mix(in oklab, var(--journey-body, var(--color-background-body)) 25%, var(--color-background-body));
+  background-color: var(--bg);
   position: relative;
   isolation: isolate;
   width: 100vw;
@@ -47,11 +49,4 @@
   top: auto;
   bottom: calc(var(--story-size) * -.1104651163);
   transform: translateX(-50%);
-}
-
-.portfolio-story-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  padding-block: 2rem 3rem;
 }
