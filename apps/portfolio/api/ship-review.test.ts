@@ -3,7 +3,7 @@ import { handlePortfolioApi } from './runtime'
 
 const origin = 'https://n3wth.com'
 const brief = { feature: 'An assistant answers benefit questions from policy documents.', consequence: 'People plan leave based on the wrong policy.' }
-const review = { failure: 'A citation points to the wrong country.', setup: 'Index two sample policies.', input: 'Ask about leave without specifying a location.', passCondition: 'It asks for a country.' }
+const review = { failure: 'A citation points to the wrong country.', setup: 'Index two sample policies.', input: 'Ask about leave without specifying a location.', passCondition: 'It asks for a country.', inspect: 'Check the cited policy ID in the reply.' }
 
 function submit(body: string, source = origin) {
   return new Request(origin + '/api/before-you-ship', {
@@ -39,4 +39,14 @@ it('returns a retryable error for incomplete model output', async () => {
     SHIP_REVIEW: { limit: vi.fn().mockResolvedValue({ success: true }) },
   }
   expect((await handlePortfolioApi(submit(JSON.stringify(brief)), env))?.status).toBe(502)
+})
+
+it('passes optional evidence to the model and rejects oversized evidence', async () => {
+  const run = vi.fn().mockResolvedValue({ response: review })
+  const env = { AI: { run }, SHIP_REVIEW: { limit: vi.fn().mockResolvedValue({ success: true }) } }
+  const withEvidence = { ...brief, evidence: 'The reply points to UK-LEAVE for a Canadian employee.' }
+  expect((await handlePortfolioApi(submit(JSON.stringify(withEvidence)), env))?.status).toBe(200)
+  expect(JSON.parse(run.mock.calls[0][1].messages[1].content)).toEqual(withEvidence)
+  expect((await handlePortfolioApi(submit(JSON.stringify({ ...brief, evidence: 'x'.repeat(901) })), env))?.status).toBe(400)
+  expect(run).toHaveBeenCalledTimes(1)
 })

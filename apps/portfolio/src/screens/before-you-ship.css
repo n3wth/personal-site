@@ -1,4 +1,6 @@
 .ship-review {
+  --ship-paper: color-mix(in oklab, var(--ink) 95%, var(--color-warning));
+  --ship-paper-ink: var(--color-background-body);
   padding-block: clamp(1.25rem, 4vh, 2.75rem) 5rem;
 }
 
@@ -11,7 +13,8 @@
 
 .ship-review-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  align-items: start;
   gap: clamp(2rem, 5vw, 5rem);
   margin-block-start: 2.5rem;
 }
@@ -114,10 +117,6 @@
   gap: .7rem;
 }
 
-@media (max-width: 760px) {
-  .ship-review-grid { grid-template-columns: minmax(0, 1fr); }
-}
-
 .ship-case,
 #review-a-feature {
   scroll-margin-block-start: 5rem;
@@ -181,8 +180,8 @@
 }
 
 .ship-case-source {
-  color: var(--color-background-body);
-  background: color-mix(in oklab, var(--ink) 95%, var(--color-warning));
+  color: var(--ship-paper-ink);
+  background: var(--ship-paper);
 }
 
 .ship-case-evidence figcaption {
@@ -271,4 +270,97 @@
 
   .ship-case-heading { gap: .2rem; }
   .ship-case-evidence figure { justify-content: start; }
+}
+
+.ship-workspace-heading {
+  margin-block-end: 1.1rem;
+}
+
+.ship-workspace-heading h2 {
+  margin-block-end: .25rem;
+  font-size: clamp(1.55rem, 3.25vw, 2.5rem);
+  letter-spacing: -.025em;
+}
+
+.ship-workspace-heading p {
+  margin: 0;
+}
+
+.ship-brief {
+  border: 1px solid var(--rail);
+  background: var(--bg-soft);
+  padding: clamp(.95rem, 2.5vw, 1.5rem);
+}
+
+.ship-brief textarea {
+  background: var(--bg);
+}
+
+.ship-evidence-input {
+  border-block-start: 1px solid var(--rail);
+  margin-block-start: .5rem;
+}
+
+.ship-evidence-input summary {
+  min-height: 44px;
+  align-content: center;
+  cursor: pointer;
+  color: var(--ink-dim);
+}
+
+.ship-brief-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .65rem 1rem;
+}
+
+.ship-brief-actions p {
+  flex: 1 1 22ch;
+  margin: 0;
+}
+
+.ship-result {
+  border-block: 1px solid var(--rail);
+}
+
+.ship-result .ship-review-text {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ship-result :is(.ship-failure, .ship-inspect) {
+  grid-column: 1 / -1;
+}
+
+.ship-result .ship-failure {
+  margin-block-end: .35rem;
+}
+
+.ship-result .ship-failure dd {
+  color: var(--ink);
+  font-size: clamp(1.25rem, 2.75vw, 1.85rem);
+  line-height: 1.25;
+  letter-spacing: -.02em;
+}
+
+.ship-result .ship-inspect {
+  margin-block-start: .25rem;
+  padding: .85rem 1rem;
+  color: var(--ship-paper-ink);
+  background: var(--ship-paper);
+}
+
+.ship-result .ship-inspect dd {
+  color: inherit;
+}
+
+.ship-example-actions {
+  align-items: center;
+}
+
+@media (max-width: 760px) {
+  .ship-review-grid,
+  .ship-result .ship-review-text {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
