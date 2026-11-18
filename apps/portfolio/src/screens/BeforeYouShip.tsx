@@ -105,10 +105,15 @@ function BeforeYouShip() {
 
   return (
     <SiteContainer className="ship-review" data-ph-no-capture>
-      <PageHeader spacing="compact" title="Before You Ship" description="Find one way your AI feature could fail and get an acceptance test to run before launch." />
+      <PageHeader
+        className="ship-intro"
+        spacing="compact"
+        title="Before You Ship"
+        description="Find one way your AI feature could fail and get a test to run before launch."
+      />
       <PolicyChallenge ready={ready} />
       <div className="ship-review-grid">
-        <section aria-labelledby="ship-form-heading">
+        <section id="review-a-feature" aria-labelledby="ship-form-heading">
           <h2 id="ship-form-heading">Review a feature</h2>
           <form method="post" onSubmit={submit} className="ship-review-form">
             <label htmlFor="ship-feature">What are you building?</label>

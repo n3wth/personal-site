@@ -1,5 +1,16 @@
 .ship-review {
-  padding-block: clamp(3.5rem, 7vh, 5rem) 5rem;
+  padding-block: clamp(1.25rem, 4vh, 2.75rem) 5rem;
+}
+
+.ship-intro .n3wth-site-heading {
+  font-size: clamp(2.6rem, 7.5vw, 6rem);
+  line-height: .98;
+  letter-spacing: -.04em;
+}
+
+.ship-intro .n3wth-site-description {
+  margin-block-start: .9rem;
+  max-width: 54ch;
 }
 
 .ship-review-grid {
@@ -111,73 +122,157 @@
   .ship-review-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
-.ship-case {
-  margin-block-start: 2rem;
-  padding: clamp(1rem, 3vw, 2rem);
+.ship-case,
+#review-a-feature {
   scroll-margin-block-start: 5rem;
-  border: 1px solid var(--rail);
-  background: var(--bg-soft);
+}
+
+.ship-case {
+  margin-block-start: clamp(1.75rem, 4vw, 3.5rem);
+  border-block: 1px solid var(--rail);
+  padding-block: clamp(1.15rem, 3vw, 1.8rem);
+}
+
+.ship-case-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem 2rem;
+  margin-block-end: clamp(.9rem, 2vw, 1.5rem);
 }
 
 .ship-case-heading h2 {
-  margin-block-end: .4rem;
+  margin-block-end: .25rem;
 }
 
-.ship-case-evidence,
-.ship-case-test {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+.ship-case-heading p {
+  margin: 0;
+  max-width: 65ch;
+}
+
+.ship-own-feature,
+.ship-case-reveal a {
+  font-size: var(--font-size-sm);
+  text-decoration: underline;
+  text-underline-offset: .22em;
+}
+
+.ship-own-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: .45em;
+  min-block-size: 44px;
 }
 
 .ship-case-evidence {
-  margin-block: 1.25rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
 }
 
 .ship-case-evidence figure {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(.8rem, 2.5vw, 2.4rem);
   margin: 0;
-  padding-block-start: .65rem;
-  border-block-start: 1px solid var(--rail);
+  padding: clamp(1rem, 3vw, 2.2rem);
+}
+
+.ship-case-answer {
+  background: var(--bg-soft);
+  border: 1px solid var(--rail);
+}
+
+.ship-case-source {
+  color: var(--color-background-body);
+  background: color-mix(in oklab, var(--ink) 95%, var(--color-warning));
 }
 
 .ship-case-evidence figcaption {
+  display: flex;
+  align-items: baseline;
+  gap: .55rem;
   font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.ship-case-answer figcaption {
   color: var(--ink-dim);
 }
 
+.ship-case-source figcaption {
+  border-block-end: 1px solid color-mix(in oklab, currentColor 25%, transparent);
+  padding-block-end: .55rem;
+}
+
 .ship-case-evidence blockquote {
-  margin: .35rem 0 0;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.ship-case-answer blockquote {
+  max-width: 22ch;
+  font-size: clamp(1.45rem, 3.25vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -.03em;
+}
+
+.ship-case-answer strong {
+  white-space: nowrap;
+}
+
+.ship-case-answer sup {
+  color: var(--ink-dim);
+  font-size: .42em;
+}
+
+.ship-case-source blockquote {
+  max-width: 33ch;
+  font-size: clamp(1rem, 1.85vw, 1.35rem);
+  line-height: 1.4;
 }
 
 .ship-case mark {
-  padding-inline: .18em;
-  background: var(--ink);
-  color: var(--bg-soft);
+  padding-inline: .13em;
+  background: var(--color-warning);
+  color: var(--color-on-warning);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.ship-case-actions,
+.ship-case-reveal {
+  margin-block-start: 1.15rem;
+}
+
+.ship-case-actions button {
+  min-inline-size: 7rem;
 }
 
 .ship-case-reveal h3 {
   margin-block: 0 .3rem;
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
-}
-
-.ship-case-reveal a {
-  font-size: var(--font-size-sm);
-  text-decoration: underline;
-  text-underline-offset: .2em;
 }
 
 .ship-case-test {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  border-block: 1px solid var(--rail);
+  padding-block: .95rem;
 }
 
 .ship-case-reveal .ship-note {
   margin-block: .55rem;
 }
 
-@media (max-width: 680px) {
+@media (max-width: 650px) {
   .ship-case-evidence,
   .ship-case-test {
     grid-template-columns: minmax(0, 1fr);
-    gap: .65rem;
   }
+
+  .ship-case-heading { gap: .2rem; }
+  .ship-case-evidence figure { justify-content: start; }
 }
