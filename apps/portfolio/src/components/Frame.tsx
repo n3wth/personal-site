@@ -11,13 +11,11 @@ import './sectionHero.css'
 export function SectionHeader({
   title,
   lede,
-  action,
   story,
   as: Heading = 'h2',
 }: {
   title: ReactNode
   lede?: ReactNode
-  action?: ReactNode
   story?: SectionStoryKind
   as?: 'h1' | 'h2'
 }) {
@@ -27,19 +25,15 @@ export function SectionHeader({
       spacing={story ? 'compact' : 'default'}
       title={Heading === 'h1' ? <span className="portfolio-section-title">{title}</span> : title}
       description={story && lede ? <span className="portfolio-story-description">{lede}</span> : lede}
-      actions={story ? undefined : action}
       level={Heading === 'h1' ? 1 : 2}
     />
   )
 
   if (!story) return header
   return (
-    <>
-      <div className="portfolio-story-hero">
-        <SectionStory kind={story} />
-        <Heading className="sr-only">{title}</Heading>
-      </div>
-      {action && <div className="site-content-gutter portfolio-story-actions">{action}</div>}
-    </>
+    <div className="portfolio-story-hero">
+      <SectionStory kind={story} />
+      <Heading className="sr-only">{title}</Heading>
+    </div>
   )
 }

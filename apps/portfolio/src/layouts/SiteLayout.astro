@@ -63,7 +63,7 @@ if (path.startsWith('thinking/')) schemas.push(buildArticleSchema({ url, title: 
           if (matchMedia('(prefers-reduced-motion: reduce)').matches) event.viewTransition.skipTransition()
         })
       }
-      // Paint the journey harmony before first paint so the ground carries across pages.
+      // Set the artwork harmony before first paint so it carries across pages.
       try {
         var journey = null
         try { journey = JSON.parse(sessionStorage.getItem('n3wth-story-journey') || 'null') } catch (error) { /* storage can be blocked */ }
