@@ -3,7 +3,7 @@ import { handlePortfolioApi } from './runtime'
 
 const origin = 'https://n3wth.com'
 const brief = { feature: 'An assistant answers benefit questions from policy documents.', consequence: 'People plan leave based on the wrong policy.' }
-const review = { failure: 'A citation points to the wrong country.', test: 'Ask about leave without specifying a location. Pass if it asks for a country.' }
+const review = { failure: 'A citation points to the wrong country.', setup: 'Index two sample policies.', input: 'Ask about leave without specifying a location.', passCondition: 'It asks for a country.' }
 
 function submit(body: string, source = origin) {
   return new Request(origin + '/api/before-you-ship', {
@@ -13,13 +13,13 @@ function submit(body: string, source = origin) {
   })
 }
 
-it('runs one rate-limited model call and returns only the review fields', async () => {
+it('runs one rate-limited model call and returns the review fields and a plain-text test', async () => {
   const run = vi.fn().mockResolvedValue({ response: { ...review, extra: 'ignored' } })
   const limit = vi.fn().mockResolvedValue({ success: true })
   const response = await handlePortfolioApi(submit(JSON.stringify(brief)), { AI: { run }, SHIP_REVIEW: { limit } })
   expect(response?.status).toBe(200)
   expect(response?.headers.get('Cache-Control')).toBe('no-store')
-  expect(await response?.json()).toEqual(review)
+  expect(await response?.json()).toEqual({ ...review, test: 'Setup: Index two sample policies.\nInput: Ask about leave without specifying a location.\nPass condition: It asks for a country.' })
   expect(run).toHaveBeenCalledTimes(1)
   expect(limit).toHaveBeenCalledTimes(1)
 })

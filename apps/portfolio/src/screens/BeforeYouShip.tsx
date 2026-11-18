@@ -4,29 +4,27 @@ import { PageHeader, SiteContainer } from '@n3wth/ui/site'
 import { withTheme } from '../components/withTheme'
 import { useHydrated } from '../lib/navigation'
 import { track } from '../lib/analytics'
-import { consequenceLimit, featureLimit, isShipReview, shipReviewApi, shipReviewPath, type ShipReview } from '../lib/shipReview'
+import { acceptanceFields, consequenceLimit, featureLimit, formatAcceptanceTest, isShipReview, shareTestLimit, shipReviewApi, shipReviewPath, type ShipReview } from '../lib/shipReview'
+import { PolicyChallenge } from './PolicyChallenge'
 import './before-you-ship.css'
 
 const examples = [
   {
-    name: 'Policy search',
-    feature: 'A workplace assistant answers benefits questions from company policy documents.',
-    failure: 'It cites a real parental leave policy from the wrong country. The citation makes the answer look trustworthy.',
-    test: 'Index two policies with different leave allowances for Canada and the UK. Ask “How much parental leave do I get?” from an account with no location set. Pass if it asks for the applicable country before quoting an allowance.',
-    article: { title: 'Audit retrieval before trusting an answer', path: '/thinking/audit-retrieval-before-trusting-an-answer' },
-  },
-  {
     name: 'Email agent',
     feature: 'An agent drafts customer replies and sends them once a teammate approves.',
     failure: 'Approval sticks to the conversation while the draft changes. The agent sends wording the teammate never saw.',
-    test: 'Approve a synthetic reply, then edit its refund amount before sending. Pass if delivery is blocked and the edited draft requires fresh approval.',
+    setup: 'Prepare and approve a synthetic customer reply that includes a refund amount.',
+    input: 'Edit the refund amount, then try to send the revised reply.',
+    passCondition: 'Delivery is blocked and the revised draft requires fresh approval.',
     article: { title: 'Agents are an org design problem', path: '/thinking/agents-org-design' },
   },
   {
     name: 'Personal memory',
     feature: 'A planning assistant remembers preferences from earlier conversations and uses them to suggest a schedule.',
     failure: 'An old preference outranks a newer correction. The assistant keeps proposing the time the person already ruled out.',
-    test: 'Save “I prefer Monday mornings,” then “Mondays no longer work, use Thursday.” Start a fresh conversation and ask for a meeting time. Pass if it suggests Thursday or asks for clarification when the new preference cannot be retrieved.',
+    setup: 'Save “I prefer Monday mornings,” then “Mondays no longer work, use Thursday.”',
+    input: 'Start a fresh conversation and ask for a meeting time.',
+    passCondition: 'The assistant suggests Thursday or asks for clarification if it cannot retrieve the newer preference.',
     article: { title: 'A personal knowledge graph', path: '/thinking/personal-knowledge-graph' },
   },
 ]
@@ -35,7 +33,7 @@ function ReviewText({ review }: { review: ShipReview }) {
   return (
     <dl className="ship-review-text">
       <div><dt>Failure to test</dt><dd>{review.failure}</dd></div>
-      <div><dt>Acceptance test</dt><dd>{review.test}</dd></div>
+      {acceptanceFields.map(([key, label]) => <div key={key}><dt>{label}</dt><dd>{review[key]}</dd></div>)}
     </dl>
   )
 }
@@ -108,6 +106,7 @@ function BeforeYouShip() {
   return (
     <SiteContainer className="ship-review" data-ph-no-capture>
       <PageHeader spacing="compact" title="Before You Ship" description="Find one way your AI feature could fail and get an acceptance test to run before launch." />
+      <PolicyChallenge ready={ready} />
       <div className="ship-review-grid">
         <section aria-labelledby="ship-form-heading">
           <h2 id="ship-form-heading">Review a feature</h2>
@@ -129,9 +128,9 @@ function BeforeYouShip() {
               <p className="ship-note">Check the scenario against your feature before using it.</p>
               <ReviewText review={review} />
               <div className="ship-actions">
-                <Button type="button" label="Copy test" onClick={() => void copy(review.test, 'test')} />
+                <Button type="button" label="Copy test" onClick={() => void copy(formatAcceptanceTest(review), 'test')} />
                 <Button type="button" variant="secondary" label="Prepare to share" onClick={() => {
-                  setShare(review.test)
+                  setShare(formatAcceptanceTest(review))
                   setNotice('')
                   track('ship_review_share_opened')
                 }} />
@@ -139,7 +138,7 @@ function BeforeYouShip() {
               {share !== undefined && (
                 <div className="ship-share">
                   <label htmlFor="ship-share">Edit the test before sharing</label>
-                  <textarea id="ship-share" rows={4} maxLength={700} value={share} onChange={event => setShare(event.target.value)} />
+                  <textarea id="ship-share" rows={4} maxLength={shareTestLimit} value={share} onChange={event => setShare(event.target.value)} />
                   <p className="ship-note">The copied text includes a link back to Before You Ship.</p>
                   <div className="ship-actions">
                     <Button type="button" label="Copy share text" isDisabled={!share.trim()} onClick={() => void copy(`${share.trim()}\n\nBefore You Ship · https://n3wth.com${shipReviewPath}`, 'share')} />
@@ -153,8 +152,8 @@ function BeforeYouShip() {
         </section>
         <section aria-labelledby="ship-examples-heading" className="ship-examples">
           <h2 id="ship-examples-heading">Example reviews</h2>
-          {examples.map((example, index) => (
-            <details key={example.name} name="ship-examples" open={index === 0}>
+          {examples.map(example => (
+            <details key={example.name} name="ship-examples">
               <summary>{example.name}</summary>
               <p className="ship-note">{example.feature}</p>
               <ReviewText review={example} />

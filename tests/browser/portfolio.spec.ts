@@ -884,12 +884,14 @@ test('Before You Ship reviews a feature and shares only the edited test', async 
     })
     await route.fulfill({ json: {
       failure: 'The assistant cites the wrong country.',
-      test: 'Ask about leave without sharing a country. Pass if it asks where you work.',
+      setup: 'Index two fictional leave policies.',
+      input: 'Ask about leave without sharing a country.',
+      passCondition: 'It asks where you work.',
     } })
   })
   await page.goto('/before-you-ship')
   await expect(page.getByRole('heading', { name: 'Before You Ship', exact: true })).toBeVisible()
-  await expect(page.getByText('Policy search', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Would you ship this?' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Generate a test' })).toBeEnabled()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: testInfo.outputPath('before-you-ship.png'), fullPage: true })
@@ -900,7 +902,7 @@ test('Before You Ship reviews a feature and shares only the edited test', async 
   await expect(review).toBeFocused()
   await expect(review.getByText('The assistant cites the wrong country.')).toBeVisible()
   await review.getByRole('button', { name: 'Copy test', exact: true }).click()
-  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toContain('Pass if it asks where you work.')
+  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toBe('Setup: Index two fictional leave policies.\nInput: Ask about leave without sharing a country.\nPass condition: It asks where you work.')
   await review.getByRole('button', { name: 'Prepare to share' }).click()
   await page.getByLabel('Edit the test before sharing').fill('A synthetic policy test for my team.')
   await review.getByRole('button', { name: 'Copy share text' }).click()
@@ -910,4 +912,39 @@ test('Before You Ship reviews a feature and shares only the edited test', async 
   const download = page.waitForEvent('download')
   await review.getByRole('button', { name: 'Download card' }).click()
   expect((await download).suggestedFilename()).toBe('before-you-ship.png')
+})
+
+test('Before You Ship reveals the case and lets visitors adapt it without inference', async ({ page }, testInfo) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { value: {
+      writeText: async (text: string) => { document.body.dataset.copiedText = text },
+    } })
+  })
+  let requests = 0
+  page.on('request', request => {
+    if (new URL(request.url()).pathname === '/api/before-you-ship') requests += 1
+  })
+  await page.goto('/before-you-ship#policy-search')
+  const challenge = page.getByRole('region', { name: 'Would you ship this?' })
+  await expect(challenge).toBeVisible()
+  const answer = challenge.getByRole('heading', { name: 'Hold it. The policy is for the UK.' })
+  await expect(answer).toHaveCount(0)
+  await challenge.getByRole('button', { name: 'Ship it' }).click()
+  await expect(answer).toBeFocused()
+  await expect(challenge.locator('mark')).toHaveText('United Kingdom')
+  await expect(challenge.getByText('Pass condition', { exact: true })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('policy-search-reveal.png'), fullPage: true })
+  await challenge.getByRole('button', { name: 'Copy case link' }).click()
+  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toBe(page.url())
+  await challenge.getByRole('button', { name: 'Adapt this test' }).click()
+  const editor = challenge.getByLabel('Edit the acceptance test')
+  await expect(editor).toBeFocused()
+  await expect(editor).toHaveValue(/Setup: .*\nInput: .*\nPass condition:/)
+  await editor.fill('Check the policy for the employee’s work country.')
+  await challenge.getByRole('button', { name: 'Copy adapted test' }).click()
+  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toBe('Check the policy for the employee’s work country.')
+  await page.reload()
+  await challenge.getByRole('button', { name: 'Hold it' }).click()
+  await expect(challenge.getByRole('heading', { name: 'Good call. The policy is for the UK.' })).toBeFocused()
+  expect(requests).toBe(0)
 })

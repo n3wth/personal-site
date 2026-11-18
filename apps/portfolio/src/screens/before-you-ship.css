@@ -110,3 +110,74 @@
 @media (max-width: 760px) {
   .ship-review-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+.ship-case {
+  margin-block-start: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  scroll-margin-block-start: 5rem;
+  border: 1px solid var(--rail);
+  background: var(--bg-soft);
+}
+
+.ship-case-heading h2 {
+  margin-block-end: .4rem;
+}
+
+.ship-case-evidence,
+.ship-case-test {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ship-case-evidence {
+  margin-block: 1.25rem;
+}
+
+.ship-case-evidence figure {
+  margin: 0;
+  padding-block-start: .65rem;
+  border-block-start: 1px solid var(--rail);
+}
+
+.ship-case-evidence figcaption {
+  font-size: var(--font-size-sm);
+  color: var(--ink-dim);
+}
+
+.ship-case-evidence blockquote {
+  margin: .35rem 0 0;
+}
+
+.ship-case mark {
+  padding-inline: .18em;
+  background: var(--ink);
+  color: var(--bg-soft);
+}
+
+.ship-case-reveal h3 {
+  margin-block: 0 .3rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.ship-case-reveal a {
+  font-size: var(--font-size-sm);
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+.ship-case-test {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ship-case-reveal .ship-note {
+  margin-block: .55rem;
+}
+
+@media (max-width: 680px) {
+  .ship-case-evidence,
+  .ship-case-test {
+    grid-template-columns: minmax(0, 1fr);
+    gap: .65rem;
+  }
+}
