@@ -64,11 +64,21 @@ async function excerpt(source: Source, env: SiteAnswerEnv, request: Request, que
 export async function answerFromSite(query: string, env: SiteAnswerEnv, request: Request) {
   const candidates = retrieve(query)
   if (!candidates.length) return noAnswer
+  const cited = (id: number) => {
+    const source = candidates[id - 1]
+    return `[${source.title.replaceAll('[', '').replaceAll(']', '')}](${new URL(source.href, 'https://n3wth.com').href})`
+  }
+  let fallback = noAnswer
   try {
     if (env.SEARCH_ANSWER && !(await env.SEARCH_ANSWER.limit({ key: request.headers.get('CF-Connecting-IP') || 'unknown' })).success) return noAnswer
     const sources = await Promise.all(candidates.map(async (source, id) => ({
       id: id + 1, title: source.title, text: await excerpt(source, env, request, query),
     })))
+    // A direct title match can still show a real excerpt when inference abstains.
+    if (terms(query).join(' ') === terms(candidates[0].title).join(' ')) {
+      const excerpt = sources[0].text.split(/(?<=[.!?])\s+/).slice(0, 2).join(' ').trim()
+      if (excerpt) fallback = { answer: `${excerpt} Sources: ${cited(1)}.` }
+    }
     if (request.signal.aborted) return noAnswer
     const output = await env.AI?.run(model, {
       messages: [
@@ -84,16 +94,15 @@ export async function answerFromSite(query: string, env: SiteAnswerEnv, request:
       } },
     }) as { response?: unknown } | undefined
     const raw = typeof output?.response === 'string' ? JSON.parse(output.response) : output?.response
-    if (!raw || typeof raw.answer !== 'string' || !Array.isArray(raw.sourceIds)) return noAnswer
+    if (!raw || typeof raw.answer !== 'string' || !Array.isArray(raw.sourceIds)) return fallback
     const answer = raw.answer.trim().replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    const ids = [...new Set(raw.sourceIds.filter((id: unknown): id is number => Number.isInteger(id) && Number(id) >= 1 && Number(id) <= candidates.length))].slice(0, 4)
-    if (!answer || answer.length > 1200 || !ids.length) return noAnswer
-    const links = ids.map(id => {
-      const source = candidates[Number(id) - 1]
-      return `[${source.title.replaceAll('[', '').replaceAll(']', '')}](${new URL(source.href, 'https://n3wth.com').href})`
-    })
-    return { answer: `${answer} Sources: ${links.join(', ')}.`, model }
+    const ids = [...new Set<number>(raw.sourceIds.flatMap((value: unknown) => {
+      const id = typeof value === 'string' || typeof value === 'number' ? Number(value) : NaN
+      return Number.isInteger(id) && id >= 1 && id <= candidates.length ? [id] : []
+    }))].slice(0, 4)
+    if (!answer || answer.length > 1200 || !ids.length) return fallback
+    return { answer: `${answer} Sources: ${ids.map(cited).join(', ')}.`, model }
   } catch {
-    return { ...noAnswer, fallback: true }
+    return { ...fallback, fallback: true }
   }
 }

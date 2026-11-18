@@ -18,6 +18,14 @@ describe('portfolio Worker API runtime', () => {
     expect(sources[0].text).toContain('memory service')
   })
 
+  it('uses a cited excerpt when the model abstains on a direct title match', async () => {
+    const run = vi.fn().mockResolvedValue({ response: { answer: '', sourceIds: [] } })
+    const response = await handlePortfolioApi(request('/api/search', { method: 'POST', body: JSON.stringify({ query: 'How do I audit retrieval before trusting an answer?' }) }), { AI: { run } })
+    expect(await response?.json()).toMatchObject({
+      answer: expect.stringContaining('Sources: [Audit retrieval before trusting an answer](https://n3wth.com/thinking/audit-retrieval-before-trusting-an-answer).'),
+    })
+  })
+
   it('skips inference when a mistyped query has no matching source', async () => {
     const run = vi.fn()
     const response = await handlePortfolioApi(request('/api/search', { method: 'POST', body: JSON.stringify({ query: 'jhow' }) }), { AI: { run } })
