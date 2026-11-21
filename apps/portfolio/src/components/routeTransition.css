@@ -12,7 +12,7 @@
 @media (prefers-reduced-motion: no-preference) {
   /* Keep the header live and hit-testable while the page content is captured. */
   :root { view-transition-name: none; }
-  .n3wth-site-main { view-transition-name: route-content; }
+  [data-route-content] { view-transition-name: route-content; }
 
   /* The outgoing page clears quickly; the incoming one settles in behind it. */
   ::view-transition-old(route-content) {
