@@ -18,6 +18,8 @@ Each active app's `wrangler.jsonc` is a production configuration. Preview toolin
 
 The preview readiness gate checks DNS, TLS, HTTP behavior and noindex without disabling certificate verification. Verify responsive pages, docs navigation/search, old aliases, images, and retained APIs before merging. Wait for passing Site CI and preview checks.
 
+Site CI runs on pull requests and can be run manually. Production still validates and checks the readiness of affected apps on pushes to main. Workflow-only edits do not redeploy the site. Run Cloudflare production manually when a workflow change needs a live release.
+
 ## One-site cutover
 
 Source preparation is not a production release. Before changes, export Worker versions, DNS records and complete redirect rulesets. Retain the existing integrations until the replacement is verified.
