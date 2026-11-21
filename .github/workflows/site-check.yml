@@ -2,8 +2,6 @@ name: Site CI
 
 on:
   pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -33,7 +31,7 @@ jobs:
       - name: Select affected workspaces
         id: affected
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           echo "workspaces=$(node scripts/workspace/affected.mjs --base "$BASE_SHA" --list)" >> "$GITHUB_OUTPUT"
           echo "ui_package=$(node scripts/workspace/affected.mjs --base "$BASE_SHA" --ui-package)" >> "$GITHUB_OUTPUT"
@@ -46,7 +44,7 @@ jobs:
       - name: Check affected workspaces
         if: steps.affected.outputs.workspaces != '[]'
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: node scripts/workspace/affected.mjs --base "$BASE_SHA"
       - name: Check built metadata
         if: steps.affected.outputs.workspaces != '[]'
