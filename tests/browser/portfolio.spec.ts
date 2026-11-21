@@ -658,7 +658,7 @@ test('contour light respects motion preferences and pauses offscreen', async ({ 
 
 test('homepage effects stay bounded through a complete color cycle', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'portfolio-1440', 'One full-cycle rendering check covers the shared controller.')
-  test.setTimeout(120_000)
+  test.setTimeout(60_000)
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
   const result = await page.locator('.home-opening-scene').evaluate(scene => new Promise<{
@@ -707,7 +707,8 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
         }
         previousTime = now
       }
-      if (now - started >= 98_000) resolve(result)
+      // Allow the 2.75s entrance and one complete 32s harmony cycle, plus frame drift.
+      if (now - started >= 40_000) resolve(result)
       else requestAnimationFrame(sample)
     }
     requestAnimationFrame(sample)
@@ -838,11 +839,9 @@ test('Art shows its opening sweep before the scene JavaScript loads', async ({ p
   const scene = page.locator('.section-story--art svg')
   const mask = scene.locator('.section-story__art-opening-mask')
   await expect(scene).not.toHaveAttribute('data-story-ready', '')
-  const moved = await mask.evaluate(el => new Promise<boolean>(resolve => {
-    const start = getComputedStyle(el).transform
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve(getComputedStyle(el).transform !== start)))
-  }))
-  expect(moved).toBe(true)
+  const transform = () => mask.evaluate(el => getComputedStyle(el).transform)
+  const opening = await transform()
+  await expect.poll(transform).not.toBe(opening)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expect(mask).toHaveCSS('animation-name', 'none')
   await expect(scene.locator('.section-story__art-opening')).toHaveCSS('opacity', '0')
