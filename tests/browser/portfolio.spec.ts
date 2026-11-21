@@ -1,5 +1,53 @@
 import { test, expect } from '@playwright/test'
 
+test('search loads on demand and keeps keyboard focus across reopening', async ({ page }) => {
+  const chunks: string[] = []
+  page.on('request', request => {
+    if (/\/CommandPalette\.[^/]+\.js/.test(request.url())) chunks.push(request.url())
+  })
+  await page.goto('/')
+  const search = page.getByRole('button', { name: 'Search', exact: true })
+  await expect(search).toBeEnabled()
+  expect(chunks).toEqual([])
+  await search.focus()
+  await page.keyboard.press('Control+k')
+  const input = page.getByRole('combobox')
+  await expect(input).toBeFocused()
+  expect(chunks).toHaveLength(1)
+  await input.fill('5 Whys')
+  await expect(page.getByRole('option', { name: '5 Whys', exact: true })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(input).toHaveCount(0)
+  await expect(search).toBeFocused()
+  await page.keyboard.press('/')
+  await expect(input).toBeFocused()
+  await expect(input).toHaveValue('')
+  expect(chunks).toHaveLength(1)
+  await page.keyboard.press('Escape')
+  await expect(search).toBeFocused()
+})
+
+test('search can close while its first chunk is loading', async ({ page }) => {
+  let release!: () => void
+  const pending = new Promise<void>(resolve => { release = resolve })
+  await page.route('**/CommandPalette.*.js', async route => {
+    await pending
+    await route.continue()
+  })
+  await page.goto('/')
+  const search = page.getByRole('button', { name: 'Search', exact: true })
+  await search.click()
+  await expect(page.getByRole('status')).toHaveText('Loading search…')
+  await page.keyboard.press('Escape')
+  await expect(search).toHaveAttribute('aria-expanded', 'false')
+  await expect(page.getByRole('status')).toHaveCount(0)
+  release()
+  await search.click()
+  await expect(page.getByRole('combobox')).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(search).toBeFocused()
+})
+
 test('prefix search lists elephant-goldfish without an empty answer', async ({ page }, testInfo) => {
   await page.route('**/api/search', route => route.fulfill({
     json: { answer: 'No relevant information found. Try another search.' },
@@ -218,13 +266,14 @@ test('Thinking notes keep local links, topics, anchors and browser Back', async 
   await page.goto('/thinking/frameworks/5-whys#usage')
   await expect(page.getByRole('heading', { level: 1, name: '5 Whys', exact: true })).toBeVisible()
   await expect(page.locator('#usage')).toBeInViewport()
-  const contents = page.getByRole('button', { name: 'Contents', exact: true })
-  await expect(contents).toHaveAttribute('aria-expanded', 'false')
+  const outline = page.locator('.thinking-note-outline')
+  const contents = outline.locator('summary')
+  await expect(outline).not.toHaveAttribute('open')
   await contents.click()
-  await expect(contents).toHaveAttribute('aria-expanded', 'true')
+  await expect(outline).toHaveAttribute('open', '')
   await expect(page.locator('.thinking-note-outline a[href="#usage"]')).toBeVisible()
   await contents.click()
-  await expect(contents).toHaveAttribute('aria-expanded', 'false')
+  await expect(outline).not.toHaveAttribute('open')
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://n3wth.com/thinking/frameworks/5-whys')
   await expect(page.locator('.thinking-note-prose img').first()).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -280,6 +329,30 @@ test('Thinking loads more writing on scroll and restores its collection and filt
   await expect(page.getByRole('status')).toHaveText('1 result')
   await expect(page.locator('.writing-results a')).toHaveText('5 Whys')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
+test('Thinking defers the index and Field Guide defers its WebGL code', async ({ page }) => {
+  const scripts: string[] = []
+  page.on('request', request => {
+    if (request.resourceType() === 'script') scripts.push(request.url())
+  })
+  await page.goto('/thinking')
+  await expect(page.locator('.writing-results > li')).toHaveCount(24)
+  expect(scripts.some(url => /\/NotesIndex\./.test(url))).toBe(false)
+  const search = page.getByRole('textbox', { name: 'Search writing' })
+  await search.scrollIntoViewIfNeeded()
+  await expect(search).toBeEnabled()
+  expect(scripts.some(url => /\/NotesIndex\./.test(url))).toBe(true)
+
+  scripts.length = 0
+  await page.goto('/thinking/field-guide')
+  await expect(page.getByRole('heading', { name: 'Figure out the story' })).toBeAttached()
+  expect(scripts.some(url => /\/(CameoCanvas|BikeCanvas|TeapotCanvas|FlythroughCanvas)\./.test(url))).toBe(false)
+  const model = page.getByRole('img', { name: /homepage trail signpost/ })
+  await expect(async () => {
+    await model.scrollIntoViewIfNeeded({ timeout: 1000 })
+    expect(scripts.some(url => /\/CameoCanvas\./.test(url))).toBe(true)
+  }).toPass({ timeout: 10_000 })
 })
 
 test('projects index connects navigation, product pages and documentation', async ({ page, request }, testInfo) => {
@@ -350,6 +423,9 @@ test('page content and footer are readable without client JavaScript', async ({ 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await expect(page.locator('.n3wth-site-footer')).toHaveCount(1)
     await expect(page).toHaveTitle('Thinking — Oliver Newth')
+    await page.goto('http://127.0.0.1:4281/thinking/frameworks/5-whys')
+    await page.locator('.thinking-note-outline summary').click()
+    await expect(page.locator('.thinking-note-outline a[href="#usage"]')).toBeVisible()
   } finally {
     await context.close()
   }
@@ -528,6 +604,22 @@ test('section navigation is never intercepted and survives browser Back', async 
   expect(errors).toEqual([])
 })
 
+test('the top navigation receives pointer input during transitions', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/thinking')
+  const brand = page.getByRole('link', { name: 'Oliver Newth — home' })
+  await page.addStyleTag({ content: '::view-transition-group(*) { animation-duration: 2s !important; }' })
+  const reachable = await brand.evaluate(async link => {
+    const { x, y, width, height } = link.getBoundingClientRect()
+    const transition = document.startViewTransition(() => {})
+    await transition.ready
+    const hit = document.elementFromPoint(x + width / 2, y + height / 2)
+    transition.skipTransition()
+    return link.contains(hit)
+  })
+  expect(reachable).toBe(true)
+})
+
 test('every page shares one artwork layer for the transition', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   for (const path of ['/', '/work', '/thinking']) {
@@ -548,6 +640,19 @@ test('route hints do not prefetch other origins', async ({ page }) => {
   })
   await page.getByRole('link', { name: 'External projects', exact: true }).hover()
   await expect(page.locator('link[rel="prefetch"][href="https://example.com/projects"]')).toHaveCount(0)
+})
+
+test('keyboard navigation prefetches a section once with reduced motion', async ({ page }) => {
+  await page.goto('/work')
+  await expect(page.locator('html')).toHaveAttribute('data-route-transitions', 'on')
+  const projects = page.getByRole('navigation', { name: 'Footer', exact: true }).getByRole('link', { name: 'Projects', exact: true })
+  await projects.focus()
+  const hint = page.locator('link[rel="prefetch"][href="/projects"]')
+  await expect(hint).toHaveCount(1)
+  await projects.hover()
+  await expect(hint).toHaveCount(1)
+  await projects.press('Enter')
+  await expect(page).toHaveURL(/\/projects$/)
 })
 
 test('contour light respects motion preferences and pauses offscreen', async ({ page }) => {
@@ -597,7 +702,7 @@ test('contour light respects motion preferences and pauses offscreen', async ({ 
 
 test('homepage effects stay bounded through a complete color cycle', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'portfolio-1440', 'One full-cycle rendering check covers the shared controller.')
-  test.setTimeout(120_000)
+  test.setTimeout(60_000)
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
   const result = await page.locator('.home-opening-scene').evaluate(scene => new Promise<{
@@ -646,7 +751,8 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
         }
         previousTime = now
       }
-      if (now - started >= 98_000) resolve(result)
+      // Allow the 2.75s entrance and one complete 32s harmony cycle, plus frame drift.
+      if (now - started >= 40_000) resolve(result)
       else requestAnimationFrame(sample)
     }
     requestAnimationFrame(sample)
@@ -664,11 +770,11 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
 test('home artwork needs no raster image, WebGL models or scene data', async ({ page }) => {
   const requests: string[] = []
   page.on('request', request => {
-    if (/contour-landscape\.webp|\/models\/|writing\/world\.json|NightField.*\.js|storyInteractions.*\.js/.test(request.url())) requests.push(request.url())
+    if (/contour-landscape\.webp|\/models\/|writing\/world\.json|(?:NightField|storyInteractions|storySpace).*\.js/.test(request.url())) requests.push(request.url())
   })
   const response = await page.goto('/')
   expect((await response!.body()).byteLength).toBeLessThan(155_000)
-  await expect(page.locator('astro-island[component-url*="Home."]')).not.toHaveAttribute('ssr', '')
+  await expect(page.locator('astro-island[component-url*="Home."]')).toHaveCount(0)
   await expect(page.locator('.home-contours__terrain')).toBeVisible()
   await expect(page.locator('canvas')).toHaveCount(0)
   expect(requests).toEqual([])
@@ -753,26 +859,51 @@ test('home keeps ordinary writing navigation when WebGL is unavailable', async (
   await thinking.focus()
   await page.keyboard.press('Enter')
   await expect(page).toHaveURL(/\/thinking$/)
-  await expect(page.getByLabel('Search writing', { exact: true })).toBeVisible()
-  await page.getByLabel('Search writing', { exact: true }).fill('5 Whys')
+  const writingSearch = page.getByLabel('Search writing', { exact: true })
+  await writingSearch.scrollIntoViewIfNeeded()
+  await writingSearch.fill('5 Whys')
   await page.locator('#notes').getByRole('link', { name: '5 Whys', exact: true }).click()
   await expect(page).toHaveURL(/\/thinking\/frameworks\/5-whys$/)
   await expect(page.getByRole('heading', { level: 1, name: '5 Whys', exact: true })).toBeVisible()
 })
 
-test('home remains composed before its light layer hydrates', async ({ page }) => {
-  await page.route('**/_astro/Home.*.js', route => route.abort())
+test('home renders the ribbon and navigation without JavaScript', async ({ browser, baseURL, viewport }) => {
+  const page = await browser.newPage({ baseURL, viewport, javaScriptEnabled: false })
   await page.goto('/')
   await expect(page.locator('.home-contours__terrain')).toBeVisible()
   await expect(page.getByRole('progressbar')).toHaveCount(0)
-  const navigation = page.locator('#primary-navigation')
-  if (!await navigation.getByRole('link', { name: 'Work', exact: true }).isVisible()) {
-    await page.getByRole('button', { name: 'Open menu', exact: true }).click()
-  }
-  await navigation.getByRole('link', { name: 'Work', exact: true }).click()
-  await expect(page).toHaveURL(/\/work$/)
+  await expect(page.locator('#primary-navigation a[href="/work"]')).toHaveCount(1)
+  await page.close()
 })
 
+
+test('Art shows its opening sweep before the scene JavaScript loads', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.route('**/Art.*.js', route => route.abort())
+  await page.goto('/art', { waitUntil: 'domcontentloaded' })
+  const scene = page.locator('.section-story--art svg')
+  const mask = scene.locator('.section-story__art-opening-mask')
+  await expect(scene).not.toHaveAttribute('data-story-ready', '')
+  const transform = () => mask.evaluate(el => getComputedStyle(el).transform)
+  const opening = await transform()
+  await expect.poll(transform).not.toBe(opening)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect(mask).toHaveCSS('animation-name', 'none')
+  await expect(scene.locator('.section-story__art-opening')).toHaveCSS('opacity', '0')
+})
+
+test('Art preserves its light routes and selects a smaller opening photo on phones', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/art')
+  await expect(page.locator('svg[data-story-ready] [data-art-route]')).toHaveCount(24)
+  const photo = page.locator('.art-opening-image img')
+  await expect(photo).toHaveAttribute('loading', 'lazy')
+  await photo.scrollIntoViewIfNeeded()
+  await expect.poll(() => photo.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0)
+  if (page.viewportSize()!.width < 768) {
+    expect(await photo.evaluate((image: HTMLImageElement) => image.currentSrc)).toMatch(/them-(800|1200)\.webp$/)
+  }
+})
 
 test('compact header is flush and its menu remains usable over photographs', async ({ page }, testInfo) => {
   test.skip(page.viewportSize()!.width >= 1024, 'Compact navigation only')
@@ -821,4 +952,82 @@ test('primary navigation opens Work', async ({ page }) => {
   await work.click()
   await expect(page).toHaveURL(/\/work$/)
   await expect(page.locator('h1').first()).toBeVisible()
+})
+
+test('Before You Ship reviews a feature and shares only the edited test', async ({ page }, testInfo) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { value: {
+      writeText: async (text: string) => { document.body.dataset.copiedText = text },
+    } })
+  })
+  await page.route('**/api/before-you-ship', async route => {
+    expect(route.request().postDataJSON()).toEqual({
+      feature: 'A workplace assistant answers company policy questions.',
+      consequence: 'Someone uses the wrong leave policy.',
+    })
+    await route.fulfill({ json: {
+      failure: 'The assistant cites the wrong country.',
+      setup: 'Index two fictional leave policies.',
+      input: 'Ask about leave without sharing a country.',
+      passCondition: 'It asks where you work.',
+    } })
+  })
+  await page.goto('/before-you-ship')
+  await expect(page.getByRole('heading', { name: 'Before You Ship', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Would you ship this?' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Generate a test' })).toBeEnabled()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: testInfo.outputPath('before-you-ship.png'), fullPage: true })
+  await page.getByLabel('What are you building?').fill('A workplace assistant answers company policy questions.')
+  await page.getByLabel('What happens if it gets something wrong?').fill('Someone uses the wrong leave policy.')
+  await page.getByRole('button', { name: 'Generate a test' }).click()
+  const review = page.getByRole('region', { name: 'Your review' })
+  await expect(review).toBeFocused()
+  await expect(review.getByText('The assistant cites the wrong country.')).toBeVisible()
+  await review.getByRole('button', { name: 'Copy test', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toBe('Setup: Index two fictional leave policies.\nInput: Ask about leave without sharing a country.\nPass condition: It asks where you work.')
+  await review.getByRole('button', { name: 'Prepare to share' }).click()
+  await page.getByLabel('Edit the test before sharing').fill('A synthetic policy test for my team.')
+  await review.getByRole('button', { name: 'Copy share text' }).click()
+  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toBe(
+    'A synthetic policy test for my team.\n\nBefore You Ship · https://n3wth.com/before-you-ship',
+  )
+  const download = page.waitForEvent('download')
+  await review.getByRole('button', { name: 'Download card' }).click()
+  expect((await download).suggestedFilename()).toBe('before-you-ship.png')
+})
+
+test('Before You Ship reveals the case and lets visitors adapt it without inference', async ({ page }, testInfo) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { value: {
+      writeText: async (text: string) => { document.body.dataset.copiedText = text },
+    } })
+  })
+  let requests = 0
+  page.on('request', request => {
+    if (new URL(request.url()).pathname === '/api/before-you-ship') requests += 1
+  })
+  await page.goto('/before-you-ship#policy-search')
+  const challenge = page.getByRole('region', { name: 'Would you ship this?' })
+  await expect(challenge).toBeVisible()
+  const answer = challenge.getByRole('heading', { name: 'Hold it. The policy is for the UK.' })
+  await expect(answer).toHaveCount(0)
+  await challenge.getByRole('button', { name: 'Ship it' }).click()
+  await expect(answer).toBeFocused()
+  await expect(challenge.locator('mark')).toHaveText('United Kingdom')
+  await expect(challenge.getByText('Pass condition', { exact: true })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('policy-search-reveal.png'), fullPage: true })
+  await challenge.getByRole('button', { name: 'Copy case link' }).click()
+  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toBe(page.url())
+  await challenge.getByRole('button', { name: 'Adapt this test' }).click()
+  const editor = challenge.getByLabel('Edit the acceptance test')
+  await expect(editor).toBeFocused()
+  await expect(editor).toHaveValue(/Setup: .*\nInput: .*\nPass condition:/)
+  await editor.fill('Check the policy for the employee’s work country.')
+  await challenge.getByRole('button', { name: 'Copy adapted test' }).click()
+  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toBe('Check the policy for the employee’s work country.')
+  await page.reload()
+  await challenge.getByRole('button', { name: 'Hold it' }).click()
+  await expect(challenge.getByRole('heading', { name: 'Good call. The policy is for the UK.' })).toBeFocused()
+  expect(requests).toBe(0)
 })

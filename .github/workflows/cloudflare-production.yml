@@ -54,7 +54,6 @@ jobs:
           const workspaces = JSON.parse(execFileSync(process.execPath, ['scripts/workspace/affected.mjs', '--base', base, '--list', '--deployment'], { encoding: 'utf8' }))
           const files = execFileSync('git', ['diff', '--name-only', `${base}..HEAD`, '--'], { encoding: 'utf8' }).split('\n').filter(Boolean)
           const infrastructure = files.some(file => [
-            '.github/workflows/cloudflare-production.yml',
             'package-lock.json',
             'scripts/workspace/affected.mjs',
             'scripts/workspace/build.mjs',
@@ -81,18 +80,6 @@ jobs:
         env:
           BASE_SHA: ${{ github.event_name == 'workflow_dispatch' && '0000000000000000000000000000000000000000' || github.event.before }}
         run: node scripts/workspace/affected.mjs --base "$BASE_SHA"
-      - name: Build affected Cloudflare apps
-        if: steps.affected.outputs.apps != ''
-        env:
-          APPS: ${{ steps.affected.outputs.apps }}
-        shell: bash
-        run: |
-          targets=()
-          for app in $APPS; do
-            targets+=(--workspace "@n3wth/$app")
-          done
-          npm run build:cloudflare -- "${targets[@]}"
-
   deploy:
     name: deploy / production
     needs: validate

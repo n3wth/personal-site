@@ -1,5 +1,5 @@
 import { withTheme } from '../components/withTheme'
-import { PageHeader, ReadingOutline } from '@n3wth/ui/site'
+import { PageHeader } from '@n3wth/ui/site'
 import '../notes.css'
 
 export interface Note {
@@ -31,7 +31,12 @@ function ThinkingNote({ note }: { note: Note }) {
         {note.tags.map(tag => <a className="link-underline inline-flex min-h-11 items-center text-sm" key={tag} href={`/thinking?topic=${encodeURIComponent(tag)}#notes`}>{tag}</a>)}
       </nav>
       <div className="thinking-note-layout">
-        {headings.length > 0 && <aside className="thinking-note-outline"><ReadingOutline label="Contents" collapsible items={headings.map(heading => ({ id: heading.id, label: heading.text, level: heading.level }))} /></aside>}
+        {headings.length > 0 && <details className="thinking-note-outline n3wth-site-reading-outline">
+          <summary className="n3wth-site-reading-outline-label">Contents</summary>
+          <nav aria-label="Contents" className="n3wth-site-reading-outline-content">
+            {headings.map(({ id, text, level }) => <a key={id} className={level === 3 ? 'ms-3' : undefined} href={`#${id}`}>{text}</a>)}
+          </nav>
+        </details>}
         <div className="min-w-0">
           {/* HTML comes from the repository's trusted Markdown build pipeline. */}
           <div className="n3wth-site-prose thinking-note-prose" dangerouslySetInnerHTML={{ __html: note.html }} />

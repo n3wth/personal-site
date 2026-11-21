@@ -131,3 +131,8 @@ describe('highlightRanges', () => {
     expect(highlightRanges('elephant-goldfish', 'elefant')).toEqual([{ start: 0, end: 8 }])
   })
 })
+
+it('does not turn a short mistyped query into common-word matches', () => {
+  const item = { id: 'example', title: 'How to show a chart', href: '/example', group: 'Thinking' as const }
+  expect(scoreItem(item, 'jhow')).toBe(0)
+})

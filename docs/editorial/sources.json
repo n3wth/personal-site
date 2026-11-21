@@ -1,4 +1,36 @@
 {
+"nist-password-usability": {
+  "title": "NIST SP 800-63B-4: Customer Experience Considerations",
+  "url": "https://pages.nist.gov/800-63-4/sp800-63b/customer/",
+  "kind": "standard",
+  "quality": "Standards implementation guidance on distinct passwords, password managers and avoiding arbitrary rotation. Not a product comparison.",
+  "discoveredOn": "2026-11-20",
+  "readVia": "Official page opened and read with web tool"
+},
+"fido-passkeys-guide": {
+  "title": "FIDO Alliance: Passkeys",
+  "url": "https://fidoalliance.org/passkeys/",
+  "kind": "standard",
+  "quality": "Standards body's explanation of passkey sign-in, phishing resistance, providers and synced versus device-bound credentials. Does not guarantee account recovery or eliminate fallback risks.",
+  "discoveredOn": "2026-11-20",
+  "readVia": "Official FAQ and passkey explanation read with web tool"
+},
+"1password-get-started": {
+  "title": "Get started with 1Password",
+  "url": "https://support.1password.com/explore/get-started/",
+  "kind": "implementation",
+  "quality": "Vendor setup documentation for apps, browser integration, saving passwords and recovery. No comparison or pricing claim.",
+  "discoveredOn": "2026-11-20",
+  "readVia": "Official setup documentation opened and read with web tool"
+},
+"google-password-manager-intro": {
+  "title": "Google Password Manager",
+  "url": "https://support.google.com/chrome/answer/95606?hl=en",
+  "kind": "implementation",
+  "quality": "Official instructions for saving, autofilling and managing passwords in Chrome. Provider compatibility varies by device.",
+  "discoveredOn": "2026-11-20",
+  "readVia": "Official Chrome Help article opened and read with web tool"
+},
   "ir-evaluation": {
     "title": "Evaluation of unranked retrieval sets",
     "url": "https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-unranked-retrieval-sets-1.html",

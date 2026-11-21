@@ -27,7 +27,18 @@
     "RESEND_PREVIEW_TOPIC_ID": "50cbe6b4-0ec5-4f37-a1e2-83be76fbc77a",
     "RESEND_TOPIC_IDS": "{\"home\":\"0dc0a1da-8228-4219-969c-b24de6b6f87a\",\"skills\":\"7314ba68-f8de-439b-aa3f-4feafb620383\",\"garden\":\"5bda5e6c-b4f4-484d-a971-217fccbff057\",\"r3\":\"a8117d35-e1be-4a53-a064-20f26f280f57\",\"ui\":\"0d2f90fd-8b0d-4949-9e1f-20e1713a75f1\"}"
   },
+  "ai": { "binding": "AI" },
   "ratelimits": [
+    {
+      "name": "SEARCH_ANSWER",
+      "namespace_id": "2026092103",
+      "simple": { "limit": 20, "period": 60 }
+    },
+    {
+      "name": "SHIP_REVIEW",
+      "namespace_id": "2026092102",
+      "simple": { "limit": 5, "period": 60 }
+    },
     {
       "name": "SUBSCRIBE",
       "namespace_id": "2026092101",

@@ -44,3 +44,24 @@ test('final note schema, sitemap and feed preserve source publication and revisi
     feed.window.close()
   }
 })
+
+test('final docs canonical and Open Graph URLs match the sitemap', () => {
+  const sitemap = new JSDOM(read('../dist/sitemap.xml'), { contentType: 'application/xml' })
+  try {
+    const docs = [...sitemap.window.document.querySelectorAll('loc')]
+      .map(node => new URL(node.textContent))
+      .filter(({ pathname }) => pathname === '/docs' || pathname.startsWith('/docs/'))
+    assert.ok(docs.length, 'Missing docs URLs in the sitemap')
+    for (const url of docs) {
+      assert.ok(!url.pathname.endsWith('/'), `${url}: sitemap URL must be slashless`)
+      const dom = new JSDOM(read(`../dist${url.pathname}/index.html`))
+      try {
+        const { document } = dom.window
+        const canonical = [...document.querySelectorAll('link[rel="canonical"]')].map(tag => tag.href)
+        const openGraph = [...document.querySelectorAll('meta[property="og:url"]')].map(tag => tag.content)
+        assert.deepEqual(canonical, [url.href], `${url}: canonical`)
+        assert.deepEqual(openGraph, [url.href], `${url}: Open Graph URL`)
+      } finally { dom.window.close() }
+    }
+  } finally { sitemap.window.close() }
+})

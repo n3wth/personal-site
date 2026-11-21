@@ -1,4 +1,6 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react'
+import { withTheme } from '../withTheme'
+import { shipReviewPath } from '../../lib/shipReview'
 import { useHydrated, useQueryString } from '../../lib/navigation'
 import { Icon, Selector, TextInput } from '@n3wth/ui/primitives'
 import articleMeta from '../../data/article-index.json'
@@ -85,6 +87,10 @@ export function NotesIndex() {
       event.preventDefault()
       navigate(link.href)
     }} className="site-content-gutter writing-index">
+      <p className="writing-tool">
+        <a href={shipReviewPath}>Before You Ship</a>
+        <span>Get an acceptance test for an AI feature.</span>
+      </p>
       <div className="writing-search">
         <TextInput className="writing-control" label="Search writing" isDisabled={!ready} isLabelHidden placeholder="Search writing" size="lg" width="100%" startIcon={<Icon icon="search" size="sm" color="secondary" />} value={query} onChange={value => update({ q: value }, true)} />
       </div>
@@ -121,4 +127,11 @@ export function NotesIndex() {
       </div>}
     </section>
   )
+}
+
+const ThemedIndex = withTheme(NotesIndex)
+
+export default function WritingIndex() {
+  // Astro observes the island's direct children, and the theme provider uses display: contents.
+  return <div><ThemedIndex /></div>
 }

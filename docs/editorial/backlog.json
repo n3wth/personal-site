@@ -47,10 +47,47 @@
       "G21",
       "G22",
       "G23",
-      "G24"
+      "G24",
+      "F01"
     ]
   },
   "items": [
+    {
+      "id": "F01",
+      "site": "portfolio",
+      "title": "Passwords and passkeys",
+      "slug": "passwords-and-passkeys",
+      "status": "pr_open",
+      "priority": "P1",
+      "keyword": "passwords and passkeys guide",
+      "searchMetrics": {
+        "volume": null,
+        "difficulty": null,
+        "intentCode": ""
+      },
+      "angle": "User-requested short guide for friends, based on a supplied password-manager and passkey recommendation.",
+      "outline": [
+        "Choose a password manager",
+        "Secure email and replace reused passwords",
+        "Add passkeys and preserve recovery",
+        "When to change passwords"
+      ],
+      "sources": [
+        "nist-password-usability",
+        "fido-passkeys-guide",
+        "1password-get-started",
+        "google-password-manager-intro"
+      ],
+      "internalLinks": [
+        "Thinking",
+        "Contact"
+      ],
+      "grounding": [
+        "User brief and supplied screenshot, 2026-11-20; private correspondence is not published"
+      ],
+      "originalAsset": "Four-step checklist for replacing a password and verifying the saved login.",
+      "url": "https://n3wth.com/thinking/passwords-and-passkeys"
+    },
     {
       "id": "G01",
       "site": "garden",

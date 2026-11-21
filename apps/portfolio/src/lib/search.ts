@@ -118,7 +118,7 @@ function editDistance(a: string, b: string, max: number): number {
 function fuzzyDistance(word: string, qFlat: string, max: number): number {
   // Compare the whole word. A one-edit prefix of a much longer word
   // ("goldf" inside "goodfellow") is a different word, not a typo.
-  if (Math.abs(word.length - qFlat.length) > max) return max + 1
+  if (Math.abs(word.length - qFlat.length) > max || (qFlat.length <= 4 && word[0] !== qFlat[0])) return max + 1
   return editDistance(word, qFlat, max)
 }
 
@@ -126,9 +126,9 @@ function fuzzyText(text: string, qFlat: string): boolean {
   const max = maxEdits(qFlat.length)
   if (max === 0) return false
   const flat = compact(text)
-  if (flat && Math.abs(flat.length - qFlat.length) <= max && editDistance(flat, qFlat, max) <= max) return true
+  if (flat.length >= FUZZY_MIN && fuzzyDistance(flat, qFlat, max) <= max) return true
   for (const word of words(text)) {
-    if (fuzzyDistance(word, qFlat, max) <= max) return true
+    if (word.length >= FUZZY_MIN && fuzzyDistance(word, qFlat, max) <= max) return true
   }
   return false
 }

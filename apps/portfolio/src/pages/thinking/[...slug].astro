@@ -14,5 +14,5 @@ const { article, note } = Astro.props
 const meta = article ? { path: 'thinking/' + article.id, title: article.title + ' — Oliver Newth', description: article.dek, ogImage: '/og/thinking/' + article.id + '.png', publishedTime: article.date } : { path: note.href.slice(1), title: note.title + ' — Oliver Newth', description: note.description || `${note.title}. A working note by Oliver Newth.`, ogImage: '/og/thinking.png', publishedTime: note.date, modifiedTime: note.updated }
 ---
 <Layout {...meta}>
-  {article ? <Article slug={article.id} client:load /> : <Note note={note} client:load />}
+  {article ? <Article slug={article.id} client:load /> : <Note note={note} />}
 </Layout>

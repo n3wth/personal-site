@@ -1,4 +1,5 @@
 .home-opening-scene {
+  --bg: var(--journey-body, var(--color-background-body));
   --home-neutral-ink: color-mix(in oklab, var(--color-text-primary) 78%, var(--bg));
   overflow: hidden;
   position: relative;

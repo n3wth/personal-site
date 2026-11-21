@@ -48,6 +48,7 @@ function artFrame(i: number) {
 }
 
 function ArtStory() {
+  const opening = useId()
   return <>
     <g stroke="none" fillRule="evenodd">
       {Array.from({ length: 8 }, (_, i) => <path key={i} data-story-wall={i} d={`${artFrame(i).loop} ${artFrame(i + 1).loop}`} style={{ opacity: 0 }} />)}
@@ -70,6 +71,17 @@ function ArtStory() {
         </g>
       })}
     </g>
+    <defs>
+      <linearGradient id={`${opening}-fade`}>
+        <stop offset="0" stopColor="white" stopOpacity="0" />
+        <stop offset=".6" stopColor="white" />
+        <stop offset="1" stopColor="white" stopOpacity="0" />
+      </linearGradient>
+      <mask id={opening} maskUnits="userSpaceOnUse" x={560} y={0} width={480} height={575}>
+        <rect className="section-story__art-opening-mask" x={410} width={165} height={575} stroke="none" fill={`url(#${opening}-fade)`} />
+      </mask>
+    </defs>
+    <path data-story-decoration="" className="section-story__art-opening" d={artFrame(0).arch} mask={`url(#${opening})`} />
   </>
 }
 

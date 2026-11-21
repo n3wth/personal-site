@@ -6,6 +6,11 @@
     "ogImage": "/og/hero-home.png"
   },
   {
+    "path": "before-you-ship",
+    "title": "Before You Ship — Oliver Newth",
+    "description": "Find a plausible failure in your AI feature and generate an acceptance test to run before launch."
+  },
+  {
     "path": "projects",
     "title": "Projects — Oliver Newth",
     "description": "Independent projects by Oliver Newth: tools for AI agents, a shared component library, and other experiments.",

@@ -1,0 +1,7 @@
+---
+import Layout from '../layouts/SiteLayout.astro'
+import Content from '../screens/BeforeYouShip'
+import routes from '../data/routes.json'
+const meta = routes.find(route => route.path === 'before-you-ship')!
+---
+<Layout {...meta}><Content client:load /></Layout>

@@ -18,12 +18,11 @@ function Projects() {
           <div className="project-feature-copy">
             <div className="project-feature-heading">
               <SiteHeading level={2}><a href={`/projects/${slug}`}>{project.name}</a></SiteHeading>
-              {project.github && <a className="project-source" href={project.github} aria-label={`${project.name} source on GitHub`} title="Source on GitHub" target="_blank" rel="noopener noreferrer"><Github size={24} strokeWidth={2} aria-hidden="true" /></a>}
+              {project.github && <a className="project-source" href={project.github} aria-label={`${project.name} source on GitHub`} title="Source on GitHub" target="_blank" rel="noopener noreferrer"><Github size={16} strokeWidth={2} aria-hidden="true" /></a>}
             </div>
             <p className="project-purpose">{project.question}</p>
             <p>{project.description}</p>
             <div className="project-actions">
-              <a href={`/projects/${slug}`}>About {project.name}</a>
               {project.docs && <a href={project.docs}>Documentation</a>}
             </div>
           </div>

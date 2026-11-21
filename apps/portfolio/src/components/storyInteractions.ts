@@ -1,6 +1,7 @@
 import { useEffect, type RefObject } from 'react'
 import { createArtRoutes } from './artRoutes'
-import { createStorySpace, pulseEnvelope, readStoryJourney, saveStoryJourney, storyEnergy, storyColor, storyChaos, type StoryAccent } from './storySpace'
+import { createStorySpace, pulseEnvelope, storyEnergy, storyColor, storyChaos, type StoryAccent } from './storySpace'
+import { readStoryJourney, saveStoryJourney } from './storyJourney'
 
 type Point = { x: number; y: number }
 
@@ -192,15 +193,18 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
       parent.visited.add(line)
     }
 
-    function geometry() {
+    function projectPoint(matrix: DOMMatrix, p: Point) {
+      return { x: matrix.a * p.x + matrix.c * p.y + matrix.e, y: matrix.b * p.x + matrix.d * p.y + matrix.f }
+    }
+
+    function geometry(matrices: Map<Line, DOMMatrix | null>) {
       return lines.map(line => {
-        const matrix = line.path.getScreenCTM()
-        return { line, matrix, points: matrix ? line.points.map(p => ({ x: matrix.a * p.x + matrix.c * p.y + matrix.e, y: matrix.b * p.x + matrix.d * p.y + matrix.f })) : [] }
+        const matrix = matrices.get(line)
+        return { line, matrix, points: matrix ? line.points.map(p => projectPoint(matrix, p)) : [] }
       })
     }
 
-    function startBurst(paths: ReturnType<typeof geometry>) {
-      const bounds = svg!.parentElement!.getBoundingClientRect()
+    function startBurst(paths: ReturnType<typeof geometry>, bounds: DOMRect) {
       const offset = Math.floor(Math.random() * paths.length)
       for (let a = 0; a < paths.length; a++) {
         const first = paths[(a + offset) % paths.length]
@@ -235,7 +239,20 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
       lastTime = now
       sceneTime = journeyOffset + time / 1000
       const energy = storyEnergy(sceneTime)
-      space.update(sceneTime)
+      // Read live transforms once per frame before any scene writes. Reuse them
+      // for the visual overlay and collision checks against the sampled paths.
+      const startsBurst = time >= nextBurst && transfers.length <= lines.length * 2
+      const checksContacts = time - lastCollision >= 16
+      const movingLines = new Set(transfers.filter(pulse => time >= pulse.born).map(pulse => pulse.line))
+      const readAll = startsBurst || (checksContacts && !awaitingAnswer && movingLines.size > 0)
+      const matrices = new Map<Line, DOMMatrix | null>()
+      for (const line of readAll ? lines : movingLines) matrices.set(line, line.path.getScreenCTM())
+      const rootMatrix = startsBurst || movingLines.size || kind === 'projects' ? svg!.getScreenCTM() : null
+      const inverseRoot = rootMatrix?.inverse()
+      const bounds = startsBurst ? svg!.parentElement!.getBoundingClientRect() : undefined
+      const paths = readAll ? geometry(matrices) : []
+
+      space.update(sceneTime, Math.abs(rootMatrix?.a || 1))
       if (time > breathStart + breathDuration + 4000) {
         breathStart = time + 5000 + Math.random() * 7000
         breathDuration = 14000 + Math.random() * 9000
@@ -250,7 +267,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
         const undertone = (.5 + .5 * Math.sin(sceneTime * .31 - position * 2.4)) * .04
         path.style.opacity = String((opacity ? Number(opacity) : 1) * (1 - (undertone + breath * .18) * (1 - energy * .65)))
       })
-      if (time >= nextBurst && transfers.length <= lines.length * 2) {
+      if (startsBurst && bounds) {
         passage++
         const calm = .65 + Math.sin(sceneTime * .037) * .18 + Math.sin(sceneTime * .013) * .1
         if (time >= nextMotif && (energy < .45 || passage === 1)) {
@@ -287,7 +304,6 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
         const reverse = Math.sin(sceneTime * .023) > 0
         if (ordered || synchronized) space.startPattern(sceneTime, burstDuration / 1000, patternColor, accent ? 0 : ordered ? burstDuration * .00065 : 0, blocks, accent || synchronized ? 0 : storyChaos(sceneTime), motifExpansion && accent !== 'suspend', accent, origin)
         seeded.clear()
-        const paths = geometry()
         const sorted = [...paths].sort((a, b) => Math.min(...a.points.map(p => p.y)) - Math.min(...b.points.map(p => p.y)))
         order = new Map(sorted.map(({ line }, index) => {
           const block = line.path.closest<SVGGElement>('[data-story-block]')
@@ -325,7 +341,7 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
           }
         } else {
           const count = synchronized ? lines.length : ordered ? Math.max(1, Math.round(lines.length * energy)) : 1 + Math.floor(Math.random() * 3 * energy)
-          for (let i = 0; i < count && startBurst(paths); i++) { /* seed connected lines */ }
+          for (let i = 0; i < count && startBurst(paths, bounds); i++) { /* seed connected lines */ }
         }
         nextBurst = time + burstDuration * (ordered ? 1.2 : .85) + tuning.gap * (.25 + (1 - energy) * 2) * space.profile.gap
         if (accent === 'return') nextBurst = time + burstDuration * 4.5
@@ -351,11 +367,10 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
         const width = Math.min(tuning.length * pulse.lengthScale, Math.abs(pulse.position - pulse.start))
         pulse.width = width
         const tail = pulse.end > pulse.start ? pulse.position - width : pulse.position
-        const rootMatrix = svg!.getScreenCTM()
-        const lineMatrix = pulse.line.path.getScreenCTM()
+        const lineMatrix = matrices.get(pulse.line)
         let transform = ''
-        if (rootMatrix && lineMatrix) {
-          const m = rootMatrix.inverse().multiply(lineMatrix)
+        if (inverseRoot && lineMatrix) {
+          const m = inverseRoot.multiply(lineMatrix)
           transform = `matrix(${m.a} ${m.b} ${m.c} ${m.d} ${m.e} ${m.f})`
           pulse.path.setAttribute('transform', transform)
           pulse.path.style.strokeWidth = String(1.5 / Math.hypot(lineMatrix.a, lineMatrix.b))
@@ -389,26 +404,24 @@ export function useStoryInteractions(ref: RefObject<SVGSVGElement | null>, kind:
       })
 
       // Sample contacts frequently enough to catch the fast launch of each pulse.
-      if (!awaitingAnswer && time - lastCollision >= 16) {
+      if (!awaitingAnswer && checksContacts) {
         lastCollision = time
         // Existing reactions get the first chance to continue before new sources start chains.
-        const active: { path: SVGPathElement; trail: Trail }[] = transfers.filter(pulse => pulse.passage === passage && time >= pulse.born && time - pulse.born < pulse.duration).map(pulse => ({ path: pulse.path, trail: pulse }))
-        const targets = active.length ? geometry() : []
+        const active = transfers.filter(pulse => pulse.passage === passage && time >= pulse.born && time - pulse.born < pulse.duration)
 
-        for (const { path, trail } of active) {
-          const matrix = path.getScreenCTM()
+        for (const trail of active) {
+          const { path } = trail
+          const matrix = matrices.get(trail.line)
           if (!matrix) continue
-          const local = path.getPointAtLength(path.getTotalLength() * trail.position)
-          const head = { x: matrix.a * local.x + matrix.c * local.y + matrix.e, y: matrix.b * local.x + matrix.d * local.y + matrix.f }
+          const head = projectPoint(matrix, pointAt(trail.line, trail.position))
           const previous = trail.previous || head
           trail.previous = head
           if (transfers.length >= pulseLimit()) continue
           const tailPosition = Math.max(0, Math.min(1, trail.position - trail.direction * trail.width))
           const litPoints = Array.from({ length: 5 }, (_, i) => {
-            const p = path.getPointAtLength(path.getTotalLength() * (tailPosition + (trail.position - tailPosition) * i / 4))
-            return { x: matrix.a * p.x + matrix.c * p.y + matrix.e, y: matrix.b * p.x + matrix.d * p.y + matrix.f }
+            return projectPoint(matrix, pointAt(trail.line, tailPosition + (trail.position - tailPosition) * i / 4))
           })
-          for (const target of targets) {
+          for (const target of paths) {
             const { line, points, matrix: targetMatrix } = target
             if (!targetMatrix || trail.visited.has(line) || seeded.has(line)) continue
             // The faint base beneath an animated overlay is the same line, not a contact.

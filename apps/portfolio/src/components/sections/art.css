@@ -34,11 +34,11 @@
 .art-caption {
   max-width: var(--frame-max);
   margin-inline: auto;
-  padding-block: 2.5rem clamp(4rem, 10svh, 8rem);
+  padding-block: clamp(1.5rem, 4svh, 2.5rem) clamp(3rem, 8svh, 6rem);
 }
 
 .art-caption h2 {
-  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-size: clamp(1.65rem, 3vw, 2.5rem);
   line-height: 1.1;
 }
 
