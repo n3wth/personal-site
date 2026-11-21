@@ -1,7 +1,11 @@
 ---
 import Layout from '../layouts/SiteLayout.astro'
 import Content from '../screens/Thinking'
+import WritingIndex from '../components/thinking/NotesIndex'
 import routes from '../data/routes.json'
 const meta = routes.find(route => route.path === 'thinking')!
 ---
-<Layout {...meta}><Content client:load /></Layout>
+<Layout {...meta}>
+  <Content client:load />
+  <div class="thinking-page"><WritingIndex client:visible /></div>
+</Layout>

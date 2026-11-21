@@ -9,7 +9,7 @@ import { SpineScene } from './SpineScene'
 import { PipelineScene } from './PipelineScene'
 import { ToolboxDemo } from './ToolboxDemo'
 import { Flythrough } from './Flythrough'
-import { useReducedMotionFlag } from './support'
+import { useReducedMotionFlag } from './viewport'
 
 /**
  * A field guide to building a personal site that tells a story, taught
