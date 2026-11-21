@@ -1,6 +1,7 @@
 import { useEffect, type RefObject } from 'react'
 import { createArtRoutes } from './artRoutes'
-import { createStorySpace, pulseEnvelope, readStoryJourney, saveStoryJourney, storyEnergy, storyColor, storyChaos, type StoryAccent } from './storySpace'
+import { createStorySpace, pulseEnvelope, storyEnergy, storyColor, storyChaos, type StoryAccent } from './storySpace'
+import { readStoryJourney, saveStoryJourney } from './storyJourney'
 
 type Point = { x: number; y: number }
 

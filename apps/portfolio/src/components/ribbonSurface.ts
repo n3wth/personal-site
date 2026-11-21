@@ -4,7 +4,6 @@ const mul = (a: RibbonVector, n: number): RibbonVector => [a[0] * n, a[1] * n, a
 const sub = (a: RibbonVector, b: RibbonVector) => add(a, mul(b, -1))
 const cross = (a: RibbonVector, b: RibbonVector): RibbonVector => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
 const unit = (a: RibbonVector) => mul(a, 1 / Math.hypot(...a))
-export const ribbonEase = (value: number) => { const t = Math.max(0, Math.min(1, value)); return t * t * (3 - 2 * t) }
 
 const curves: readonly (readonly RibbonVector[])[] = [
   [[-180, 1000, -200], [200, 1000, -200], [700, 700, -200], [700, 400, -150]],

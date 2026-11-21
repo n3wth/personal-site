@@ -1,6 +1,5 @@
 import { groundLag, harmonyColor, harmonySeconds, paintHarmonyPhase, type HarmonyRole } from './harmony'
 
-const storageKey = 'n3wth-story-journey'
 const paletteSpace = typeof CSS !== 'undefined' && CSS.supports?.('color', 'color-mix(in oklab, red, blue)') ? 'oklab' : 'srgb'
 export type StoryAccent = 'return' | 'depth' | 'suspend' | null
 export const storyEnergy = (time: number) => .12 + .88 * (.5 + .28 * Math.cos(time * .09) + .22 * Math.cos(time * .047 + 1)) ** 2
@@ -19,30 +18,6 @@ const profiles: Record<string, { speed: number; gap: number; chorus: number }> =
   projects: { speed: .7, gap: 1.2, chorus: .15 },
   library: { speed: 1.5, gap: 2.8, chorus: .04 },
   contact: { speed: 1.1, gap: 1.8, chorus: .18 },
-}
-
-/** A tab-local clock and palette connect the scenes without changing navigation. */
-let documentJourney: { epoch: number; color: number } | undefined
-export function readStoryJourney() {
-  if (documentJourney) return documentJourney
-  // The layout paints the ground before hydration from the same journey.
-  const painted = (globalThis as { __storyJourney?: { epoch: number; color: number } }).__storyJourney
-  if (painted && Number.isFinite(painted.epoch) && Number.isFinite(painted.color)) return documentJourney = painted
-  const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
-  try {
-    const value = JSON.parse(sessionStorage.getItem(storageKey) || 'null')
-    if (navigation?.type !== 'reload' && Number.isFinite(value?.epoch) && Number.isFinite(value?.color)) {
-      documentJourney = value as { epoch: number; color: number }
-      return documentJourney
-    }
-  } catch { /* Storage is optional. */ }
-  documentJourney = { epoch: Date.now() - Math.random() * 600000, color: Math.floor(Math.random() * 4) }
-  return documentJourney
-}
-
-export function saveStoryJourney(journey: { epoch: number; color: number }) {
-  documentJourney = journey
-  try { sessionStorage.setItem(storageKey, JSON.stringify(journey)) } catch { /* Private browsing remains usable. */ }
 }
 
 /** Fixed geometry; light travels through the stack and shades each solid face. */
