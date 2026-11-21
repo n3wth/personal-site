@@ -1,7 +1,17 @@
 ---
 import Head from '@astrojs/starlight/components/Head.astro'
 
-const { entry } = Astro.locals.starlightRoute
+const { entry, head } = Astro.locals.starlightRoute
+
+// Cloudflare serves documentation at slashless URLs, as listed in the sitemap.
+for (const { tag, attrs } of head) {
+  if (tag === 'link' && attrs?.rel === 'canonical' && typeof attrs.href === 'string') {
+    attrs.href = attrs.href.replace(/\/$/, '')
+  }
+  if (tag === 'meta' && attrs?.property === 'og:url' && typeof attrs.content === 'string') {
+    attrs.content = attrs.content.replace(/\/$/, '')
+  }
+}
 ---
 
 <Head />
