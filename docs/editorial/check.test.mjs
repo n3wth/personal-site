@@ -34,6 +34,17 @@ test('an HTTP 200 challenge page is not valid source evidence', () => {
   assert.equal(isChallenge('<title>BEIR retrieval benchmark</title>'), false)
 })
 
+test('adding sources keeps link checks scoped, while editing or removing old sources audits every review', () => {
+  const reviews = [{ id: 'old', contentPath: 'old.md' }, { id: 'new', contentPath: 'new.md' }]
+  const paths = ['docs/editorial/sources.json', 'new.md']
+  const before = { old: { url: 'https://example.com/old', kind: 'standard' } }
+  const after = { ...before, new: { url: 'https://example.com/new' } }
+  assert.deepEqual(reviewsForChanges(reviews, paths, before, after), [reviews[1]])
+  assert.deepEqual(reviewsForChanges(reviews, paths, before, { ...after, old: { ...before.old, kind: 'practitioner' } }), reviews)
+  assert.deepEqual(reviewsForChanges(reviews, paths, before, { new: after.new }), reviews)
+  assert.deepEqual(reviewsForChanges(reviews, undefined, before, after), reviews)
+})
+
 test('backlog contains complete briefs and a unique release order', () => {
   assert.deepEqual(validateBacklog(backlog, sources), [])
   const broken = structuredClone(backlog)

@@ -3,6 +3,7 @@ import { readFile, writeFile, readdir, realpath } from 'node:fs/promises'
 import { resolve, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
+import { isDeepStrictEqual } from 'node:util'
 import { siteUrls } from '../../packages/site-config/index.js'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
@@ -30,8 +31,11 @@ const validDate = (value, now) => nonempty(value) && /^\d{4}-\d{2}-\d{2}(?:T\d{2
 
 export const isChallenge = body => /<title>[^<]*(access denied|just a moment|page not found|captcha|sign in|client challenge|checking your browser|security check)/i.test(body)
 
-export function reviewsForChanges(reviews, paths) {
-  if (!paths || paths.includes('docs/editorial/sources.json')) return reviews
+export function reviewsForChanges(reviews, paths, previousSources, currentSources) {
+  if (!paths) return reviews
+  // New sources cannot affect old claims. Edits or removals still require a full audit.
+  if (paths.includes('docs/editorial/sources.json') && (!previousSources || !currentSources ||
+    Object.entries(previousSources).some(([id, source]) => !isDeepStrictEqual(source, currentSources[id])))) return reviews
   const changed = new Set(paths)
   return reviews.filter(review => changed.has(review.contentPath) || changed.has(`docs/editorial/reviews/${review.id}.json`))
 }
@@ -190,7 +194,10 @@ async function main() {
     const names = (await readdir(resolve(root, 'docs/editorial/reviews'))).filter(name => name.endsWith('.json'))
     const reviews = await Promise.all(names.map(name => readJson(`docs/editorial/reviews/${name}`)))
     const paths = id ? execFileSync('git', ['diff', '--name-only', '-z', id, 'HEAD', '--'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean) : undefined
-    console.log(reviewsForChanges(reviews, paths).map(review => review.id).join('\n'))
+    const previousSources = paths?.includes('docs/editorial/sources.json')
+      ? JSON.parse(execFileSync('git', ['show', `${id}:docs/editorial/sources.json`], { cwd: root, encoding: 'utf8' }))
+      : undefined
+    console.log(reviewsForChanges(reviews, paths, previousSources, sources).map(review => review.id).join('\n'))
     return
   }
   if (command === 'backlog') {
