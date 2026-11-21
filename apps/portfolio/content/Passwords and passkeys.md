@@ -16,7 +16,7 @@ You can start with your email today and work through the rest over time.
 
 I use [1Password](https://support.1password.com/explore/get-started/). It saves your logins, creates random passwords, and fills them in for you. Install its app on your phone and computer, plus its browser extension.
 
-You can also use Apple Passwords or [Google Password Manager](https://passwords.google.com/). Pick one that works on the devices you use.
+You can also use Apple Passwords or [Google Password Manager](https://support.google.com/chrome/answer/95606?hl=en). Pick one that works on the devices you use.
 
 Give the manager a long, unique account password if it asks for one. Follow its recovery setup and keep any emergency kit somewhere safe that you can reach without opening the manager.
 

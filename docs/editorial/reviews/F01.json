@@ -1,0 +1,113 @@
+{
+  "id": "F01",
+  "contentPath": "apps/portfolio/content/Passwords and passkeys.md",
+  "contentSha256": "979d154758bb227dcf8438e8f788519c566f5029d157296aca347772309d0197",
+  "reviewedAt": "2026-11-20",
+  "reviewer": "Codex editorial pass against official sources read during this task. Personal 1Password use is supplied by the user in the screenshot.",
+  "decision": "pass",
+  "scores": {
+    "originality": 4,
+    "usefulness": 5,
+    "evidence": 4,
+    "clarity": 5,
+    "limitations": 4
+  },
+  "publicSafe": true,
+  "brandsChecked": true,
+  "internalLinksChecked": true,
+  "claimsComplete": true,
+  "reviewNotes": "Original contribution is the short ordered setup checklist for friends. No private correspondence or names are published. No efficacy statistics, product rankings or prices. Existing note layout, search, topics and sitemap supply discovery; no contextual internal links are needed in this short guide. Passkey provider and recovery differences are explicit. Security practices are recommendations rather than guarantees.",
+  "claims": [
+    {
+      "text": "Use a different password for every account.",
+      "kind": "sourced",
+      "sourceId": "nist-password-usability",
+      "sourcePassage": "Summary: distinct passwords prevent reuse of compromised credentials across services; password managers can maintain them.",
+      "limitation": "Guidance explains the account-isolation mechanism, not absolute account security.",
+      "verdict": "supported"
+    },
+    {
+      "text": "A strong, unique password does not need changing on a calendar.",
+      "kind": "sourced",
+      "sourceId": "nist-password-usability",
+      "sourcePassage": "Do not require that passwords be changed arbitrarily (e.g., periodically)",
+      "limitation": "Weak, reused or compromised credentials still need replacement; workplace policies may differ.",
+      "verdict": "supported"
+    },
+    {
+      "text": "It saves your logins, creates random passwords, and fills them in for you.",
+      "kind": "sourced",
+      "sourceId": "1password-get-started",
+      "sourcePassage": "Summary: documentation covers creating strong passwords, saving logins, browser sign-in and app setup.",
+      "limitation": "Vendor implementation documentation; no superiority or current pricing claim.",
+      "verdict": "supported"
+    },
+    {
+      "text": "[Google Password Manager](https://support.google.com/chrome/answer/95606?hl=en)",
+      "kind": "sourced",
+      "sourceId": "google-password-manager-intro",
+      "sourcePassage": "When you use Chrome, Google Password Manager saves your passwords for different sites.",
+      "limitation": "Option depends on the reader's devices and account setup.",
+      "verdict": "supported"
+    },
+    {
+      "text": "A passkey lets you sign in by unlocking your phone or computer, usually with your face, fingerprint, or device PIN.",
+      "kind": "sourced",
+      "sourceId": "fido-passkeys-guide",
+      "sourcePassage": "Summary: passkeys replace passwords and are unlocked using device biometrics, PIN or other device unlock methods.",
+      "limitation": "Exact prompts and hardware support vary.",
+      "verdict": "supported"
+    },
+    {
+      "text": "It is tied to the real service, which helps protect you from fake sign-in pages.",
+      "kind": "sourced",
+      "sourceId": "fido-passkeys-guide",
+      "sourcePassage": "Summary: passkeys use cryptographic key pairs and provide phishing-resistant sign-in.",
+      "limitation": "Does not secure compromised devices or all account fallback and recovery paths.",
+      "verdict": "supported"
+    },
+    {
+      "text": "Some sync through your provider; others stay on a single device.",
+      "kind": "sourced",
+      "sourceId": "fido-passkeys-guide",
+      "sourcePassage": "Summary: passkeys may be synced by a provider or device-bound.",
+      "limitation": "Readers must confirm their own provider's recovery and replacement process.",
+      "verdict": "supported"
+    },
+    {
+      "text": "I use [1Password]",
+      "kind": "recommendation",
+      "rationale": "User supplied this first-person recommendation in the attached screenshot; no claim about current subscription or duration is added."
+    },
+    {
+      "text": "Your email can reset the passwords for many of your other accounts.",
+      "kind": "recommendation",
+      "rationale": "Reason for prioritizing email in the checklist; applies to services using email-based recovery, not every service."
+    },
+    {
+      "text": "For each account:",
+      "kind": "recommendation",
+      "rationale": "Four-step practical checklist: use official settings, generate and save a unique password, then verify it works. Website labels vary."
+    },
+    {
+      "text": "For accounts that still use passwords, turn on two-factor authentication when available.",
+      "kind": "recommendation",
+      "rationale": "Practical defense-in-depth recommendation with authenticator/security-key options and recovery-code storage. No guarantee against phishing."
+    },
+    {
+      "text": "Never share a sign-in code or approve a login you did not start.",
+      "kind": "recommendation",
+      "rationale": "Practical precaution against social engineering and unsolicited login prompts."
+    },
+    {
+      "text": "Changing a password does not normally make your laptop or internet connection faster.",
+      "kind": "recommendation",
+      "rationale": "Corrects the supplied anecdote: no causal performance evidence is supplied and account credential rotation is not a general performance remedy."
+    },
+    {
+      "text": "Follow its recovery setup and keep any emergency kit somewhere safe that you can reach without opening the manager.",
+      "kind": "recommendation",
+      "rationale": "Avoid circular recovery dependencies; actual recovery mechanisms vary by provider."
+    }
+  ]
+}
