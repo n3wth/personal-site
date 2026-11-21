@@ -81,18 +81,6 @@ jobs:
         env:
           BASE_SHA: ${{ github.event_name == 'workflow_dispatch' && '0000000000000000000000000000000000000000' || github.event.before }}
         run: node scripts/workspace/affected.mjs --base "$BASE_SHA"
-      - name: Build affected Cloudflare apps
-        if: steps.affected.outputs.apps != ''
-        env:
-          APPS: ${{ steps.affected.outputs.apps }}
-        shell: bash
-        run: |
-          targets=()
-          for app in $APPS; do
-            targets+=(--workspace "@n3wth/$app")
-          done
-          npm run build:cloudflare -- "${targets[@]}"
-
   deploy:
     name: deploy / production
     needs: validate
