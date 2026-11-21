@@ -964,12 +964,14 @@ test('Before You Ship reviews a feature and shares only the edited test', async 
     expect(route.request().postDataJSON()).toEqual({
       feature: 'A workplace assistant answers company policy questions.',
       consequence: 'Someone uses the wrong leave policy.',
+      evidence: 'A Canadian employee was shown UK-LEAVE-18.'
     })
     await route.fulfill({ json: {
       failure: 'The assistant cites the wrong country.',
       setup: 'Index two fictional leave policies.',
       input: 'Ask about leave without sharing a country.',
       passCondition: 'It asks where you work.',
+      inspect: 'Check the cited document ID for UK-LEAVE-18.'
     } })
   })
   await page.goto('/before-you-ship')
@@ -978,14 +980,21 @@ test('Before You Ship reviews a feature and shares only the edited test', async 
   await expect(page.getByRole('button', { name: 'Generate a test' })).toBeEnabled()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: testInfo.outputPath('before-you-ship.png'), fullPage: true })
+  await page.getByText('Email agent', { exact: true }).click()
+  await page.getByRole('button', { name: 'Use this brief', exact: true }).click()
+  await expect(page.getByLabel('What are you building?')).toHaveValue(/An agent drafts customer replies/)
+  await page.getByText('Add a reply or source excerpt', { exact: true }).click()
+  await page.getByLabel('Reply or source excerpt').fill('A Canadian employee was shown UK-LEAVE-18.')
   await page.getByLabel('What are you building?').fill('A workplace assistant answers company policy questions.')
   await page.getByLabel('What happens if it gets something wrong?').fill('Someone uses the wrong leave policy.')
   await page.getByRole('button', { name: 'Generate a test' }).click()
   const review = page.getByRole('region', { name: 'Your review' })
   await expect(review).toBeFocused()
   await expect(review.getByText('The assistant cites the wrong country.')).toBeVisible()
+  await expect(review.getByText('Check the cited document ID for UK-LEAVE-18.')).toBeVisible()
+  await review.screenshot({ path: testInfo.outputPath('review-evidence.png') })
   await review.getByRole('button', { name: 'Copy test', exact: true }).click()
-  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toBe('Setup: Index two fictional leave policies.\nInput: Ask about leave without sharing a country.\nPass condition: It asks where you work.')
+  await expect.poll(() => page.evaluate(() => document.body.dataset.copiedText)).toBe('Setup: Index two fictional leave policies.\nInput: Ask about leave without sharing a country.\nPass condition: It asks where you work.\nInspect: Check the cited document ID for UK-LEAVE-18.')
   await review.getByRole('button', { name: 'Prepare to share' }).click()
   await page.getByLabel('Edit the test before sharing').fill('A synthetic policy test for my team.')
   await review.getByRole('button', { name: 'Copy share text' }).click()

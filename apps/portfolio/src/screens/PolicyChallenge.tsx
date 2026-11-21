@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Button } from '@n3wth/ui/primitives'
+import { ArrowDownRight } from 'lucide-react'
 import { track } from '../lib/analytics'
 import { acceptanceFields, formatAcceptanceTest, shareTestLimit, shipReviewPath } from '../lib/shipReview'
 
@@ -35,22 +36,25 @@ export function PolicyChallenge({ ready }: { ready: boolean }) {
 
   return (
     <section id={caseId} className="ship-case" aria-labelledby="ship-case-heading">
-      <div className="ship-case-heading">
-        <h2 id="ship-case-heading">Would you ship this?</h2>
-        <p>A fictional employee in <strong>Canada</strong> asks, “How much parental leave do I get?”</p>
-      </div>
+      <header className="ship-case-heading">
+        <div>
+          <h2 id="ship-case-heading">Would you ship this?</h2>
+          <p>A fictional employee in <strong>Canada</strong> asks, “How much parental leave do I get?”</p>
+        </div>
+        <a className="ship-own-feature" href="#review-a-feature">Review my own feature <ArrowDownRight size={14} aria-hidden="true" /></a>
+      </header>
       <div className="ship-case-evidence">
-        <figure>
+        <figure className="ship-case-answer">
           <figcaption>Assistant reply</figcaption>
-          <blockquote>“You’re eligible for 18 weeks of paid parental leave.”</blockquote>
+          <blockquote>“You’re eligible for <strong>18 weeks</strong> of paid parental leave.” <sup aria-label="Source 1">[1]</sup></blockquote>
         </figure>
-        <figure>
-          <figcaption>Cited source · Company leave policy</figcaption>
+        <figure className="ship-case-source">
+          <figcaption><span aria-hidden="true">[1]</span> Company leave policy</figcaption>
           <blockquote>“Employees based in the {decision ? <mark>United Kingdom</mark> : 'United Kingdom'} are eligible for 18 weeks of paid parental leave.”</blockquote>
         </figure>
       </div>
       {!decision ? (
-        <div className="ship-actions">
+        <div className="ship-actions ship-case-actions">
           <Button type="button" label="Ship it" variant="secondary" isDisabled={!ready} onClick={() => choose('ship')} />
           <Button type="button" label="Hold it" variant="secondary" isDisabled={!ready} onClick={() => choose('hold')} />
         </div>
