@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 /** Viewport tracking for the piece's canvases. `near` flips true once
     (mount trigger, the same deferral the Creative section uses for its
@@ -41,19 +41,16 @@ export function frameloopFor(visible: boolean, reduced: boolean): 'always' | 'de
   return reduced ? 'demand' : 'always'
 }
 
-/** Live prefers-reduced-motion flag; every scene in the piece takes this
-    and renders its static form when true. */
+const reducedMotionQuery = '(prefers-reduced-motion: reduce)'
+const readReducedMotion = () => window.matchMedia(reducedMotionQuery).matches
+const readServerMotion = () => false
+const subscribeToMotion = (onChange: () => void) => {
+  const media = window.matchMedia(reducedMotionQuery)
+  media.addEventListener('change', onChange)
+  return () => media.removeEventListener('change', onChange)
+}
+
+/** Match the initial article HTML during hydration, then apply the user's preference. */
 export function useReducedMotionFlag() {
-  const [reduced, setReduced] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const onChange = () => setReduced(mq.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-  return reduced
+  return useSyncExternalStore(subscribeToMotion, readReducedMotion, readServerMotion)
 }

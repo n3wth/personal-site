@@ -349,9 +349,10 @@ test('Thinking defers the index and Field Guide defers its WebGL code', async ({
   await expect(page.getByRole('heading', { name: 'Figure out the story' })).toBeAttached()
   expect(scripts.some(url => /\/(CameoCanvas|BikeCanvas|TeapotCanvas|FlythroughCanvas)\./.test(url))).toBe(false)
   const model = page.getByRole('img', { name: /homepage trail signpost/ })
-  const scene = page.waitForRequest(/\/CameoCanvas\.[^/]+\.js/)
-  await model.scrollIntoViewIfNeeded()
-  await scene
+  await expect(async () => {
+    await model.scrollIntoViewIfNeeded({ timeout: 1000 })
+    expect(scripts.some(url => /\/CameoCanvas\./.test(url))).toBe(true)
+  }).toPass({ timeout: 10_000 })
 })
 
 test('projects index connects navigation, product pages and documentation', async ({ page, request }, testInfo) => {
