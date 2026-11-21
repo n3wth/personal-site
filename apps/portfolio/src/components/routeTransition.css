@@ -7,21 +7,20 @@
   --route-ease-in: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+::view-transition { pointer-events: none; }
+
 @media (prefers-reduced-motion: no-preference) {
+  /* Keep the header live and hit-testable while the page content is captured. */
+  :root { view-transition-name: none; }
+  .n3wth-site-main { view-transition-name: route-content; }
+
   /* The outgoing page clears quickly; the incoming one settles in behind it. */
-  ::view-transition-old(root) {
+  ::view-transition-old(route-content) {
     animation: route-fade-out 200ms var(--route-ease-out) both;
   }
-  ::view-transition-new(root) {
+  ::view-transition-new(route-content) {
     animation: route-fade-in 440ms var(--route-ease-in) 60ms both;
   }
-
-  /* The navigation is the same object on every page, so it stays put without an opacity dip. */
-  .route-steady { view-transition-name: site-navigation; }
-  ::view-transition-group(site-navigation) { animation-duration: 0s; }
-  ::view-transition-old(site-navigation),
-  ::view-transition-new(site-navigation) { animation: none; }
-  ::view-transition-old(site-navigation) { opacity: 0; }
 
   /* Every page's artwork is one shared layer: its lines recede inward on exit and fade in on arrival. */
   .portfolio-story-hero > .section-story,

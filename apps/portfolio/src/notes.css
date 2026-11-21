@@ -1,4 +1,9 @@
 .thinking-note-layout { display: grid; gap: 2rem; max-width: 72ch; margin: 3rem auto; }
+.thinking-note-outline summary { min-height: 44px; cursor: pointer; }
+.thinking-note-outline summary::after { content: '+' / ''; }
+.thinking-note-outline[open] summary::after { content: '−' / ''; }
+.thinking-note-outline summary::-webkit-details-marker { display: none; }
+.thinking-note-outline nav a { display: block; width: fit-content; }
 .thinking-note-prose { max-width: 72ch; line-height: 1.75; overflow-wrap: anywhere; }
 .thinking-note-prose :is(h2, h3, h4) { scroll-margin-top: 7rem; margin-block: 2em 0.75em; font-weight: 600; }
 .thinking-note-prose h2 { font-size: var(--font-size-xl); }

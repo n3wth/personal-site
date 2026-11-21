@@ -1,4 +1,5 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react'
+import { withTheme } from '../withTheme'
 import { shipReviewPath } from '../../lib/shipReview'
 import { useHydrated, useQueryString } from '../../lib/navigation'
 import { Icon, Selector, TextInput } from '@n3wth/ui/primitives'
@@ -126,4 +127,11 @@ export function NotesIndex() {
       </div>}
     </section>
   )
+}
+
+const ThemedIndex = withTheme(NotesIndex)
+
+export default function WritingIndex() {
+  // Astro observes the island's direct children, and the theme provider uses display: contents.
+  return <div><ThemedIndex /></div>
 }

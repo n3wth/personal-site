@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 
@@ -8,59 +8,6 @@ import * as THREE from 'three'
  * so mutating materials here can never leak into the cached scene the
  * night field renders from.
  */
-
-/** Viewport tracking for the piece's canvases. `near` flips true once
-    (mount trigger, the same deferral the Creative section uses for its
-    background images); `visible` keeps toggling, so a scene can stop
-    its frame loop the moment it scrolls away instead of drawing off
-    screen forever. */
-export function useNear<T extends HTMLElement>(rootMargin = '600px') {
-  const ref = useRef<T>(null)
-  // No IntersectionObserver -> mount immediately, from the first render.
-  const noIO = typeof window !== 'undefined' && !('IntersectionObserver' in window)
-  const [near, setNear] = useState(noIO)
-  const [visible, setVisible] = useState(noIO)
-  useEffect(() => {
-    const el = ref.current
-    if (!el || !('IntersectionObserver' in window)) return
-    const io = new IntersectionObserver(
-      (entries) => {
-        const isIn = entries.some((e) => e.isIntersecting)
-        if (isIn) setNear(true)
-        setVisible(isIn)
-      },
-      { rootMargin }
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [rootMargin])
-  return [ref, near, visible] as const
-}
-
-/** Which r3f frame loop a scene deserves right now: full loop only
-    while on screen, single-invalidate renders for static reduced-motion
-    scenes, nothing at all once scrolled past. */
-export function frameloopFor(visible: boolean, reduced: boolean): 'always' | 'demand' | 'never' {
-  if (!visible) return 'never'
-  return reduced ? 'demand' : 'always'
-}
-
-/** Live prefers-reduced-motion flag; every scene in the piece takes this
-    and renders its static form when true. */
-export function useReducedMotionFlag() {
-  const [reduced, setReduced] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const onChange = () => setReduced(mq.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-  return reduced
-}
 
 /** Rodin/Blender GLBs ship exotic material state (spec-gloss extension,
     metalness 1) that renders black under plain point lights — the first

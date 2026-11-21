@@ -266,13 +266,14 @@ test('Thinking notes keep local links, topics, anchors and browser Back', async 
   await page.goto('/thinking/frameworks/5-whys#usage')
   await expect(page.getByRole('heading', { level: 1, name: '5 Whys', exact: true })).toBeVisible()
   await expect(page.locator('#usage')).toBeInViewport()
-  const contents = page.getByRole('button', { name: 'Contents', exact: true })
-  await expect(contents).toHaveAttribute('aria-expanded', 'false')
+  const outline = page.locator('.thinking-note-outline')
+  const contents = outline.locator('summary')
+  await expect(outline).not.toHaveAttribute('open')
   await contents.click()
-  await expect(contents).toHaveAttribute('aria-expanded', 'true')
+  await expect(outline).toHaveAttribute('open', '')
   await expect(page.locator('.thinking-note-outline a[href="#usage"]')).toBeVisible()
   await contents.click()
-  await expect(contents).toHaveAttribute('aria-expanded', 'false')
+  await expect(outline).not.toHaveAttribute('open')
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://n3wth.com/thinking/frameworks/5-whys')
   await expect(page.locator('.thinking-note-prose img').first()).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -328,6 +329,29 @@ test('Thinking loads more writing on scroll and restores its collection and filt
   await expect(page.getByRole('status')).toHaveText('1 result')
   await expect(page.locator('.writing-results a')).toHaveText('5 Whys')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
+test('Thinking defers the index and Field Guide defers its WebGL code', async ({ page }) => {
+  const scripts: string[] = []
+  page.on('request', request => {
+    if (request.resourceType() === 'script') scripts.push(request.url())
+  })
+  await page.goto('/thinking')
+  await expect(page.locator('.writing-results > li')).toHaveCount(24)
+  expect(scripts.some(url => /\/NotesIndex\./.test(url))).toBe(false)
+  const search = page.getByRole('textbox', { name: 'Search writing' })
+  await search.scrollIntoViewIfNeeded()
+  await expect(search).toBeEnabled()
+  expect(scripts.some(url => /\/NotesIndex\./.test(url))).toBe(true)
+
+  scripts.length = 0
+  await page.goto('/thinking/field-guide')
+  await expect(page.getByRole('heading', { name: 'Figure out the story' })).toBeAttached()
+  expect(scripts.some(url => /\/(CameoCanvas|BikeCanvas|TeapotCanvas|FlythroughCanvas)\./.test(url))).toBe(false)
+  const model = page.getByRole('img', { name: /homepage trail signpost/ })
+  const scene = page.waitForRequest(/\/CameoCanvas\.[^/]+\.js/)
+  await model.scrollIntoViewIfNeeded()
+  await scene
 })
 
 test('projects index connects navigation, product pages and documentation', async ({ page, request }, testInfo) => {
@@ -398,6 +422,9 @@ test('page content and footer are readable without client JavaScript', async ({ 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await expect(page.locator('.n3wth-site-footer')).toHaveCount(1)
     await expect(page).toHaveTitle('Thinking — Oliver Newth')
+    await page.goto('http://127.0.0.1:4281/thinking/frameworks/5-whys')
+    await page.locator('.thinking-note-outline summary').click()
+    await expect(page.locator('.thinking-note-outline a[href="#usage"]')).toBeVisible()
   } finally {
     await context.close()
   }
@@ -574,6 +601,22 @@ test('section navigation is never intercepted and survives browser Back', async 
   await expect(page.locator('.section-story svg')).toHaveCSS('opacity', '1')
   await expect(page.locator('.n3wth-site-footer')).toHaveCSS('opacity', '1')
   expect(errors).toEqual([])
+})
+
+test('the top navigation receives pointer input during transitions', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/thinking')
+  const brand = page.getByRole('link', { name: 'Oliver Newth — home' })
+  await page.addStyleTag({ content: '::view-transition-group(*) { animation-duration: 2s !important; }' })
+  const reachable = await brand.evaluate(async link => {
+    const { x, y, width, height } = link.getBoundingClientRect()
+    const transition = document.startViewTransition(() => {})
+    await transition.ready
+    const hit = document.elementFromPoint(x + width / 2, y + height / 2)
+    transition.skipTransition()
+    return link.contains(hit)
+  })
+  expect(reachable).toBe(true)
 })
 
 test('every page shares one artwork layer for the transition', async ({ page }) => {
@@ -815,8 +858,9 @@ test('home keeps ordinary writing navigation when WebGL is unavailable', async (
   await thinking.focus()
   await page.keyboard.press('Enter')
   await expect(page).toHaveURL(/\/thinking$/)
-  await expect(page.getByLabel('Search writing', { exact: true })).toBeVisible()
-  await page.getByLabel('Search writing', { exact: true }).fill('5 Whys')
+  const writingSearch = page.getByLabel('Search writing', { exact: true })
+  await writingSearch.scrollIntoViewIfNeeded()
+  await writingSearch.fill('5 Whys')
   await page.locator('#notes').getByRole('link', { name: '5 Whys', exact: true }).click()
   await expect(page).toHaveURL(/\/thinking\/frameworks\/5-whys$/)
   await expect(page.getByRole('heading', { level: 1, name: '5 Whys', exact: true })).toBeVisible()
