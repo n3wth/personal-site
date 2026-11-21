@@ -4,4 +4,11 @@ import Content from '../screens/Home'
 import routes from '../data/routes.json'
 const meta = routes.find(route => route.path === '')!
 ---
-<Layout {...meta}><Content client:load /></Layout>
+<Layout {...meta}><Content /></Layout>
+
+<script>
+  import { mountHomeFlow } from '../components/homeFlow'
+
+  const ribbon = document.querySelector<SVGSVGElement>('.home-contours')
+  if (ribbon) mountHomeFlow(ribbon)
+</script>

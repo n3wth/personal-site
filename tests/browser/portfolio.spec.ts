@@ -725,11 +725,11 @@ test('homepage effects stay bounded through a complete color cycle', async ({ pa
 test('home artwork needs no raster image, WebGL models or scene data', async ({ page }) => {
   const requests: string[] = []
   page.on('request', request => {
-    if (/contour-landscape\.webp|\/models\/|writing\/world\.json|NightField.*\.js|storyInteractions.*\.js/.test(request.url())) requests.push(request.url())
+    if (/contour-landscape\.webp|\/models\/|writing\/world\.json|(?:NightField|storyInteractions|storySpace).*\.js/.test(request.url())) requests.push(request.url())
   })
   const response = await page.goto('/')
   expect((await response!.body()).byteLength).toBeLessThan(155_000)
-  await expect(page.locator('astro-island[component-url*="Home."]')).not.toHaveAttribute('ssr', '')
+  await expect(page.locator('astro-island[component-url*="Home."]')).toHaveCount(0)
   await expect(page.locator('.home-contours__terrain')).toBeVisible()
   await expect(page.locator('canvas')).toHaveCount(0)
   expect(requests).toEqual([])
@@ -821,17 +821,13 @@ test('home keeps ordinary writing navigation when WebGL is unavailable', async (
   await expect(page.getByRole('heading', { level: 1, name: '5 Whys', exact: true })).toBeVisible()
 })
 
-test('home remains composed before its light layer hydrates', async ({ page }) => {
-  await page.route('**/_astro/Home.*.js', route => route.abort())
+test('home renders the ribbon and navigation without JavaScript', async ({ browser, baseURL, viewport }) => {
+  const page = await browser.newPage({ baseURL, viewport, javaScriptEnabled: false })
   await page.goto('/')
   await expect(page.locator('.home-contours__terrain')).toBeVisible()
   await expect(page.getByRole('progressbar')).toHaveCount(0)
-  const navigation = page.locator('#primary-navigation')
-  if (!await navigation.getByRole('link', { name: 'Work', exact: true }).isVisible()) {
-    await page.getByRole('button', { name: 'Open menu', exact: true }).click()
-  }
-  await navigation.getByRole('link', { name: 'Work', exact: true }).click()
-  await expect(page).toHaveURL(/\/work$/)
+  await expect(page.locator('#primary-navigation a[href="/work"]')).toHaveCount(1)
+  await page.close()
 })
 
 

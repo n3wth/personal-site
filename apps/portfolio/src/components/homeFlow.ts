@@ -1,7 +1,10 @@
-import { useEffect, type RefObject } from 'react'
-import { ribbonEase as smooth } from './ribbonSurface'
 import { groundLag, harmonyMix, harmonySeconds, paintHarmony } from './harmony'
-import { readStoryJourney, saveStoryJourney } from './storySpace'
+import { readStoryJourney, saveStoryJourney } from './storyJourney'
+
+const smooth = (value: number) => {
+  const t = Math.max(0, Math.min(1, value))
+  return t * t * (3 - 2 * t)
+}
 
 /** `start` is the harmony phase the visitor arrives with, so the ribbon resumes their journey. */
 export function createHomeFlow(svg: SVGSVGElement, start = 0) {
@@ -51,46 +54,34 @@ export function createHomeFlow(svg: SVGSVGElement, start = 0) {
   }
 }
 
-export function useHomeFlow(ref: RefObject<SVGSVGElement | null>) {
-  useEffect(() => {
-    const svg = ref.current
-    if (!svg) return
-    const journey = readStoryJourney()
-    const arrived = (((Date.now() - journey.epoch) / 1000 - groundLag) / harmonySeconds % 4 + 4) % 4
-    const flow = createHomeFlow(svg, Math.floor(arrived) + .25 + .75 * (arrived % 1)), media = matchMedia('(prefers-reduced-motion: reduce)')
-    const leave = () => saveStoryJourney({ epoch: Date.now() - (flow.journeyPhase() % 4 * harmonySeconds + groundLag) * 1000, color: journey.color })
-    window.addEventListener('pagehide', leave)
-    let visible = typeof IntersectionObserver === 'undefined', frame = 0, elapsed = 0
-    let previous: number | undefined
-    const tick = (now: number) => {
-      if (previous !== undefined) elapsed += Math.min(now - previous, 100) / 1000
-      previous = now
-      flow.update(elapsed)
-      frame = requestAnimationFrame(tick)
-    }
-    const sync = () => {
-      cancelAnimationFrame(frame)
-      previous = undefined
-      const paused = media.matches || document.hidden || !visible
-      svg.toggleAttribute('data-story-paused', paused)
-      if (media.matches) flow.reset()
-      if (!paused) frame = requestAnimationFrame(tick)
-    }
-    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting
-      sync()
-    })
-    observer?.observe(svg.parentElement ?? svg)
-    media.addEventListener('change', sync)
-    document.addEventListener('visibilitychange', sync)
+export function mountHomeFlow(svg: SVGSVGElement) {
+  const journey = readStoryJourney()
+  const arrived = (((Date.now() - journey.epoch) / 1000 - groundLag) / harmonySeconds % 4 + 4) % 4
+  const flow = createHomeFlow(svg, Math.floor(arrived) + .25 + .75 * (arrived % 1)), media = matchMedia('(prefers-reduced-motion: reduce)')
+  const leave = () => saveStoryJourney({ epoch: Date.now() - (flow.journeyPhase() % 4 * harmonySeconds + groundLag) * 1000, color: journey.color })
+  window.addEventListener('pagehide', leave)
+  let visible = typeof IntersectionObserver === 'undefined', frame = 0, elapsed = 0
+  let previous: number | undefined
+  const tick = (now: number) => {
+    if (previous !== undefined) elapsed += Math.min(now - previous, 100) / 1000
+    previous = now
+    flow.update(elapsed)
+    frame = requestAnimationFrame(tick)
+  }
+  const sync = () => {
+    cancelAnimationFrame(frame)
+    previous = undefined
+    const paused = media.matches || document.hidden || !visible
+    svg.toggleAttribute('data-story-paused', paused)
+    if (media.matches) flow.reset()
+    if (!paused) frame = requestAnimationFrame(tick)
+  }
+  const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting
     sync()
-    return () => {
-      cancelAnimationFrame(frame)
-      window.removeEventListener('pagehide', leave)
-      observer?.disconnect()
-      media.removeEventListener('change', sync)
-      document.removeEventListener('visibilitychange', sync)
-      svg.removeAttribute('data-story-paused')
-    }
-  }, [ref])
+  })
+  observer?.observe(svg.parentElement ?? svg)
+  media.addEventListener('change', sync)
+  document.addEventListener('visibilitychange', sync)
+  sync()
 }
